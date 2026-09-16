@@ -1,0 +1,96 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - run: uv sync --all-extras
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+      - run: uv run mypy
+
+  test:
+    name: test (${{ matrix.os }}, ${{ matrix.python }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: ubuntu-latest, python: "3.11" }
+          - { os: ubuntu-latest, python: "3.12" }
+          - { os: ubuntu-latest, python: "3.13" }
+          # Windows is the platform LabHarness is developed and demoed on.
+          - { os: windows-latest, python: "3.12" }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          python-version: ${{ matrix.python }}
+      - run: uv sync --all-extras
+      - run: uv run pytest -m "not latex"
+
+  latex:
+    name: latex
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - uses: teatimeguest/setup-texlive-action@v3
+        with:
+          cache: true
+          packages: |
+            scheme-basic
+            achemso
+            caption
+            chemfig
+            etoolbox
+            float
+            geometry
+            hyperref
+            latexmk
+            lm
+            mciteplus
+            natbib
+            natmove
+            setspace
+            simplekv
+            standalone
+            url
+            xkeyval
+      - run: uv sync --all-extras
+      - run: uv run pytest -m latex
+
+  # Single required check: the ruleset references this name, so it stays stable
+  # however the matrix above changes.
+  ci-pass:
+    name: ci-pass
+    if: always()
+    needs: [lint, test, latex]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail if any job did not succeed
+        run: |
+          echo "lint=${{ needs.lint.result }} test=${{ needs.test.result }} latex=${{ needs.latex.result }}"
+          [ "${{ needs.lint.result }}" = "success" ] || exit 1
+          [ "${{ needs.test.result }}" = "success" ] || exit 1
+          [ "${{ needs.latex.result }}" = "success" ] || exit 1
