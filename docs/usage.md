@@ -2,8 +2,9 @@
 
 Complete reference for the v0.1 command line, file formats and troubleshooting.
 
-> **Pre-alpha.** This document is the specification of v0.1 (README-driven development).
-> Nothing here is implemented yet; it is what is being built.
+> **Pre-alpha.** `init`, `build`, `watch` and `doctor` work today. `add`, `resolve` and the
+> figure kinds they create are still specification (README-driven development), and are marked
+> **[not implemented yet]** below.
 
 - [Concepts](#concepts)
 - [Global options](#global-options)
@@ -64,7 +65,7 @@ Creates a workspace from the template: `paper.tex`, `labharness-style.tex`, `ref
 | `--journal` | `acs` | Journal template. v0.1 ships ACS only |
 | `--force` | off | Write into a folder that is not empty |
 
-### `labharness add`
+### `labharness add` **[not implemented yet]**
 
 ```
 labharness add <kind> <name> [--input FILE...] [--edit]
@@ -112,7 +113,7 @@ each phase. It opens the PDF in your viewer on start (SumatraPDF on Windows, Ski
 If LaTeX fails, the error is summarised, the last good PDF stays on screen, and the watcher keeps
 running: fix the file, save, and it recovers.
 
-### `labharness resolve`
+### `labharness resolve` **[not implemented yet]**
 
 ```
 labharness resolve "NAME" -o FILE
@@ -162,6 +163,9 @@ Editing the manifest or the style file rebuilds every figure. `labharness add` k
 date for you, but it is plain text you can edit by hand.
 
 ## Figure kinds
+
+The modules that draw these are still being built: the watcher already runs Python figure
+scripts, but the `chem`, `diagrams` and `plots` helpers below are **[not implemented yet]**.
 
 ### `structure` — chemical structures
 

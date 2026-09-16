@@ -2,14 +2,29 @@
 
 Turn raw lab data into publication-ready LaTeX figures, and keep the PDF in sync while you work.
 
-> **Status: pre-alpha, v0.1 in development.** This README is the specification: it describes the
-> v0.1 command line as it is being built (README-driven development). Commands marked
-> **[not implemented yet]** do not work.
+> **Status: pre-alpha, v0.1 in development.** `init`, `build`, `watch` and `doctor` work
+> today. Everything marked **[not implemented yet]** is specification: it describes what is
+> being built (README-driven development), not what runs.
 
 LabHarness is a local-first, open-source (MIT) harness for scientific writing and lab-data
 automation — *Data-to-Paper*. Change a data point or a SMILES string, save, and the figure and the
 PDF update on their own. The pipeline is always short, readable Python you can open and edit,
 never a black box.
+
+## How fast is it
+
+Measured on the author's laptop (Windows 11, MiKTeX), with the watcher already running, on a
+document using the ACS template:
+
+| Step | Time |
+|---|---|
+| **Regenerating a figure** after a data change | **0.3 s** |
+| Recompiling the document | 4.1 s |
+
+The harness keeps its own work in the hundreds of milliseconds: scripts run inside the watcher
+process, so a rebuild never pays for starting Python and importing RDKit or Matplotlib again
+(the same figure takes 1.8 s on a cold start). What is left is LaTeX, and making that part
+faster is the current work.
 
 ## Who it is for
 
@@ -98,8 +113,8 @@ uv sync --all-extras
 uv run labharness doctor
 ```
 
-`labharness doctor` **[not implemented yet]** checks the requirements above and tells you exactly
-what is missing and how to install it.
+`labharness doctor` checks the requirements above and tells you exactly what is missing and
+how to install it.
 
 Install only what you need:
 
@@ -114,9 +129,9 @@ Install only what you need:
 ## Quickstart
 
 ```bash
-labharness init my-paper --journal acs     # [not implemented yet]
+labharness init my-paper --journal acs
 cd my-paper
-labharness add structure catalyst --input data/catalyst.smi
+labharness add structure catalyst --input data/catalyst.smi   # [not implemented yet]
 labharness watch
 ```
 
@@ -125,15 +140,15 @@ PDF reloads in your viewer, with the timings printed in the terminal.
 
 ## Commands
 
-All of these are **[not implemented yet]**; they are the v0.1 specification.
+`add` and `resolve` are still specification; the rest work today.
 
 | Command | What it does |
 |---|---|
 | `labharness init [PATH] [--journal acs]` | Create a workspace from the template |
-| `labharness add <kind> <name> [--input FILE...]` | Add a figure: writes the script and the manifest entry |
+| `labharness add <kind> <name> [--input FILE...]` | Add a figure: writes the script and the manifest entry **[not implemented yet]** |
 | `labharness build [--only NAME] [--no-latex]` | Rebuild figures and compile the PDF once |
 | `labharness watch [--no-open] [--debounce MS]` | Watch, rebuild and recompile on every save |
-| `labharness resolve NAME -o FILE` | IUPAC name to SMILES, offline |
+| `labharness resolve NAME -o FILE` | IUPAC name to SMILES, offline **[not implemented yet]** |
 | `labharness doctor` | Check the environment and report what is missing |
 
 **[Full command reference, options and file formats: `docs/usage.md`](docs/usage.md)**
@@ -202,7 +217,9 @@ See [`docs/ROADMAP.md`](docs/ROADMAP.md) for the detail.
 ## Contributing
 
 External contributions open with v1.0. See [`CONTRIBUTING.md`](CONTRIBUTING.md) and the
-[Code of Conduct](CODE_OF_CONDUCT.md). Design decisions are recorded as ADRs in [`docs/adr/`](docs/adr/).
+[Code of Conduct](CODE_OF_CONDUCT.md). If you want to work on LabHarness itself, start with
+[`docs/onboarding.md`](docs/onboarding.md); the decisions behind the design are in
+[`docs/adr/`](docs/adr/).
 
 ## License
 
