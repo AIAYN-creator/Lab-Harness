@@ -1,15 +1,19 @@
-% figures/mechanism.pdf -- enamine formation, the first step of the catalytic cycle.
+% figures/mechanism.pdf -- how the anode degrades the molecule.
 %
-% Only the drawing lives here: LabHarness adds the journal style around it, which is why
-% there is no preamble and no font in this file.
+% Water is oxidised at the anode surface to a sorbed hydroxyl radical, which then attacks the
+% aromatic ring of the pollutant. Only the drawing lives here: LabHarness adds the journal
+% style around it, which is why there is no preamble and no font in this file.
 %
-% electron pair -- a full arrowhead, for a pair of electrons
-% single electron -- a half arrowhead, for a radical
-\begin{tikzpicture}
-  \node (amine) {\chemfig{HN*5(-----)}};
-  \node (ketone) at (3.4,0) {\chemfig{O=[:120]C(-[:180]H_3C)-[:60]CH_3}};
-  \node (enamine) at (8.2,0) {\chemfig{N*5(-----)-[:30]C(=[:90]CH_2)-[:330]CH_3}};
+% electron pair   -- a full arrowhead, for a pair of electrons
+% single electron -- a half arrowhead, for a single electron
+\begin{tikzpicture}[node distance=1.1cm]
+  \node (water) {\chemfig{H-O-H}};
+  \node (anode) [right=of water] {M};
+  \node (radical) [right=2.6cm of anode] {\chemfig{M\cdot OH}};
+  \node (ring) [right=2.4cm of radical] {\chemfig{*6(-=-=(-R)-=)}};
 
-  \draw[electron pair] (1.5,0.2) -- node[node label, above] {$-$H$_2$O} (2.4,0.2);
-  \draw[electron pair] (5.1,0.2) -- node[node label, above] {enamine} (6.4,0.2);
+  \draw[electron pair] ($(anode.east)+(0.2,0)$) -- node[node label, above] {$-$H$^+$, $-$e$^-$}
+    ($(radical.west)+(-0.2,0)$);
+  \draw[single electron] ($(radical.east)+(0.2,0)$) -- node[node label, above] {$\cdot$OH}
+    node[node label, below] {attack} ($(ring.west)+(-0.2,0)$);
 \end{tikzpicture}

@@ -2,14 +2,19 @@
 # `labharness watch` regenerates a figure whenever its script or any of its inputs change.
 
 [[figure]]
-output = "figures/catalyst.pdf"
-script = "scripts/catalyst.py"
-inputs = ["data/catalyst.smi"]
+output = "figures/atenolol.pdf"
+script = "scripts/atenolol.py"
+inputs = ["data/atenolol.smi"]
 
 [[figure]]
-output = "figures/calibration.pdf"
-script = "scripts/calibration.py"
-inputs = ["data/calibration.csv"]
+output = "figures/decay.pdf"
+script = "scripts/decay.py"
+inputs = ["data/decay.csv"]
+
+[[figure]]
+output = "figures/kapp.pdf"
+script = "scripts/kapp.py"
+inputs = ["data/kapp.csv"]
 
 [[figure]]
 output = "figures/mechanism.pdf"
