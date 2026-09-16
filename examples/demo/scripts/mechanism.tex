@@ -1,0 +1,15 @@
+% figures/mechanism.pdf -- enamine formation, the first step of the catalytic cycle.
+%
+% Only the drawing lives here: LabHarness adds the journal style around it, which is why
+% there is no preamble and no font in this file.
+%
+% electron pair -- a full arrowhead, for a pair of electrons
+% single electron -- a half arrowhead, for a radical
+\begin{tikzpicture}
+  \node (amine) {\chemfig{HN*5(-----)}};
+  \node (ketone) at (3.4,0) {\chemfig{O=[:120]C(-[:180]H_3C)-[:60]CH_3}};
+  \node (enamine) at (8.2,0) {\chemfig{N*5(-----)-[:30]C(=[:90]CH_2)-[:330]CH_3}};
+
+  \draw[electron pair] (1.5,0.2) -- node[node label, above] {$-$H$_2$O} (2.4,0.2);
+  \draw[electron pair] (5.1,0.2) -- node[node label, above] {enamine} (6.4,0.2);
+\end{tikzpicture}

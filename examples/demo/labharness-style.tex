@@ -1,0 +1,34 @@
+% LabHarness document style -- generated from the ACS journal style.
+%
+% One typeface for the whole document, text and figures alike: Latin Modern Roman.
+% Do not set fonts anywhere else; change them in the journal style file instead.
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{graphicx}
+
+% achemso loads mciteplus, which initialises its label-width counters at the first
+% \bibitem. A document with an empty bibliography never reaches one, and then fails at
+% \end{mcitethebibliography} with an undefined control sequence -- which is exactly what
+% a freshly created workspace has.
+% \gdef, not \providecommand: LaTeX makes \providecommand macros robust, and a robust
+% macro does not expand where TeX expects a number.
+\makeatletter
+\@ifundefined{mcitemaxwidthbibitem}{\gdef\mcitemaxwidthbibitem{0}}{}
+\@ifundefined{mcitemaxwidthsubitem}{\gdef\mcitemaxwidthsubitem{0}}{}
+\@ifundefined{@mcitecorrectmaxwidthbibitem}{\gdef\@mcitecorrectmaxwidthbibitem{0}}{}
+\@ifundefined{@mcitecorrectmaxwidthsubitem}{\gdef\@mcitecorrectmaxwidthsubitem{0}}{}
+\makeatother
+
+% \labfigure{path}: include a generated figure at its natural (final) size.
+% If the figure does not exist yet, show a placeholder so the document still compiles.
+\newcommand{\labfigure}[1]{%
+  \IfFileExists{#1}%
+    {\includegraphics{#1}}%
+    {\fbox{\parbox{0.9\linewidth}{%
+      \centering\ttfamily Figure not generated yet:\\\detokenize{#1}%
+    }}}%
+}
+
+% \labresults{path}: load the macros written next to a fitted plot
+% (e.g. figures/calibration.fit.tex) so the text can cite fitted values that update with the data.
+\newcommand{\labresults}[1]{\InputIfFileExists{#1}{}{}}

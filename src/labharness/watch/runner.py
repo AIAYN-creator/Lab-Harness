@@ -9,6 +9,7 @@ from collections.abc import Iterator, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from labharness.core.latex import run_pdflatex
 from labharness.core.manifest import Figure, Workspace
 from labharness.watch.latex import CompileResult, compile_document
 
@@ -42,8 +43,14 @@ def build(
     workspace: Workspace,
     figures: Sequence[Figure] | None = None,
     compile_latex: bool = True,
+    quick: bool = False,
 ) -> BuildResult:
-    """Rebuild the given figures (all of them by default) and compile the document."""
+    """Rebuild the given figures (all of them by default) and compile the document.
+
+    ``quick`` takes the short path through LaTeX, which is safe when only a figure changed.
+    If it fails, the full latexmk run happens anyway, so a bibliography that needed it is
+    never left broken.
+    """
     result = BuildResult()
 
     started = time.perf_counter()
@@ -53,7 +60,12 @@ def build(
 
     if compile_latex and all(item.ok for item in result.figures):
         started = time.perf_counter()
-        result.compilation = compile_document(workspace.document)
+        if quick:
+            result.compilation = run_pdflatex(workspace.document)
+            if not result.compilation.ok:
+                result.compilation = compile_document(workspace.document)
+        else:
+            result.compilation = compile_document(workspace.document)
         result.latex_seconds = time.perf_counter() - started
 
     return result
@@ -73,12 +85,7 @@ def build_figure(workspace: Workspace, figure: Figure) -> FigureResult:
         return FigureResult(figure, ok=False, seconds=0.0, error=f"{figure.script} does not exist")
 
     if script.suffix == ".tex":
-        return FigureResult(
-            figure,
-            ok=False,
-            seconds=0.0,
-            error="TikZ figures are not implemented yet (the diagrams module is still to come)",
-        )
+        return _build_diagram(workspace, figure, script, started)
 
     if script.suffix != ".py":
         return FigureResult(
@@ -102,6 +109,23 @@ def build_figure(workspace: Workspace, figure: Figure) -> FigureResult:
             figure, ok=False, seconds=seconds, error=f"{figure.script} produced no {figure.output}"
         )
     return FigureResult(figure, ok=True, seconds=seconds)
+
+
+def _build_diagram(
+    workspace: Workspace, figure: Figure, script: Path, started: float
+) -> FigureResult:
+    """Compile a TikZ or chemfig source through the diagrams module."""
+    from labharness.modules.diagrams import render_diagram
+    from labharness.style import load_style
+
+    try:
+        render_diagram(script, workspace.root / figure.output, style=load_style(workspace.journal))
+    except Exception as error:  # noqa: BLE001 - a broken figure must not stop the watcher
+        return FigureResult(
+            figure, ok=False, seconds=time.perf_counter() - started, error=str(error)
+        )
+
+    return FigureResult(figure, ok=True, seconds=time.perf_counter() - started)
 
 
 @contextlib.contextmanager

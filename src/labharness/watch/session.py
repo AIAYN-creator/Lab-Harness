@@ -5,7 +5,7 @@ from collections.abc import Callable, Iterable, Iterator
 from dataclasses import dataclass
 from pathlib import Path
 
-from labharness.core.manifest import Figure, Workspace
+from labharness.core.manifest import MANIFEST_NAME, STYLE_NAME, Figure, Workspace
 from labharness.watch.runner import BuildResult, build
 
 DEFAULT_DEBOUNCE_MS = 100
@@ -42,17 +42,25 @@ def changes_to_cycles(
                 if figure not in affected:
                     affected.append(figure)
 
-        document_changed = any(path.name == workspace.document.name for path in batch)
+        document_changed = any(_touches_the_document(path, workspace) for path in batch)
         if not affected and not document_changed:
             continue
 
-        result = build(workspace, figures=affected, compile_latex=True)
+        # Only figures moved: LaTeX needs one pass, not a full latexmk run.
+        result = build(workspace, figures=affected, compile_latex=True, quick=not document_changed)
         yield Cycle(
             changed=tuple(sorted(batch)),
             rebuilt=tuple(affected),
             result=result,
             started_at=started,
         )
+
+
+def _touches_the_document(path: Path, workspace: Workspace) -> bool:
+    """Whether a change can move more than a figure: the text, the style, the bibliography."""
+    return (
+        path.name in (workspace.document.name, MANIFEST_NAME, STYLE_NAME) or path.suffix == ".bib"
+    )
 
 
 def watch(

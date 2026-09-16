@@ -57,6 +57,39 @@ def run_latexmk(document: Path) -> LatexResult:
     return LatexResult(ok=ok, pdf=pdf if pdf.is_file() else None, errors=errors, log=output)
 
 
+def run_pdflatex(document: Path, passes: int = 2) -> LatexResult:
+    """Compile with pdflatex directly, for when only a figure changed.
+
+    latexmk is the right tool when the bibliography or the cross-references may have moved,
+    but it costs about a second of its own before running anything, and then makes two or
+    three passes. Redrawing a figure needs one pass, and LaTeX itself says so when it needs
+    another, so the quick path listens for that instead of assuming.
+    """
+    pdflatex = shutil.which("pdflatex")
+    if pdflatex is None:
+        raise LabHarnessError(
+            "cannot find 'pdflatex'. Install a LaTeX distribution (MiKTeX or TeX Live)."
+        )
+
+    output = ""
+    for attempt in range(passes):
+        result = subprocess.run(
+            [pdflatex, "-interaction=nonstopmode", document.name],
+            cwd=document.parent,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        output = result.stdout + result.stderr
+        if "Rerun" not in output or attempt == passes - 1:
+            break
+
+    pdf = document.with_suffix(".pdf")
+    ok = result.returncode == 0 and pdf.is_file()
+    errors = summarise_errors(output) or (summarise_errors(read_log(document)) if not ok else ())
+    return LatexResult(ok=ok, pdf=pdf if pdf.is_file() else None, errors=errors, log=output)
+
+
 def read_log(document: Path) -> str:
     log = document.with_suffix(".log")
     if not log.is_file():

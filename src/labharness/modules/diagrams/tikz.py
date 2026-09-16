@@ -11,7 +11,7 @@ from pathlib import Path
 
 from labharness.core.atomic import atomic_output
 from labharness.core.errors import LabHarnessError
-from labharness.core.latex import run_latexmk
+from labharness.core.latex import run_latexmk, run_pdflatex
 from labharness.style.latex import tikz_preamble
 from labharness.style.tokens import Style, load_style
 
@@ -54,7 +54,12 @@ def render_diagram(
         working = Path(folder) / f"{source.stem}.tex"
         working.write_text(document, encoding="utf-8")
 
-        result = run_latexmk(working)
+        # A standalone diagram has no bibliography and no table of contents: two pdflatex
+        # passes cover even chemfig arrows, which need the second one, and skip the second or
+        # so that latexmk spends deciding.
+        result = run_pdflatex(working, passes=2)
+        if not result.ok:
+            result = run_latexmk(working)
         if not result.ok or result.pdf is None:
             raise LabHarnessError(f"'{source.name}' did not compile:\n{result.summary}")
 

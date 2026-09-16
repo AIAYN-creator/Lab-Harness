@@ -1,0 +1,16 @@
+# LabHarness manifest: one [[figure]] entry per generated figure.
+# `labharness watch` regenerates a figure whenever its script or any of its inputs change.
+
+[[figure]]
+output = "figures/catalyst.pdf"
+script = "scripts/catalyst.py"
+inputs = ["data/catalyst.smi"]
+
+[[figure]]
+output = "figures/calibration.pdf"
+script = "scripts/calibration.py"
+inputs = ["data/calibration.csv"]
+
+[[figure]]
+output = "figures/mechanism.pdf"
+script = "scripts/mechanism.tex"

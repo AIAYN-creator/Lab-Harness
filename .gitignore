@@ -32,3 +32,4 @@ examples/**/paper.pdf
 .idea/
 .DS_Store
 Thumbs.db
+acs-*.bib
