@@ -55,28 +55,13 @@ jobs:
       - uses: astral-sh/setup-uv@v5
         with:
           enable-cache: true
-      - uses: teatimeguest/setup-texlive-action@v3
-        with:
-          cache: true
-          packages: |
-            scheme-basic
-            achemso
-            caption
-            chemfig
-            etoolbox
-            float
-            geometry
-            hyperref
-            latexmk
-            lm
-            mciteplus
-            natbib
-            natmove
-            setspace
-            simplekv
-            standalone
-            url
-            xkeyval
+      # Third-party actions are blocked for this repository, so TeX Live comes from apt
+      # instead of setup-texlive-action.
+      - name: Install TeX Live
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends texlive-latex-recommended texlive-latex-extra texlive-science texlive-fonts-recommended
+          pdflatex --version | head -1
       - run: uv sync --all-extras
       - run: uv run pytest -m latex
 
