@@ -13,18 +13,23 @@ never a black box.
 
 ## How fast is it
 
-Measured on the author's laptop (Windows 11, MiKTeX), with the watcher already running, on a
-document using the ACS template:
+From saving a file to seeing the PDF, measured on the author's laptop (Windows 11, MiKTeX)
+with the watcher running, on a document using the ACS template:
 
-| Step | Time |
-|---|---|
-| **Regenerating a figure** after a data change | **0.3 s** |
-| Recompiling the document | 4.1 s |
+| You change | Figure | LaTeX | **Total** |
+|---|---|---|---|
+| A measurement in a CSV | 0.20 s | 1.1 s | **1.3 s** |
+| A SMILES string | 0.05 s | 1.05 s | **1.1 s** |
+| A reaction mechanism | 3.1 s | 1.0 s | **4.1 s** |
+| The text of the manuscript | — | 4.1 s | **4.1 s** |
 
-The harness keeps its own work in the hundreds of milliseconds: scripts run inside the watcher
-process, so a rebuild never pays for starting Python and importing RDKit or Matplotlib again
-(the same figure takes 1.8 s on a cold start). What is left is LaTeX, and making that part
-faster is the current work.
+Two things make that possible. Figure scripts run inside the watcher process, so a rebuild
+never pays again for starting Python and importing RDKit or Matplotlib: the same figure takes
+1.8 s from a cold start and 0.2 s once the watcher is up. And when only a figure changed,
+LaTeX needs a single pass, which is what it gets — latexmk costs about a second before it runs
+anything, so it is kept for the cases that need it, such as a changed bibliography.
+
+What is left is LaTeX itself, and mechanisms drawn with chemfig, which are slow to compile.
 
 ## Who it is for
 
