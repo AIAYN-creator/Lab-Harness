@@ -1,0 +1,179 @@
+"""Drawing a regression: points with their error bars, the fit, and the numbers it produced."""
+
+import re
+from collections.abc import Callable, Sequence
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any
+
+from labharness.core.atomic import atomic_output
+from labharness.core.errors import LabHarnessError
+from labharness.core.extras import require
+from labharness.modules.plots.data import Points, Series, read_series
+from labharness.modules.plots.fits import Fit, fit
+from labharness.style.mpl import palette
+from labharness.style.tokens import Style, load_style
+
+Label = tuple[str, str | None]
+FIT_MACROS = ".fit.tex"
+
+
+@dataclass
+class PlotResult:
+    """What a plot produced: the fits, and where the numbers were written."""
+
+    output: Path
+    fits: tuple[Fit, ...]
+    macros: Path
+    warnings: tuple[str, ...]
+
+
+def regression_plot(
+    output: Path | str,
+    series: Series | Sequence[Series],
+    x_label: Label,
+    y_label: Label,
+    model: str = "linear",
+    degree: int = 2,
+    function: Callable[..., Any] | None = None,
+    p0: Sequence[float] | None = None,
+    show_equation: bool = False,
+    style: Style | None = None,
+    width_in: float | None = None,
+) -> PlotResult:
+    """Plot one or more series with their fit, at the journal's size and typeface.
+
+    Axis labels are required on purpose: an unlabelled axis is the most common defect in a
+    figure, and it is cheaper to refuse than to notice it in proof.
+    """
+    style = style or load_style()
+    all_series = [series] if isinstance(series, Series) else list(series)
+    if not all_series:
+        raise LabHarnessError("give regression_plot at least one series")
+
+    x_title = _axis_title(style, x_label, "x_label")
+    y_title = _axis_title(style, y_label, "y_label")
+
+    measurements = [read_series(item) for item in all_series]
+    fits = [
+        fit(points.x, points.y, points.error, model=model, degree=degree, function=function, p0=p0)
+        for points in measurements
+    ]
+
+    output = Path(output)
+    _draw(output, measurements, fits, x_title, y_title, style, width_in, show_equation)
+    macros = _write_macros(output, fits)
+
+    warnings = tuple(warning for points in measurements for warning in points.warnings)
+    return PlotResult(output=output, fits=tuple(fits), macros=macros, warnings=warnings)
+
+
+def _axis_title(style: Style, label: Label | None, argument: str) -> str:
+    if not label or not label[0]:
+        raise LabHarnessError(
+            f"{argument} is required: give it as (quantity, unit), for example "
+            '("Concentration", "mM"), or (quantity, None) when there is no unit.'
+        )
+    quantity, unit = label
+    return style.axis_label(quantity, unit)
+
+
+def _draw(
+    output: Path,
+    measurements: list[Points],
+    fits: list[Fit],
+    x_title: str,
+    y_title: str,
+    style: Style,
+    width_in: float | None,
+    show_equation: bool,
+) -> None:
+    matplotlib = require("matplotlib", extra="plots")
+    require("matplotlib.font_manager", extra="plots")
+    pyplot = require("matplotlib.pyplot", extra="plots")
+    numpy = require("numpy", extra="plots")
+    from labharness.style.mpl import apply
+
+    matplotlib.use("pdf", force=True)
+    apply(matplotlib, style, width_in=width_in)
+    colours = palette(style)
+
+    figure, axes = pyplot.subplots()
+    try:
+        for index, (points, fitted) in enumerate(zip(measurements, fits, strict=True)):
+            colour = colours[index % len(colours)]
+            axes.errorbar(
+                points.x,
+                points.y,
+                yerr=points.error,
+                fmt="o",
+                color=colour,
+                linestyle="none",
+                label=points.label,
+            )
+            # The fit is drawn over the data only: extrapolating a fit into a region with no
+            # measurements is how figures start saying more than the experiment does.
+            line = numpy.linspace(float(min(points.x)), float(max(points.x)), 200)
+            axes.plot(line, fitted.predict(line), "-", color=colour)
+
+        axes.set_xlabel(x_title)
+        axes.set_ylabel(y_title)
+        if any(points.label for points in measurements):
+            axes.legend()
+        if show_equation and len(fits) == 1:
+            axes.annotate(
+                f"{fits[0].equation}\n$R^2$ = {fits[0].r_squared:.4f}",
+                xy=(0.04, 0.96),
+                xycoords="axes fraction",
+                va="top",
+            )
+
+        with atomic_output(output) as temporary:
+            figure.savefig(temporary, format="pdf")
+    finally:
+        pyplot.close(figure)
+
+
+def _write_macros(output: Path, fits: list[Fit]) -> Path:
+    """Write the fitted numbers as LaTeX macros next to the figure.
+
+    This is what lets the text of a paper cite a slope and have it follow the data instead of
+    being retyped by hand.
+    """
+    name = _macro_name(output.stem)
+    lines = [
+        f"% Generated by LabHarness from {output.name}.",
+        "% Do not edit: it is rewritten on every build.",
+    ]
+    for index, fitted in enumerate(fits):
+        suffix = "" if len(fits) == 1 else _macro_name(str(index + 1))
+        for parameter in fitted.parameters:
+            value, uncertainty = parameter.rounded()
+            macro = f"\\Fit{name}{suffix}{_macro_name(parameter.name)}"
+            lines.append(f"\\newcommand{{{macro}}}{{{value}}}")
+            lines.append(f"\\newcommand{{{macro}Error}}{{{uncertainty}}}")
+        lines.append(f"\\newcommand{{\\Fit{name}{suffix}RSquared}}{{{fitted.r_squared:.4f}}}")
+
+    macros = output.with_suffix("").with_name(output.stem + FIT_MACROS)
+    with atomic_output(macros) as temporary:
+        temporary.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return macros
+
+
+def _macro_name(text: str) -> str:
+    """LaTeX macro names can only hold letters, so make one out of whatever we were given."""
+    words = re.split(r"[^A-Za-z0-9]+", text)
+    name = "".join(word[:1].upper() + word[1:] for word in words if word)
+    digits = {
+        "0": "Zero",
+        "1": "One",
+        "2": "Two",
+        "3": "Three",
+        "4": "Four",
+        "5": "Five",
+        "6": "Six",
+        "7": "Seven",
+        "8": "Eight",
+        "9": "Nine",
+    }
+    return "".join(digits.get(character, character) for character in name)
