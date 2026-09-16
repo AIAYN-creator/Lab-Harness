@@ -1,11 +1,12 @@
 """The ACS workspace template must compile, and everything in it must use one typeface."""
 
-import re
+import io
 import shutil
 import subprocess
 from pathlib import Path
 
 import pytest
+from pypdf import PdfReader
 
 TEMPLATE = Path(__file__).resolve().parents[1] / "templates" / "workspace" / "journals" / "acs"
 
@@ -32,11 +33,32 @@ def compiled_pdf(tmp_path_factory: pytest.TempPathFactory) -> bytes:
     return pdf.read_bytes()
 
 
+def embedded_fonts(pdf: bytes) -> set[str]:
+    """Base font names used by the document, read through a real PDF parser.
+
+    Reading the raw bytes is not enough: pdfTeX stores these entries inside compressed
+    object streams, and whether they end up in the clear depends on the distribution.
+    """
+    names: set[str] = set()
+    for page in PdfReader(io.BytesIO(pdf)).pages:
+        resources = page.get("/Resources")
+        if resources is None:
+            continue
+        fonts = resources.get_object().get("/Font")
+        if fonts is None:
+            continue
+        for font in fonts.get_object().values():
+            base_font = font.get_object().get("/BaseFont")
+            if base_font is not None:
+                # Subset fonts are named like ABCDEF+LMRoman10-Regular.
+                names.add(str(base_font).lstrip("/").split("+")[-1])
+    return names
+
+
 def test_every_embedded_font_is_latin_modern(compiled_pdf: bytes) -> None:
-    # Subset fonts are named like ABCDEF+LMRoman10-Regular.
-    fonts = set(re.findall(rb"/BaseFont\s*/(?:[A-Z]{6}\+)?([A-Za-z0-9\-]+)", compiled_pdf))
-    assert fonts, "no embedded fonts found in the compiled PDF"
-    assert all(font.startswith(b"LM") for font in fonts), fonts
+    fonts = embedded_fonts(compiled_pdf)
+    assert fonts, "no fonts found in the compiled PDF"
+    assert all(font.startswith("LM") for font in fonts), fonts
 
 
 def test_missing_figures_do_not_break_the_build(compiled_pdf: bytes) -> None:

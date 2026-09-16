@@ -41,7 +41,7 @@ diagrams = "labharness.modules.diagrams"
 plots = "labharness.modules.plots"
 
 [dependency-groups]
-dev = ["pytest>=8", "pytest-cov", "ruff", "mypy", "pre-commit"]
+dev = ["pytest>=8", "pytest-cov", "pypdf>=5", "ruff", "mypy", "pre-commit"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/labharness"]
