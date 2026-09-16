@@ -1,0 +1,11 @@
+% A flowchart: nodes and arrows, in the style of xinychen/awesome-latex-drawing.
+%
+% This file holds only the drawing; the journal style is added around it.
+\begin{tikzpicture}[node distance=1.6cm]
+  \node (data) [draw, rounded corners, align=center] {Raw data};
+  \node (script) [draw, rounded corners, align=center, right=of data] {Script};
+  \node (figure) [draw, rounded corners, align=center, right=of script] {Figure};
+
+  \path[electron pair] (data) edge (script);
+  \path[electron pair] (script) edge (figure);
+\end{tikzpicture}

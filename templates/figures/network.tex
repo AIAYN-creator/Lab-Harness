@@ -1,0 +1,13 @@
+% A node network: entities and the relations between them.
+%
+% This file holds only the drawing; the journal style is added around it.
+% For plates around groups of nodes, load the tikz-bayesnet library in your document and use
+% \plate; LaTeX installs it on demand.
+\begin{tikzpicture}[node distance=1.4cm]
+  \node (a) [draw, circle] {$a$};
+  \node (b) [draw, circle, right=of a] {$b$};
+  \node (c) [draw, circle, below=of b] {$c$};
+
+  \path[electron pair] (a) edge (b);
+  \path[electron pair] (b) edge (c);
+\end{tikzpicture}

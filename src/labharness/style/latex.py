@@ -46,6 +46,8 @@ TIKZ_PREAMBLE = r"""% LabHarness figure style -- generated from the {name} journ
 \usepackage{{{latex_package}}}
 \usepackage{{tikz}}
 \usepackage{{chemfig}}
+% arrows.meta for the arrowheads used below, positioning for "right=of", calc for coordinates.
+\usetikzlibrary{{arrows.meta, positioning, calc}}
 
 \setchemfig{{
   atom sep = {bond_length}pt,

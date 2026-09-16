@@ -3,9 +3,9 @@ from pathlib import Path
 
 import pytest
 
+from labharness.core.latex import summarise_errors
 from labharness.core.manifest import Figure, Workspace, load_workspace
 from labharness.watch import session
-from labharness.watch.latex import _errors
 from labharness.watch.runner import BuildResult, build_figure
 
 SCRIPT = """
@@ -121,7 +121,7 @@ def test_a_save_rebuilds_only_the_affected_figures(
 
 
 def test_latex_errors_are_summarised_for_a_person() -> None:
-    summary = _errors(
+    summary = summarise_errors(
         "This is pdfTeX\n! LaTeX Error: File `nope.sty' not found.\nl.8 \\usepackage\nblah\n"
     )
 
@@ -133,7 +133,7 @@ def test_a_latex_failure_is_explained_from_the_log(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     # latexmk prints a summary, not the LaTeX error: the message must come from the log.
-    from labharness.watch import latex
+    from labharness.core import latex
 
     document = tmp_path / "paper.tex"
     document.write_text("broken", encoding="utf-8")
@@ -146,10 +146,10 @@ def test_a_latex_failure_is_explained_from_the_log(
         stdout = "latexmk: Errors, so I did not complete making targets\n"
         stderr = ""
 
-    monkeypatch.setattr("labharness.watch.latex.shutil.which", lambda name: "latexmk")
-    monkeypatch.setattr("labharness.watch.latex.subprocess.run", lambda *args, **kwargs: Result())
+    monkeypatch.setattr("labharness.core.latex.shutil.which", lambda name: "latexmk")
+    monkeypatch.setattr("labharness.core.latex.subprocess.run", lambda *args, **kwargs: Result())
 
-    result = latex.compile_document(document)
+    result = latex.run_latexmk(document)
 
     assert not result.ok
     assert result.errors[0].startswith("! Undefined control sequence")

@@ -1,0 +1,17 @@
+% A reaction mechanism: molecules with chemfig, electron flow with curved arrows.
+%
+% This file holds only the drawing. LabHarness wraps it in a standalone document with the
+% journal style, so never set fonts, line widths or bond lengths here.
+%
+% Arrow styles that come with the style:
+%   electron pair   -- a full arrowhead, for a pair of electrons
+%   single electron -- a half arrowhead, for a radical
+%
+% \chemmove needs two LaTeX passes; latexmk does them for you.
+\begin{tikzpicture}
+  \node (start) {\chemfig{O=[:150]C(-[:210]H_3C)-[:30]CH_3}};
+  \node (arrow) at (3.2,0) {};
+  \node (end) at (6,0) {\chemfig{HO-[:150]C(-[:210]H_3C)(-[:30]CH_3)-[:330]Nu}};
+
+  \draw[electron pair] (start.east) -- node[node label, above] {Nu$^-$} (end.west);
+\end{tikzpicture}
