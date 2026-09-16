@@ -1,0 +1,50 @@
+# Style of American Chemical Society journals (achemso class).
+#
+# This file is the single source of truth for how every figure of an ACS document looks.
+# Each engine (RDKit, LaTeX/TikZ, Matplotlib) translates these values; no module may
+# hard-code a font, a size or a colour. Adding a journal means adding a file like this one.
+
+name = "acs"
+description = "American Chemical Society journals (achemso class)"
+
+[typography]
+# v0.1 uses the LaTeX default typeface for the text and for every figure, so the document
+# never mixes typefaces. Latin Modern is its OpenType digitisation.
+family = "Latin Modern Roman"
+latex_package = "lmodern"
+# Looked up inside the installed LaTeX distribution with kpsewhich; never bundled here.
+font_file = "lmroman10-regular.otf"
+base_size_pt = 8.0
+small_size_pt = 7.0
+
+[dimensions]
+single_column_in = 3.25
+double_column_in = 7.0
+# Width divided by height, used when a figure does not ask for a size of its own.
+aspect_ratio = 1.3333
+
+[structures]
+# ACS Document 1996 geometry, the convention ChemDraw ships for ACS submissions.
+bond_length_pt = 14.4
+line_width_pt = 0.6
+wedge_width_pt = 2.0
+double_bond_offset = 0.18
+hash_spacing_pt = 2.5
+
+[plots]
+grid = false
+line_width_pt = 0.8
+marker_size_pt = 3.0
+error_capsize_pt = 2.0
+axis_label_format = "{quantity} ({unit})"
+# Okabe-Ito, readable with any colour vision deficiency. Black first: most figures are monochrome.
+palette = [
+  "#000000",
+  "#E69F00",
+  "#56B4E9",
+  "#009E73",
+  "#D55E00",
+  "#0072B2",
+  "#CC79A7",
+  "#F0E442",
+]

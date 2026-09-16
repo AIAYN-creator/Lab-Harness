@@ -1,7 +1,8 @@
 # Contributing to LabHarness
 
-Thanks for your interest! **LabHarness is pre-alpha and the repository is private.** External
-contributions open with the public v1.0 release. This guide already describes how they will work.
+Thanks for your interest! **LabHarness is pre-alpha.** The repository is public, but external
+contributions are not actively sought until the v1.0 release: issues are welcome, and pull requests
+are considered case by case. This guide describes how contributions work.
 
 ## Development setup
 
@@ -19,8 +20,9 @@ uv run pytest
 
 ## How changes get in
 
-- **Before v1.0:** the maintainer commits directly to `main`.
-- **From v1.0 on:**
+- **The maintainer** pushes to `main` directly, through the administrator bypass of the branch
+  ruleset.
+- **Everyone else:**
   1. Open an issue first for anything beyond a small fix, so we can agree on the approach.
   2. Work on a short-lived branch and open a pull request against `main`.
   3. The pull request needs the `ci-pass` check to be green and an approval from the

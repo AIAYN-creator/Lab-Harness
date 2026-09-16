@@ -23,6 +23,7 @@ classifiers = [
 # The core (CLI, watcher, style, manifest, TikZ diagrams) must stay free of heavy
 # scientific dependencies: every domain lives behind an optional extra.
 dependencies = [
+    "typer>=0.12",
     "watchfiles>=0.21",
 ]
 
@@ -31,6 +32,9 @@ chem = ["rdkit>=2023.9", "svglib>=1.5", "reportlab>=4.0"]
 iupac = ["py2opsin"]
 plots = ["numpy>=1.26", "scipy>=1.11", "matplotlib>=3.8"]
 all = ["labharness[chem,iupac,plots]"]
+
+[project.scripts]
+labharness = "labharness.cli.app:main"
 
 [project.urls]
 Repository = "https://github.com/AIAYN-creator/Lab-Harness"

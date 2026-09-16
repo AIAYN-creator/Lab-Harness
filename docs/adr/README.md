@@ -1,4 +1,26 @@
 # Architecture Decision Records
 
-The design decisions behind LabHarness — what was decided, the alternatives considered
-and why — are published here as ADRs.
+Why LabHarness is the way it is. Each entry states the decision and the reason it beat the
+alternatives; the long-form records, with every option that was considered, live on the
+maintainer's project board and are being written up here as they settle.
+
+If a change contradicts one of these, raise it before working around it.
+
+| # | Decision | Why |
+|---|---|---|
+| 1 | **v0.1 is a demo-ready MVP**, done when the live demo runs end to end on the maintainer's laptop. Regressions and plots are in; a graphical interface, editorial tables and other journals are out. | Plots are where the friction is: Excel, axis titles, units, redoing it whenever the data changes. |
+| 2 | **Latency reference: 0.5 s** from saving a file to seeing the PDF update, measured per phase and reported, but not a release gate. | Ambitious on purpose. Figures already meet it; LaTeX does not, and pretending otherwise would hide the real bottleneck. |
+| 3 | **Python, managed with uv**, supporting 3.11 to 3.13. | RDKit, SciPy and Matplotlib are Python, and the pipeline has to be readable by the researcher using it. |
+| 4 | **A package plus short scripts in the workspace**, with an `eject` command planned for v0.5. | One tested implementation instead of copies that drift, while the scripts a user reads stay three lines long. |
+| 5 | **Modular install: one extra per domain**, and a core that imports without any of them. | Somebody doing chemistry should not download the economics stack. |
+| 6 | **Style is data**: one file per journal, translated for RDKit, LaTeX and Matplotlib. | Adding a journal must not mean touching modules. |
+| 7 | **One typeface for the whole document** — the LaTeX default in v0.1 — and figures generated at their final printed size. | The point of the project: no layout friction, and no figure whose text is a different size from the text around it. |
+| 8 | **Event-driven watcher in Python** that rebuilds only affected figures and calls latexmk, with a `labharness.toml` manifest saying which script uses which data. | `latexmk -pvc` watches neither the data nor the scripts, and polls on a timer. A manifest is also what a graphical interface will read. |
+| 9 | **Scripts run inside the watcher process.** | A rebuild costs milliseconds instead of the second a fresh interpreter needs to import Matplotlib. Measured: 1826 ms cold, around 300 ms warm. |
+| 10 | **Mechanisms and diagrams use TikZ and chemfig**, compiled standalone to PDF; never RDKit. | RDKit cannot draw electron-pushing arrows reliably, and compiling diagrams separately keeps the document fast. |
+| 11 | **IUPAC names are resolved offline with OPSIN, as a separate step** that writes a SMILES file into `data/`. | Local-first, and a wrong name becomes a file you can check instead of a silently wrong structure. |
+| 12 | **Errors on plotted points come from replicates when they exist**, then an explicit error column, then the instrument resolution inferred from the decimals in the file. | It matches how lab data actually arrives, and never invents an uncertainty. |
+| 13 | **pytest, ruff and mypy, with a single required CI check named `ci-pass`.** | The branch ruleset references one stable name, so the test matrix can change freely. |
+| 14 | **No third-party GitHub Actions.** | The repository policy blocks them, so the CI installs what it needs itself. |
+| 15 | **Conventional Commits, squash merges, and a protected `main` with an administrator bypass.** | A readable history, and review for everyone who is not the maintainer. |
+| 16 | **Agent instructions live in `AGENTS.md`, with a one-line `CLAUDE.md` importing it.** | Whatever agent someone uses, the rules are the same ones. |
