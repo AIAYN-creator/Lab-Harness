@@ -65,17 +65,46 @@ jobs:
       - run: uv sync --all-extras
       - run: uv run pytest -m latex
 
+  # LaTeX on the platform the demo runs on. Slower than the Ubuntu job, so it only guards
+  # the document and diagram paths, which are the ones a Windows LaTeX install can break.
+  latex-windows:
+    name: latex-windows
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - name: Install MiKTeX and Perl
+        shell: pwsh
+        run: |
+          choco install miktex --no-progress -y
+          choco install strawberryperl --no-progress -y
+          $env:PATH = "C:\Program Files\MiKTeX\miktex\bin\x64;C:\Strawberry\perl\bin;$env:PATH"
+          echo "C:\Program Files\MiKTeX\miktex\bin\x64" >> $env:GITHUB_PATH
+          echo "C:\Strawberry\perl\bin" >> $env:GITHUB_PATH
+          initexmf --set-config-value "[MPM]AutoInstall=1"
+      - name: Report the environment
+        shell: pwsh
+        run: |
+          pdflatex --version | Select-Object -First 1
+          latexmk -v
+      - run: uv sync --all-extras
+      - run: uv run pytest -m latex
+
   # Single required check: the ruleset references this name, so it stays stable
   # however the matrix above changes.
   ci-pass:
     name: ci-pass
     if: always()
-    needs: [lint, test, latex]
+    needs: [lint, test, latex, latex-windows]
     runs-on: ubuntu-latest
     steps:
       - name: Fail if any job did not succeed
         run: |
-          echo "lint=${{ needs.lint.result }} test=${{ needs.test.result }} latex=${{ needs.latex.result }}"
+          echo "lint=${{ needs.lint.result }} test=${{ needs.test.result }}"
+          echo "latex=${{ needs.latex.result }} latex-windows=${{ needs.latex-windows.result }}"
           [ "${{ needs.lint.result }}" = "success" ] || exit 1
           [ "${{ needs.test.result }}" = "success" ] || exit 1
           [ "${{ needs.latex.result }}" = "success" ] || exit 1
+          [ "${{ needs.latex-windows.result }}" = "success" ] || exit 1
