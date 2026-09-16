@@ -100,6 +100,7 @@ def test_a_missing_font_explains_how_to_install_it() -> None:
         find_font_file("labharness-no-such-font.otf")
 
 
+@pytest.mark.skipif(shutil.which("kpsewhich") is None, reason="needs a LaTeX distribution")
 def test_matplotlib_gets_the_font_registered_not_just_named() -> None:
     matplotlib = pytest.importorskip("matplotlib", reason="needs the plots extra")
     pytest.importorskip("matplotlib.font_manager")  # the registry lives in this submodule

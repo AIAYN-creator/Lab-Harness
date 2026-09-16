@@ -1,9 +1,16 @@
 """The RDKit translator must match the drawing options RDKit actually exposes."""
 
+import shutil
+
 import pytest
 
 from labharness.style import load_style
 from labharness.style.rdkit import apply_to_draw_options
+
+# The style points RDKit at the document font, which lives in the LaTeX installation.
+pytestmark = pytest.mark.skipif(
+    shutil.which("kpsewhich") is None, reason="needs a LaTeX distribution"
+)
 
 rdMolDraw2D = pytest.importorskip("rdkit.Chem.Draw.rdMolDraw2D", reason="needs the chem extra")
 Chem = pytest.importorskip("rdkit.Chem", reason="needs the chem extra")
