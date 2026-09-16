@@ -95,9 +95,19 @@ def test_the_document_font_is_found_in_the_latex_installation() -> None:
     assert font.suffix == ".otf"
 
 
+@pytest.mark.skipif(shutil.which("kpsewhich") is None, reason="needs a LaTeX distribution")
 def test_a_missing_font_explains_how_to_install_it() -> None:
     with pytest.raises(LabHarnessError, match="Latin Modern"):
         find_font_file("labharness-no-such-font.otf")
+
+
+def test_without_latex_the_error_says_to_install_a_distribution(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr("labharness.style.fonts.shutil.which", lambda name: None)
+
+    with pytest.raises(LabHarnessError, match="LaTeX distribution"):
+        find_font_file("labharness-font-without-kpsewhich.otf")
 
 
 @pytest.mark.skipif(shutil.which("kpsewhich") is None, reason="needs a LaTeX distribution")
