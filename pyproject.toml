@@ -1,0 +1,74 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "labharness"
+version = "0.1.0.dev0"
+description = "Local-first Data-to-Paper harness: raw lab data to publication-ready LaTeX figures."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "AIAYN-creator" }]
+requires-python = ">=3.11"
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Science/Research",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Chemistry",
+    "Topic :: Text Processing :: Markup :: LaTeX",
+]
+# The core (CLI, watcher, style, manifest, TikZ diagrams) must stay free of heavy
+# scientific dependencies: every domain lives behind an optional extra.
+dependencies = [
+    "watchfiles>=0.21",
+]
+
+[project.optional-dependencies]
+chem = ["rdkit>=2023.9", "svglib>=1.5", "reportlab>=4.0"]
+iupac = ["py2opsin"]
+plots = ["numpy>=1.26", "scipy>=1.11", "matplotlib>=3.8"]
+all = ["labharness[chem,iupac,plots]"]
+
+[project.urls]
+Repository = "https://github.com/AIAYN-creator/Lab-Harness"
+
+[project.entry-points."labharness.modules"]
+chem = "labharness.modules.chem"
+diagrams = "labharness.modules.diagrams"
+plots = "labharness.modules.plots"
+
+[dependency-groups]
+dev = ["pytest>=8", "pytest-cov", "ruff", "mypy", "pre-commit"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/labharness"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"templates" = "labharness/templates"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+addopts = "-ra"
+markers = ["latex: needs a LaTeX distribution installed"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM"]
+
+[tool.mypy]
+python_version = "3.12"  # numpy stubs need 3.12 syntax; the package still supports 3.11
+files = ["src", "tests"]
+strict = true
+
+# RDKit, Matplotlib and friends ship incomplete type information.
+[[tool.mypy.overrides]]
+module = "labharness.modules.*"
+disallow_untyped_calls = false
+warn_return_any = false

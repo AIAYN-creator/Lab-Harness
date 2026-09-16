@@ -1,0 +1,11 @@
+# Normalize line endings: LF in the repository, whatever the OS.
+* text=auto eol=lf
+
+# Windows-only scripts keep CRLF.
+*.ps1 text eol=crlf
+
+# Binary files.
+*.pdf binary
+*.png binary
+*.otf binary
+*.ttf binary

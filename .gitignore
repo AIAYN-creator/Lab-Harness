@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# LaTeX build artifacts
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.synctex.gz
+*.toc
+
+# Generated outputs of the example workspaces (rebuilt by `labharness build`)
+examples/**/figures/*
+!examples/**/figures/.gitkeep
+examples/**/paper.pdf
+
+# Editors and OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
