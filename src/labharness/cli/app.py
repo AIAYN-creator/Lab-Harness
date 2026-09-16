@@ -16,6 +16,7 @@ from labharness.core.errors import LabHarnessError, MissingExtraError
 from labharness.core.manifest import Figure, Workspace, load_workspace
 from labharness.core.workspace import create_workspace
 from labharness.doctor import everything_required_passes, run_checks
+from labharness.modules.chem import resolve_name
 from labharness.watch.runner import BuildResult
 from labharness.watch.runner import build as run_build
 from labharness.watch.session import DEFAULT_DEBOUNCE_MS, Cycle, watch
@@ -105,6 +106,19 @@ def watch_command(
             watch(workspace, on_cycle=_print_cycle, debounce_ms=debounce)
         except KeyboardInterrupt:  # pragma: no cover - interactive
             typer.echo("Stopped.")
+
+
+@app.command()
+def resolve(
+    name: Annotated[str, typer.Argument(help="Systematic IUPAC name, in quotes.")],
+    output: Annotated[Path, typer.Option("--output", "-o", help="Where to write the SMILES.")],
+) -> None:
+    """Turn an IUPAC name into a SMILES file, offline, with OPSIN."""
+    with _reporting_errors():
+        smiles = resolve_name(name, output=output)
+
+    typer.secho(f"{smiles}", fg=typer.colors.GREEN)
+    typer.echo(f"written to {output}. Check it before using it in a figure.")
 
 
 @app.command()

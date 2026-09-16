@@ -129,3 +129,10 @@ def test_doctor_reports_the_environment() -> None:
     assert result.exit_code in (0, 3)
     assert "pdflatex" in result.stdout
     assert "PDF viewer" in result.stdout
+
+
+def test_resolve_rejects_an_empty_name(tmp_path: Path) -> None:
+    result = runner.invoke(app, ["resolve", "   ", "-o", str(tmp_path / "out.smi")])
+
+    assert result.exit_code == 1
+    assert "chemical name" in result.stdout
