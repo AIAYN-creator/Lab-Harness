@@ -1,43 +1,208 @@
 # LabHarness
 
-> **Status: pre-alpha — under active design.** Nothing here is usable yet. This README is a placeholder; the full README (written before the code, README-driven development) lands with v0.1.
+Turn raw lab data into publication-ready LaTeX figures, and keep the PDF in sync while you work.
 
-**LabHarness** is an open-source, local-first harness for scientific writing and lab-data automation — *Data-to-Paper*. It turns raw lab files (`.csv`, `.smi`, `.mol`, …) into publication-ready vector figures for LaTeX, and keeps the PDF in sync as the data changes.
+> **Status: pre-alpha, v0.1 in development.** This README is the specification: it describes the
+> v0.1 command line as it is being built (README-driven development). Commands marked
+> **[not implemented yet]** do not work.
 
-AI helps write the pipeline, but the pipeline is always **short, readable Python you can open and edit** — never a black box.
+LabHarness is a local-first, open-source (MIT) harness for scientific writing and lab-data
+automation — *Data-to-Paper*. Change a data point or a SMILES string, save, and the figure and the
+PDF update on their own. The pipeline is always short, readable Python you can open and edit,
+never a black box.
 
 ## Who it is for
 
-Researchers, PhD students and science students who already write in LaTeX/Overleaf and are comfortable in a terminal and an editor like VS Code or Zed.
+Researchers, PhD students and science students who already write in LaTeX or Overleaf and are
+comfortable with a terminal and an editor such as VS Code or Zed.
+
+## How it works
+
+```
+ data/                     scripts/                  figures/            paper.pdf
+ raw measurements   ---->  transparent scripts ----> vector figures ---> your manuscript
+ .csv .smi .mol            .py and .tex              .pdf
+
+              labharness.toml says which script uses which data
+              labharness watch reacts to every save and rebuilds only what changed
+```
 
 ## Principles
 
 - **Local-first.** Everything runs on your machine; nothing needs the network by default.
-- **Human-in-the-loop.** Figures come from transparent scripts you can read, tweak or take over entirely.
-- **Zero layout friction.** One typeface for the whole document — figures included — and figures generated at their final printed size, so labels, axes and structures always match the text.
-- **Save and see.** Change a data point or a SMILES string, save, and the figure and the PDF update on their own.
+- **Human-in-the-loop.** Figures come from scripts you can read, tweak or take over entirely.
+- **Zero layout friction.** One typeface for the whole document, figures included, generated at
+  their final printed size so nothing is ever rescaled.
+- **Save and see.** No manual regeneration step.
 - **Modular.** Install only the domains you use.
 
-## Planned for v0.1
+## Requirements
 
-| Module | What it does |
+| What | Why | Notes |
+|---|---|---|
+| Python ≥ 3.11 | The harness | Developed on 3.12 |
+| [uv](https://docs.astral.sh/uv/) | Environment and lockfile | `pip install .` also works |
+| A LaTeX distribution | Compiling the document and the diagrams | MiKTeX or TeX Live/MacTeX |
+| Perl | `latexmk` needs it | Ships with TeX Live; on Windows with MiKTeX install Strawberry Perl |
+| A PDF viewer that does not lock files | Live reload | SumatraPDF (Windows), Skim (macOS). **Adobe Acrobat will not work**: it locks the PDF |
+| Java *(optional)* | IUPAC name resolution with OPSIN | Only for the `iupac` extra |
+
+## Install
+
+### 1. The requirements
+
+<details>
+<summary>Windows</summary>
+
+```powershell
+winget install astral-sh.uv
+winget install StrawberryPerl.StrawberryPerl   # latexmk needs Perl; skip it if you use TeX Live
+winget install SumatraPDF.SumatraPDF
+winget install MiKTeX.MiKTeX                   # or TeX Live
+winget install EclipseAdoptium.Temurin.21.JDK  # optional, only for the iupac extra
+```
+
+</details>
+
+<details>
+<summary>macOS</summary>
+
+```bash
+brew install uv
+brew install --cask mactex          # or basictex for a smaller install
+brew install --cask skim
+brew install --cask temurin         # optional, only for the iupac extra
+```
+
+</details>
+
+<details>
+<summary>Linux</summary>
+
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+sudo apt install texlive-full       # or a smaller scheme plus achemso, chemfig and standalone
+sudo apt install default-jre        # optional, only for the iupac extra
+```
+
+Any PDF viewer that reloads on change works: Okular and Zathura both do.
+
+</details>
+
+### 2. LabHarness
+
+```bash
+git clone https://github.com/AIAYN-creator/Lab-Harness.git
+cd Lab-Harness
+uv sync --all-extras
+uv run labharness doctor
+```
+
+`labharness doctor` **[not implemented yet]** checks the requirements above and tells you exactly
+what is missing and how to install it.
+
+Install only what you need:
+
+| Extra | Brings | For |
+|---|---|---|
+| *(core)* | CLI, watcher, style, TikZ diagrams | Always |
+| `chem` | RDKit, SVG to PDF conversion | Chemical structures |
+| `plots` | NumPy, SciPy, Matplotlib | Regressions and plots |
+| `iupac` | OPSIN (needs Java) | Names to SMILES |
+| `all` | Everything above | — |
+
+## Quickstart
+
+```bash
+labharness init my-paper --journal acs     # [not implemented yet]
+cd my-paper
+labharness add structure catalyst --input data/catalyst.smi
+labharness watch
+```
+
+Now open `data/catalyst.smi`, change the SMILES string and save. The structure is redrawn and the
+PDF reloads in your viewer, with the timings printed in the terminal.
+
+## Commands
+
+All of these are **[not implemented yet]**; they are the v0.1 specification.
+
+| Command | What it does |
 |---|---|
-| **Chemical structures** | SMILES (or an IUPAC name, resolved offline) → vector PDF, via RDKit |
-| **Diagrams** | Reaction mechanisms with arrow-pushing, flowcharts and technical frameworks, via TikZ/chemfig |
-| **Regressions & plots** | Linear, polynomial, logarithmic, exponential and custom fits with error bars, labelled axes and units, via SciPy/Matplotlib |
-| **Watcher** | Event-driven orchestrator: regenerates only the affected figures and recompiles the PDF |
+| `labharness init [PATH] [--journal acs]` | Create a workspace from the template |
+| `labharness add <kind> <name> [--input FILE...]` | Add a figure: writes the script and the manifest entry |
+| `labharness build [--only NAME] [--no-latex]` | Rebuild figures and compile the PDF once |
+| `labharness watch [--no-open] [--debounce MS]` | Watch, rebuild and recompile on every save |
+| `labharness resolve NAME -o FILE` | IUPAC name to SMILES, offline |
+| `labharness doctor` | Check the environment and report what is missing |
 
-v0.1 ships with the ACS journal template only and is operated entirely from the command line.
+**[Full command reference, options and file formats: `docs/usage.md`](docs/usage.md)**
+
+## The workspace
+
+```
+my-paper/
+├── paper.tex              # Your manuscript (ACS template in v0.1)
+├── labharness-style.tex   # Typography and figure helpers: the only place fonts are set
+├── labharness.toml        # Manifest: which script builds which figure, from which data
+├── data/                  # Raw measurements. Never modified by the tool
+├── figures/               # Generated vector PDFs. Never edited by hand
+├── scripts/               # Transparent scripts, one per figure
+├── references.bib
+├── AGENTS.md  CLAUDE.md   # Rules for AI agents working in this workspace
+└── compile.sh  compile.ps1
+```
+
+A script is short enough to read at a glance:
+
+```python
+# figures/catalyst.pdf -- structure of the catalyst
+from labharness.modules.chem import render_structure
+
+render_structure(smiles_file="data/catalyst.smi", output="figures/catalyst.pdf")
+```
+
+And the manifest says what depends on what:
+
+```toml
+[[figure]]
+output = "figures/catalyst.pdf"
+script = "scripts/catalyst.py"
+inputs = ["data/catalyst.smi"]
+```
+
+## Typography
+
+One typeface for the entire document — text, axis labels, atom labels, mechanisms — defined once
+in `labharness-style.tex`. v0.1 uses the LaTeX default (Computer Modern / Latin Modern). Figures
+are generated at their final printed size and included without scaling, so 8 pt in a figure is
+8 pt on paper.
+
+## In v0.1
+
+**Included:** chemical structures (RDKit), reaction mechanisms and diagrams (TikZ/chemfig),
+regressions and plots with error bars (SciPy/Matplotlib), the watcher, the ACS template and
+IUPAC name resolution.
+
+**Not included:** any graphical interface, editorial LaTeX tables, journals other than ACS, and
+publishing to PyPI.
 
 ## Roadmap
 
 | Version | Focus |
 |---|---|
-| **v0.1** | Demo-ready MVP: structures, diagrams, regressions, watcher, ACS template |
-| **v0.5** | Daily use: editorial LaTeX tables (booktabs/siunitx), real agent rules, lab compound libraries |
-| **v1.0** | Public release: more journal templates (RSC, Elsevier), selectable typeface |
-| **v1.5+** | New domains: economics, mathematics, architecture/engineering |
-| **v2.0** | A graphical interface for people who don't use a terminal |
+| **v0.1** | Demo-ready MVP |
+| **v0.5** | Daily use: editorial tables, real agent rules, lab compound libraries |
+| **v1.0** | Public release: more journal templates, selectable typeface |
+| **v1.5+** | New domains: economics, mathematics, architecture and engineering |
+| **v2.0** | A graphical interface for people who do not use a terminal |
+
+See [`docs/ROADMAP.md`](docs/ROADMAP.md) for the detail.
+
+## Contributing
+
+External contributions open with v1.0. See [`CONTRIBUTING.md`](CONTRIBUTING.md) and the
+[Code of Conduct](CODE_OF_CONDUCT.md). Design decisions are recorded as ADRs in [`docs/adr/`](docs/adr/).
 
 ## License
 
