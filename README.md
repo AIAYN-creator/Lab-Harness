@@ -2,9 +2,9 @@
 
 Turn raw lab data into publication-ready LaTeX figures, and keep the PDF in sync while you work.
 
-> **Status: pre-alpha, v0.1 in development.** `init`, `build`, `watch` and `doctor` work
-> today. Everything marked **[not implemented yet]** is specification: it describes what is
-> being built (README-driven development), not what runs.
+> **Status: alpha, v0.1.0.** Everything below runs today except what is marked
+> **[not implemented yet]**, which is specification: it describes what is being built
+> (README-driven development), not what runs.
 
 LabHarness is a local-first, open-source (MIT) harness for scientific writing and lab-data
 automation — *Data-to-Paper*. Change a data point or a SMILES string, save, and the figure and the
@@ -145,7 +145,7 @@ PDF reloads in your viewer, with the timings printed in the terminal.
 
 ## Commands
 
-`add` and `resolve` are still specification; the rest work today.
+`add` is still specification; the rest work today.
 
 | Command | What it does |
 |---|---|
@@ -153,7 +153,7 @@ PDF reloads in your viewer, with the timings printed in the terminal.
 | `labharness add <kind> <name> [--input FILE...]` | Add a figure: writes the script and the manifest entry **[not implemented yet]** |
 | `labharness build [--only NAME] [--no-latex]` | Rebuild figures and compile the PDF once |
 | `labharness watch [--no-open] [--debounce MS]` | Watch, rebuild and recompile on every save |
-| `labharness resolve NAME -o FILE` | IUPAC name to SMILES, offline **[not implemented yet]** |
+| `labharness resolve NAME -o FILE` | IUPAC name to SMILES, offline |
 | `labharness doctor` | Check the environment and report what is missing |
 
 **[Full command reference, options and file formats: `docs/usage.md`](docs/usage.md)**

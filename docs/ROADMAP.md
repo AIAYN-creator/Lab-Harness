@@ -3,7 +3,7 @@
 Where LabHarness is going, and the design rules v0.1 must respect so that later versions never
 require rewriting the core.
 
-## v0.1 — Demo-ready MVP *(current)*
+## v0.1 — Demo-ready MVP *(released: 0.1.0)*
 
 **Goal:** a live, fully working demo of the loop data or SMILES → figure → PDF, on the author's
 Windows laptop.
@@ -14,7 +14,7 @@ ACS template with a single document-wide typeface, modular installation, and age
 
 **Done when:** the demo runs end to end without manual intervention beyond saving files.
 
-## v0.5 — Daily use
+## v0.5 — Daily use *(current)*
 
 **Goal:** the author uses it every day with real research data (asymmetric catalysis).
 

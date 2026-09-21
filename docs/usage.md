@@ -2,9 +2,8 @@
 
 Complete reference for the v0.1 command line, file formats and troubleshooting.
 
-> **Pre-alpha.** `init`, `build`, `watch` and `doctor` work today. `add`, `resolve` and the
-> figure kinds they create are still specification (README-driven development), and are marked
-> **[not implemented yet]** below.
+> **Alpha, v0.1.0.** Every command works today except `add`, which is still specification
+> (README-driven development) and is marked **[not implemented yet]** below.
 
 - [Concepts](#concepts)
 - [Global options](#global-options)
@@ -113,7 +112,7 @@ each phase. It opens the PDF in your viewer on start (SumatraPDF on Windows, Ski
 If LaTeX fails, the error is summarised, the last good PDF stays on screen, and the watcher keeps
 running: fix the file, save, and it recovers.
 
-### `labharness resolve` **[not implemented yet]**
+### `labharness resolve`
 
 ```
 labharness resolve "NAME" -o FILE
@@ -164,8 +163,8 @@ date for you, but it is plain text you can edit by hand.
 
 ## Figure kinds
 
-The modules that draw these are still being built: the watcher already runs Python figure
-scripts, but the `chem`, `diagrams` and `plots` helpers below are **[not implemented yet]**.
+Each kind is a short script that calls one helper. The watcher runs Python scripts in its own
+process and compiles `.tex` diagrams on their own, so a rebuild costs milliseconds.
 
 ### `structure` — chemical structures
 
