@@ -7,6 +7,23 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- `labharness add <kind> <name>`: writes a figure script from a template and declares it in the
+  manifest; `--insert` also places the figure block in `paper.tex`.
+- `labharness preview`: renders figures, and with `--document` the pages of the PDF, as PNG images
+  to review them by eye. `doctor` reports the tool it uses.
+
+### Changed
+
+- A journal is now one folder under `templates/workspace/journals/`, holding its style, manuscript
+  and bibliography. `init` records the journal in the manifest and generates
+  `labharness-style.tex` from the style.
+
+### Fixed
+
+- Python figure scripts always used the ACS style, whatever journal the workspace had.
+
 ## [0.1.0] - 2026-09-21
 
 The demo-ready MVP: change a data point, a SMILES string or a mechanism, save, and the figure and
