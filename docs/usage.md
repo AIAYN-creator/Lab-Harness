@@ -118,6 +118,30 @@ each phase. It opens the PDF in your viewer on start (SumatraPDF on Windows, Ski
 If LaTeX fails, the error is summarised, the last good PDF stays on screen, and the watcher keeps
 running: fix the file, save, and it recovers.
 
+### `labharness preview`
+
+```
+labharness preview [--only NAME] [--document] [--dpi 200]
+```
+
+Renders each figure as a PNG in `.labharness/preview/`, and with `--document` every page of the
+compiled `paper.pdf` as well, so you can see the figures where they sit. The folder is ignored by
+git.
+
+A test can tell that a figure was built, not that it reads well: a label in the wrong place, a
+group that reads as a radical, a figure with half its area blank. The images are for looking at,
+by you or by an agent that can open images; the workspace `AGENTS.md` asks agents to do it before
+calling a figure done.
+
+| Option | Default | Meaning |
+|---|---|---|
+| `--only NAME` | all | Preview a single figure |
+| `--document` | off | Also render the pages of `paper.pdf` |
+| `--dpi` | 200 | Resolution of the images |
+
+Uses `pdftoppm` (included in MiKTeX; `poppler-utils` on Debian and Ubuntu, `poppler` in Homebrew)
+or, failing that, Ghostscript. `labharness doctor` says which one it found.
+
 ### `labharness resolve`
 
 ```
@@ -141,7 +165,8 @@ labharness doctor
 
 Checks Python and the installed extras, the LaTeX distribution, `latexmk` and Perl, the Latin
 Modern fonts, Java when the `iupac` extra is installed, and your PDF viewer — warning you if the
-default viewer is Adobe Acrobat, which locks the file. Exits non-zero if something required is
+default viewer is Adobe Acrobat, which locks the file — and the tool `preview` uses to turn PDFs
+into images. Exits non-zero if something required is
 missing. Run it first whenever something does not work.
 
 ## The manifest

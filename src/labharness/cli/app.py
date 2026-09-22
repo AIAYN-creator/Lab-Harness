@@ -23,6 +23,7 @@ from labharness.core.templates import DEFAULT_JOURNAL
 from labharness.core.workspace import create_workspace
 from labharness.doctor import everything_required_passes, run_checks
 from labharness.modules.chem import resolve_name
+from labharness.preview import DEFAULT_DPI, Preview, preview_document, preview_figures
 from labharness.watch.runner import BuildResult
 from labharness.watch.runner import build as run_build
 from labharness.watch.session import DEFAULT_DEBOUNCE_MS, Cycle, watch
@@ -152,6 +153,29 @@ def watch_command(
 
 
 @app.command()
+def preview(
+    only: Annotated[str | None, typer.Option(help="Preview a single figure, by name.")] = None,
+    document: Annotated[
+        bool, typer.Option(help="Also render every page of the compiled paper.pdf.")
+    ] = False,
+    dpi: Annotated[int, typer.Option(min=36, max=1200, help="Resolution of the images.")] = (
+        DEFAULT_DPI
+    ),
+) -> None:
+    """Render figures as PNG images, to look at them before trusting them."""
+    with _reporting_errors():
+        workspace = load_workspace()
+        results = preview_figures(workspace, _selected(workspace, only), dpi=dpi)
+        if document:
+            results.append(preview_document(workspace, dpi=dpi))
+
+    for result in results:
+        _print_preview(result, workspace.root)
+    if not all(result.ok for result in results):
+        raise typer.Exit(EXIT_ERROR)
+
+
+@app.command()
 def resolve(
     name: Annotated[str, typer.Argument(help="Systematic IUPAC name, in quotes.")],
     output: Annotated[Path, typer.Option("--output", "-o", help="Where to write the SMILES.")],
@@ -239,6 +263,15 @@ def _open_in_editor(path: Path) -> None:
             "No editor found: set the EDITOR environment variable, or open the script yourself.",
             fg=typer.colors.YELLOW,
         )
+
+
+def _print_preview(result: Preview, root: Path) -> None:
+    source = result.source.relative_to(root).as_posix()
+    if not result.ok:
+        typer.secho(f"  {source}  failed: {result.error}", fg=typer.colors.RED)
+        return
+    for image in result.images:
+        typer.echo(f"  {source}  ->  {image.relative_to(root).as_posix()}")
 
 
 def _ms(seconds: float) -> str:

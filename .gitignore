@@ -26,6 +26,7 @@ htmlcov/
 examples/**/figures/*
 !examples/**/figures/.gitkeep
 examples/**/paper.pdf
+examples/**/.labharness/
 
 # Editors and OS
 .vscode/

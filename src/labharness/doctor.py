@@ -12,6 +12,7 @@ import subprocess
 import sys
 from dataclasses import dataclass
 
+from labharness.preview import INSTALL_HINT, find_rasteriser
 from labharness.style import load_style
 from labharness.style.fonts import find_font_file
 from labharness.watch.viewer import find_viewer
@@ -35,6 +36,7 @@ def run_checks() -> list[Check]:
         _fonts(),
         _java(),
         _viewer(),
+        _rasteriser(),
     ]
 
 
@@ -126,6 +128,17 @@ def _java() -> Check:
         java or "not found",
         required=needed,
         hint="" if java or not needed else "Needed by the 'iupac' extra. Install Eclipse Temurin",
+    )
+
+
+def _rasteriser() -> Check:
+    tool = find_rasteriser()
+    return Check(
+        "figure previews",
+        tool is not None,
+        f"{tool[0]} ({tool[1]})" if tool else "not found",
+        required=False,
+        hint="" if tool else f"'labharness preview' needs it. {INSTALL_HINT}",
     )
 
 

@@ -153,6 +153,7 @@ All of these work today.
 | `labharness add <kind> <name> [--input FILE...]` | Add a figure: writes the script and the manifest entry, and with `--insert` the LaTeX |
 | `labharness build [--only NAME] [--no-latex]` | Rebuild figures and compile the PDF once |
 | `labharness watch [--no-open] [--debounce MS]` | Watch, rebuild and recompile on every save |
+| `labharness preview [--only NAME] [--document]` | Render figures (and the pages of the PDF) as PNG, to review them by eye |
 | `labharness resolve NAME -o FILE` | IUPAC name to SMILES, offline |
 | `labharness doctor` | Check the environment and report what is missing |
 

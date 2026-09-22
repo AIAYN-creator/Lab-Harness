@@ -30,3 +30,6 @@ transparent scripts in `scripts/`, generated figures in `figures/`, and the manu
    leave the SMILES in `data/` so the human can check it.
 9. Do not rewrite the scientific text of `paper.tex` unless explicitly asked. Insert and update
    figures; do not write the discussion.
+10. **Look at a figure before calling it done.** A figure that builds can still read wrong.
+    Run `labharness preview --only <name>` and open the PNG it writes; use `--document` to see
+    it in place on the page.
