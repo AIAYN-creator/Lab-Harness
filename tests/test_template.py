@@ -3,12 +3,11 @@
 import io
 import shutil
 import subprocess
-from pathlib import Path
 
 import pytest
 from pypdf import PdfReader
 
-TEMPLATE = Path(__file__).resolve().parents[1] / "templates" / "workspace" / "journals" / "acs"
+from labharness.core import create_workspace
 
 pytestmark = [
     pytest.mark.latex,
@@ -18,9 +17,8 @@ pytestmark = [
 
 @pytest.fixture(scope="module")
 def compiled_pdf(tmp_path_factory: pytest.TempPathFactory) -> bytes:
-    workspace = tmp_path_factory.mktemp("acs")
-    for source in TEMPLATE.iterdir():
-        shutil.copy(source, workspace / source.name)
+    # Through init, as a user would get it: the style file is generated, not shipped.
+    workspace = create_workspace(tmp_path_factory.mktemp("acs"), journal="acs", force=True)
 
     result = subprocess.run(
         ["pdflatex", "-interaction=nonstopmode", "-halt-on-error", "paper.tex"],

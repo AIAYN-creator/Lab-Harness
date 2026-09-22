@@ -92,8 +92,10 @@ def build_figure(workspace: Workspace, figure: Figure) -> FigureResult:
             figure, ok=False, seconds=0.0, error=f"do not know how to build {figure.script}"
         )
 
+    from labharness.style.tokens import using_journal
+
     try:
-        with _working_directory(workspace.root):
+        with _working_directory(workspace.root), using_journal(workspace.journal):
             runpy.run_path(str(script), run_name="__main__")
     except Exception:  # noqa: BLE001 - a broken script must not stop the watcher
         return FigureResult(

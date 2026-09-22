@@ -14,6 +14,7 @@ import typer
 from labharness import __version__
 from labharness.core.errors import LabHarnessError, MissingExtraError
 from labharness.core.manifest import Figure, Workspace, load_workspace
+from labharness.core.templates import DEFAULT_JOURNAL
 from labharness.core.workspace import create_workspace
 from labharness.doctor import everything_required_passes, run_checks
 from labharness.modules.chem import resolve_name
@@ -51,7 +52,7 @@ def _main(
 @app.command()
 def init(
     path: Annotated[Path, typer.Argument(help="Where to create the workspace.")] = Path("."),
-    journal: Annotated[str, typer.Option(help="Journal template to use.")] = "acs",
+    journal: Annotated[str, typer.Option(help="Journal template to use.")] = DEFAULT_JOURNAL,
     force: Annotated[bool, typer.Option(help="Write into a folder that is not empty.")] = False,
 ) -> None:
     """Create a workspace: manuscript, data, scripts, figures and manifest."""

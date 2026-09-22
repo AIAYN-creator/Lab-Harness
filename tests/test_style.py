@@ -1,21 +1,13 @@
 import shutil
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
 
-from labharness.core import LabHarnessError
-from labharness.style import available_journals, find_font_file, load_style
+from labharness.core import LabHarnessError, create_workspace
+from labharness.style import Latex, available_journals, find_font_file, load_style
 from labharness.style.latex import document_preamble, tikz_preamble
 from labharness.style.mpl import palette, rcparams
-
-TEMPLATE_STYLE = (
-    Path(__file__).resolve().parents[1]
-    / "templates"
-    / "workspace"
-    / "journals"
-    / "acs"
-    / "labharness-style.tex"
-)
 
 
 def test_acs_style_loads_with_the_acs_1996_geometry() -> None:
@@ -46,12 +38,18 @@ def test_axis_labels_follow_the_journal_format() -> None:
     assert style.axis_label("Absorbance", None) == "Absorbance"
 
 
-def test_the_workspace_template_is_what_the_style_generates() -> None:
-    # The template shipped to users must not drift from the style: it is generated from it.
-    generated = document_preamble(load_style("acs"))
-    on_disk = TEMPLATE_STYLE.read_text(encoding="utf-8")
+def test_a_new_workspace_gets_the_style_its_journal_generates(tmp_path: Path) -> None:
+    # Written at init from the journal style, so the two cannot drift apart.
+    workspace = create_workspace(tmp_path / "paper")
+    on_disk = (workspace / "labharness-style.tex").read_text(encoding="utf-8")
 
-    assert generated.splitlines() == on_disk.splitlines()
+    assert on_disk.splitlines() == document_preamble(load_style("acs")).splitlines()
+
+
+def test_journal_specific_latex_stays_in_its_journal() -> None:
+    # The mciteplus workaround is for achemso only: it comes from the ACS style file.
+    assert "mcitemaxwidthbibitem" in load_style("acs").latex.preamble
+    assert "mcite" not in document_preamble(replace(load_style("acs"), latex=Latex()))
 
 
 def test_the_tikz_preamble_carries_the_same_typeface_and_geometry() -> None:

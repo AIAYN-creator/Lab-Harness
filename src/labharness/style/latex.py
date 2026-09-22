@@ -9,20 +9,7 @@ DOCUMENT_PREAMBLE = r"""% LabHarness document style -- generated from the {name}
 \usepackage[T1]{{fontenc}}
 \usepackage{{{latex_package}}}
 \usepackage{{graphicx}}
-
-% achemso loads mciteplus, which initialises its label-width counters at the first
-% \bibitem. A document with an empty bibliography never reaches one, and then fails at
-% \end{{mcitethebibliography}} with an undefined control sequence -- which is exactly what
-% a freshly created workspace has.
-% \gdef, not \providecommand: LaTeX makes \providecommand macros robust, and a robust
-% macro does not expand where TeX expects a number.
-\makeatletter
-\@ifundefined{{mcitemaxwidthbibitem}}{{\gdef\mcitemaxwidthbibitem{{0}}}}{{}}
-\@ifundefined{{mcitemaxwidthsubitem}}{{\gdef\mcitemaxwidthsubitem{{0}}}}{{}}
-\@ifundefined{{@mcitecorrectmaxwidthbibitem}}{{\gdef\@mcitecorrectmaxwidthbibitem{{0}}}}{{}}
-\@ifundefined{{@mcitecorrectmaxwidthsubitem}}{{\gdef\@mcitecorrectmaxwidthsubitem{{0}}}}{{}}
-\makeatother
-
+{journal_preamble}
 % \labfigure{{path}}: include a generated figure at its natural (final) size.
 % If the figure does not exist yet, show a placeholder so the document still compiles.
 \newcommand{{\labfigure}}[1]{{%
@@ -68,10 +55,12 @@ TIKZ_PREAMBLE = r"""% LabHarness figure style -- generated from the {name} journ
 
 def document_preamble(style: Style) -> str:
     """The contents of ``labharness-style.tex`` in a workspace."""
+    journal = style.latex.preamble.strip()
     return DOCUMENT_PREAMBLE.format(
         name=style.name.upper(),
         family=style.typography.family,
         latex_package=style.typography.latex_package,
+        journal_preamble=f"\n{journal}\n" if journal else "",
     )
 
 
