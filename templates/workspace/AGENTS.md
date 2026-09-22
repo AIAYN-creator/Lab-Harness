@@ -11,8 +11,10 @@ transparent scripts in `scripts/`, generated figures in `figures/`, and the manu
 1. **`data/` holds raw data: never modify it.**
 2. **Never edit files in `figures/` by hand.** Figures are produced by the scripts in `scripts/`
    and declared in `labharness.toml`.
-3. A new figure means a script in `scripts/` plus its entry in `labharness.toml`
-   (`labharness add` does both).
+3. A new figure means a script in `scripts/` plus its entry in `labharness.toml`. Create both
+   with `labharness add <kind> <name> --input data/...` (kinds: `structure`, `plot`,
+   `mechanism`, `flow`, `network`), then edit the script it writes. Add `--insert` only when
+   the human asked for the figure to go into `paper.tex`.
 4. Use the right module for each kind of figure:
    - chemical structures → the `chem` module (RDKit);
    - reaction mechanisms with arrows, flowcharts and diagrams → the `diagrams` module

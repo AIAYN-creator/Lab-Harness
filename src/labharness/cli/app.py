@@ -5,6 +5,10 @@ prints the result. No figure logic lives here, so a graphical interface can reus
 functions later.
 """
 
+import os
+import shlex
+import shutil
+import subprocess
 import time
 from pathlib import Path
 from typing import Annotated
@@ -12,8 +16,9 @@ from typing import Annotated
 import typer
 
 from labharness import __version__
+from labharness.core.add import KINDS, add_figure
 from labharness.core.errors import LabHarnessError, MissingExtraError
-from labharness.core.manifest import Figure, Workspace, load_workspace
+from labharness.core.manifest import MANIFEST_NAME, Figure, Workspace, load_workspace
 from labharness.core.templates import DEFAULT_JOURNAL
 from labharness.core.workspace import create_workspace
 from labharness.doctor import everything_required_passes, run_checks
@@ -61,6 +66,43 @@ def init(
 
     typer.secho(f"Workspace created in {target}", fg=typer.colors.GREEN)
     typer.echo("Next: add a figure with 'labharness add', then run 'labharness watch'.")
+
+
+@app.command()
+def add(
+    kind: Annotated[str, typer.Argument(help=f"Kind of figure: {', '.join(KINDS)}.")],
+    name: Annotated[str, typer.Argument(help="Name of the script and of figures/<name>.pdf.")],
+    input_files: Annotated[
+        list[Path] | None,
+        typer.Option("--input", help="A file the figure depends on. Repeatable."),
+    ] = None,
+    insert: Annotated[
+        bool, typer.Option(help="Also add the figure block to paper.tex, before the references.")
+    ] = False,
+    edit: Annotated[bool, typer.Option(help="Open the new script in your editor.")] = False,
+    force: Annotated[bool, typer.Option(help="Replace a script that already exists.")] = False,
+) -> None:
+    """Add a figure: write its script from a template and declare it in the manifest."""
+    with _reporting_errors():
+        workspace = load_workspace()
+        added = add_figure(workspace, kind, name, inputs=input_files, insert=insert, force=force)
+
+    typer.secho(f"Added {added.output.as_posix()}", fg=typer.colors.GREEN)
+    typer.echo(f"  script    {added.script.as_posix()}")
+    inputs = ", ".join(path.as_posix() for path in added.inputs) or "none"
+    typer.echo(f"  inputs    {inputs}")
+    typer.echo(f"  manifest  {MANIFEST_NAME}")
+    for note in added.notes:
+        typer.secho(f"  note: {note}", fg=typer.colors.YELLOW)
+
+    if added.inserted:
+        typer.echo(f"  document  figure block added to {workspace.document.name}")
+    else:
+        typer.echo("\nPaste this where the figure belongs in paper.tex:\n")
+        typer.echo(added.latex)
+
+    if edit:
+        _open_in_editor(workspace.root / added.script)
 
 
 @app.command()
@@ -179,6 +221,24 @@ def _print_cycle(cycle: Cycle) -> None:
     changed = ", ".join(path.name for path in cycle.changed)
     typer.echo(f"\n{time.strftime('%H:%M:%S')}  {changed}")
     _print_result(cycle.result)
+
+
+def _open_in_editor(path: Path) -> None:
+    """Open a script in $VISUAL or $EDITOR, or VS Code if it is installed.
+
+    Never the operating system's default handler: on Windows that can mean running a
+    ``.py`` file instead of opening it.
+    """
+    command = os.environ.get("VISUAL") or os.environ.get("EDITOR")
+    if command:
+        subprocess.run([*shlex.split(command, posix=os.name != "nt"), str(path)], check=False)
+    elif shutil.which("code"):
+        subprocess.run([shutil.which("code") or "code", str(path)], check=False)
+    else:
+        typer.secho(
+            "No editor found: set the EDITOR environment variable, or open the script yourself.",
+            fg=typer.colors.YELLOW,
+        )
 
 
 def _ms(seconds: float) -> str:

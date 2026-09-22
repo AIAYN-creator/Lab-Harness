@@ -1,0 +1,8 @@
+# $output -- chemical structure, drawn from $smiles_file
+#
+# Put one SMILES string in $smiles_file. Starting from a name? Do not type the SMILES from
+# memory: run `labharness resolve "systematic name" -o $smiles_file` and check the result.
+# Bond lengths, line widths and the typeface come from the journal style.
+from labharness.modules.chem import render_structure
+
+render_structure(output="$output", smiles_file="$smiles_file")

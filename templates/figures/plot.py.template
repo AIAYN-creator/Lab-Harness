@@ -1,0 +1,15 @@
+# $output -- $y against $x, from $csv
+#
+# model: "linear", "poly" (with degree=...), "exp", or your own function (function=...).
+# Error bars come from replicates when an x value repeats, then from an error column
+# (error_column="..."), then from the instrument resolution read from the decimals.
+# Axis labels are (quantity, unit); the journal style decides how they are written.
+from labharness.modules.plots import Series, regression_plot
+
+regression_plot(
+    output="$output",
+    series=Series(csv="$csv", x="$x", y="$y"),
+    model="linear",
+    x_label=("$x", None),  # e.g. ("Time", "min")
+    y_label=("$y", None),
+)

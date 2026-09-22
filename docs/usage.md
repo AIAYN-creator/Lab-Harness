@@ -2,8 +2,8 @@
 
 Complete reference for the v0.1 command line, file formats and troubleshooting.
 
-> **Alpha, v0.1.0.** Every command works today except `add`, which is still specification
-> (README-driven development) and is marked **[not implemented yet]** below.
+> **Alpha, v0.1.0.** Every command below works today. Anything marked **[not implemented yet]**
+> is specification (README-driven development).
 
 - [Concepts](#concepts)
 - [Global options](#global-options)
@@ -64,21 +64,27 @@ Creates a workspace from the template: `paper.tex`, `labharness-style.tex`, `ref
 | `--journal` | `acs` | Journal template. v0.1 ships ACS only |
 | `--force` | off | Write into a folder that is not empty |
 
-### `labharness add` **[not implemented yet]**
+### `labharness add`
 
 ```
-labharness add <kind> <name> [--input FILE...] [--edit]
+labharness add <kind> <name> [--input FILE...] [--insert] [--edit] [--force]
 ```
 
 Writes `scripts/<name>.py` (or `.tex` for diagrams) from a commented template **and** adds the
-matching `[[figure]]` entry to the manifest, so the watcher picks it up immediately.
+matching `[[figure]]` entry to the manifest, so the watcher picks it up immediately. It then
+prints the LaTeX block that places the figure in the manuscript, or adds it with `--insert`.
 
 | Argument | Meaning |
 |---|---|
-| `kind` | `structure`, `mechanism`, `flow` or `plot` |
-| `name` | Used for the script and for `figures/<name>.pdf` |
-| `--input` | Input files the figure depends on. Repeatable |
-| `--edit` | Open the new script in your editor |
+| `kind` | `structure`, `plot`, `mechanism`, `flow` or `network` |
+| `name` | Used for the script and for `figures/<name>.pdf`: letters, digits, `-` and `_` |
+| `--input` | Input files the figure depends on. Repeatable. A `structure` without one reads `data/<name>.smi`; a `plot` fills in its column names from the CSV header |
+| `--insert` | Also add the figure block to `paper.tex`, just before the bibliography |
+| `--edit` | Open the new script in `$VISUAL`, `$EDITOR` or VS Code |
+| `--force` | Replace a script that already exists (the manifest entry is not duplicated) |
+
+`add` never writes into `data/`: if an input does not exist yet, it says so, and the figure builds
+as soon as the file appears. An existing script is never replaced without `--force`.
 
 ### `labharness build`
 

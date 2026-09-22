@@ -136,7 +136,7 @@ Install only what you need:
 ```bash
 labharness init my-paper --journal acs
 cd my-paper
-labharness add structure catalyst --input data/catalyst.smi   # [not implemented yet]
+labharness add structure catalyst --input data/catalyst.smi --insert
 labharness watch
 ```
 
@@ -145,12 +145,12 @@ PDF reloads in your viewer, with the timings printed in the terminal.
 
 ## Commands
 
-`add` is still specification; the rest work today.
+All of these work today.
 
 | Command | What it does |
 |---|---|
 | `labharness init [PATH] [--journal acs]` | Create a workspace from the template |
-| `labharness add <kind> <name> [--input FILE...]` | Add a figure: writes the script and the manifest entry **[not implemented yet]** |
+| `labharness add <kind> <name> [--input FILE...]` | Add a figure: writes the script and the manifest entry, and with `--insert` the LaTeX |
 | `labharness build [--only NAME] [--no-latex]` | Rebuild figures and compile the PDF once |
 | `labharness watch [--no-open] [--debounce MS]` | Watch, rebuild and recompile on every save |
 | `labharness resolve NAME -o FILE` | IUPAC name to SMILES, offline |
