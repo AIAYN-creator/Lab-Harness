@@ -23,7 +23,7 @@ def _missing() -> str | None:
     for module, extra in (("rdkit", "chem"), ("scipy", "plots"), ("matplotlib", "plots")):
         if importlib.util.find_spec(module) is None:
             return f"needs the {extra} extra"
-    for tool in ("latexmk", "pdflatex", "kpsewhich"):
+    for tool in ("pdflatex", "bibtex", "kpsewhich"):
         if shutil.which(tool) is None:
             return "needs a LaTeX distribution"
     return None
@@ -88,7 +88,7 @@ def test_a_changed_measurement_reaches_the_number_quoted_in_the_text(workspace: 
     assert (workspace / "paper.pdf").read_bytes() != pdf_before
 
 
-def test_the_quick_path_is_used_for_a_figure_and_is_faster(workspace: Path) -> None:
+def test_a_rebuild_costs_one_pass_whichever_path_it_takes(workspace: Path) -> None:
     project = load_workspace(workspace)
     build(project)
     decay = [figure for figure in project.figures if figure.name == "decay"]
@@ -97,5 +97,9 @@ def test_the_quick_path_is_used_for_a_figure_and_is_faster(workspace: Path) -> N
     full = build(project, figures=decay, quick=False)
 
     assert quick.ok and full.ok
-    # One pdflatex pass against latexmk, which pays for itself before it runs anything.
-    assert quick.latex_seconds < full.latex_seconds
+    assert quick.compilation is not None and full.compilation is not None
+    # A figure changed, nothing new was cited: one pass either way, and no BibTeX. latexmk
+    # used to spend a second deciding that before running anything.
+    assert quick.compilation.passes == 1
+    assert full.compilation.passes == 1
+    assert not full.compilation.bibliography

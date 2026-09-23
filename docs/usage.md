@@ -42,7 +42,7 @@ Output is coloured when the terminal supports it; `NO_COLOR` is honoured.
 | 0 | Success |
 | 1 | Runtime error: LaTeX failed, a fit did not converge, an input file is invalid |
 | 2 | Usage error: unknown command or bad options |
-| 3 | A dependency is missing: an extra, or a system tool such as LaTeX, Perl or Java |
+| 3 | A dependency is missing: an extra, or a system tool such as LaTeX or Java |
 
 Every error says what failed, why, and how to fix it.
 
@@ -163,10 +163,10 @@ Reserved for later versions: `--library FILE.csv` (your lab's compound inventory
 labharness doctor
 ```
 
-Checks Python and the installed extras, the LaTeX distribution, `latexmk` and Perl, the Latin
+Checks Python and the installed extras, the LaTeX distribution and BibTeX, the Latin
 Modern fonts, Java when the `iupac` extra is installed, and your PDF viewer — warning you if the
 default viewer is Adobe Acrobat, which locks the file — and the tool `preview` uses to turn PDFs
-into images. Exits non-zero if something required is
+into images. `latexmk` is reported but optional. Exits non-zero if something required is
 missing. Run it first whenever something does not work.
 
 ## The manifest
@@ -191,6 +191,13 @@ script = "scripts/mechanism.tex"
 
 Editing the manifest or the style file rebuilds every figure. `labharness add` keeps the file up to
 date for you, but it is plain text you can edit by hand.
+
+Two optional keys go at the top of the file:
+
+| Key | Default | Meaning |
+|---|---|---|
+| `journal` | `"acs"` | The journal the workspace was created for; `init` writes it |
+| `builder` | `"labharness"` | How the document is compiled. `"labharness"`: pdflatex, BibTeX or Biber only when citations or the bibliography changed, and more passes only when LaTeX asks. `"latexmk"`: hand it to latexmk instead, which needs Perl |
 
 ## Figure kinds
 
@@ -280,7 +287,7 @@ Figures are generated at their final size and included without scaling.
 
 | Symptom | Cause and fix |
 |---|---|
-| `latexmk` fails saying the script engine `perl` was not found | MiKTeX on Windows has no Perl. Install Strawberry Perl |
+| With `builder = "latexmk"`, latexmk fails saying the script engine `perl` was not found | MiKTeX on Windows has no Perl. Install Strawberry Perl, or remove the line: LabHarness compiles without latexmk |
 | A package is reported missing although it is installed | The MiKTeX file database is stale: run `initexmf --update-fndb` |
 | The PDF does not refresh, or LaTeX cannot write it | The viewer is locking the file. Use SumatraPDF or Skim, not Adobe Acrobat |
 | Nothing rebuilds when you save | The file is not listed in any `inputs` in the manifest |

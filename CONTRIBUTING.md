@@ -7,8 +7,7 @@ are considered case by case. This guide describes how contributions work.
 ## Development setup
 
 Requirements: Python ≥ 3.11, [uv](https://docs.astral.sh/uv/) and a LaTeX distribution
-(MiKTeX or TeX Live). On Windows with MiKTeX, `latexmk` also needs Perl
-(e.g. Strawberry Perl). Use a PDF viewer that does not lock files: SumatraPDF on Windows,
+(MiKTeX or TeX Live). Use a PDF viewer that does not lock files: SumatraPDF on Windows,
 Skim on macOS.
 
 ```

@@ -75,7 +75,9 @@ jobs:
       - uses: astral-sh/setup-uv@v5
         with:
           enable-cache: true
-      - name: Install MiKTeX and Perl
+      # No Perl on purpose: this is what a Windows user installs, and LabHarness compiles
+      # without latexmk (ADR 25).
+      - name: Install MiKTeX
         shell: pwsh
         timeout-minutes: 25
         run: |
@@ -91,16 +93,14 @@ jobs:
             choco uninstall miktex miktex.install --no-progress -y --force
             Start-Sleep -Seconds 60
           }
-          choco install strawberryperl --no-progress -y
-          $env:PATH = "$bin;C:\Strawberry\perl\bin;$env:PATH"
+          $env:PATH = "$bin;$env:PATH"
           echo "C:\Program Files\MiKTeX\miktex\bin\x64" >> $env:GITHUB_PATH
-          echo "C:\Strawberry\perl\bin" >> $env:GITHUB_PATH
           initexmf --set-config-value "[MPM]AutoInstall=1"
       - name: Report the environment
         shell: pwsh
         run: |
           pdflatex --version | Select-Object -First 1
-          latexmk -v
+          bibtex --version | Select-Object -First 1
       - run: uv sync --all-extras
       - run: uv run pytest -m latex
 

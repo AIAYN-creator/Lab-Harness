@@ -1,8 +1,8 @@
 """Checking that this machine has everything LabHarness needs.
 
-Every problem found on the author's laptop during development is a check here: Perl missing
-for latexmk, no Sumatra installed, Adobe Acrobat locking the PDF, a stale MiKTeX file
-database.
+Every problem found on the author's laptop during development is a check here: no Sumatra
+installed, Adobe Acrobat locking the PDF, a stale MiKTeX file database. latexmk and Perl used
+to be on that list; LabHarness now compiles without them, so they are only reported.
 """
 
 import importlib.util
@@ -32,6 +32,7 @@ def run_checks() -> list[Check]:
         _python(),
         *_extras(),
         _latex(),
+        _bibtex(),
         _latexmk(),
         _fonts(),
         _java(),
@@ -86,10 +87,23 @@ def _latex() -> Check:
     )
 
 
+def _bibtex() -> Check:
+    bibtex = shutil.which("bibtex")
+    return Check(
+        "bibtex",
+        bibtex is not None,
+        bibtex or "not found",
+        hint=""
+        if bibtex
+        else "It comes with every LaTeX distribution: reinstall MiKTeX or TeX Live",
+    )
+
+
 def _latexmk() -> Check:
+    """Optional: only used by workspaces with builder = "latexmk" in their manifest."""
     latexmk = shutil.which("latexmk")
     if latexmk is None:
-        return Check("latexmk", False, "not found", hint="Install MiKTeX or TeX Live")
+        return Check("latexmk", True, "not installed (optional)", required=False)
 
     result = subprocess.run([latexmk, "-v"], capture_output=True, text=True, check=False)
     output = result.stdout + result.stderr
@@ -97,10 +111,11 @@ def _latexmk() -> Check:
         return Check(
             "latexmk",
             False,
-            "found, but it does not run",
+            "found, but it does not run (optional: LabHarness compiles without it)",
+            required=False,
             hint=(
-                "latexmk is a Perl script. On Windows with MiKTeX install Perl: "
-                "winget install StrawberryPerl.StrawberryPerl"
+                'Only needed for builder = "latexmk". It is a Perl script: on Windows with '
+                "MiKTeX, winget install StrawberryPerl.StrawberryPerl"
             ),
         )
     return Check("latexmk", True, output.strip().splitlines()[0] if output.strip() else latexmk)

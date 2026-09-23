@@ -48,8 +48,8 @@ def build(
     """Rebuild the given figures (all of them by default) and compile the document.
 
     ``quick`` takes the short path through LaTeX, which is safe when only a figure changed.
-    If it fails, the full latexmk run happens anyway, so a bibliography that needed it is
-    never left broken.
+    If it fails, the full build happens anyway, so a bibliography that needed it is never
+    left broken.
     """
     result = BuildResult()
 
@@ -63,9 +63,9 @@ def build(
         if quick:
             result.compilation = run_pdflatex(workspace.document)
             if not result.compilation.ok:
-                result.compilation = compile_document(workspace.document)
+                result.compilation = compile_document(workspace.document, workspace.builder)
         else:
-            result.compilation = compile_document(workspace.document)
+            result.compilation = compile_document(workspace.document, workspace.builder)
         result.latex_seconds = time.perf_counter() - started
 
     return result

@@ -21,6 +21,7 @@ htmlcov/
 *.out
 *.synctex.gz
 *.toc
+.*.labharness-bib
 
 # Generated outputs of the example workspaces (rebuilt by `labharness build`)
 examples/**/figures/*

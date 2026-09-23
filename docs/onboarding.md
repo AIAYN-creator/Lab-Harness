@@ -29,7 +29,6 @@ in it exists because it bit someone during development.
 |---|---|---|
 | Python ≥ 3.11 | The package | `uv` installs it for you if needed |
 | A LaTeX distribution | Compiling documents and diagrams | MiKTeX or TeX Live/MacTeX |
-| Perl | `latexmk` is a Perl script | TeX Live ships it. With MiKTeX on Windows: `winget install StrawberryPerl.StrawberryPerl` |
 | SumatraPDF or Skim | A viewer that reloads and does not lock the PDF | Adobe Acrobat locks the file and breaks the rebuild |
 | Java *(optional)* | OPSIN, for the `iupac` extra | Eclipse Temurin |
 
@@ -39,7 +38,7 @@ in it exists because it bit someone during development.
 src/labharness/
 ├── core/        Manifest, workspace creation, errors, lazy extras
 ├── style/       The journal style (data) and one translator per engine
-├── watch/       The orchestrator: run scripts, call latexmk, open the viewer
+├── watch/       The orchestrator: run scripts, compile LaTeX, open the viewer
 ├── cli/         Typer commands: a thin layer over everything above
 └── modules/     One subpackage per domain: chem, diagrams, plots
 templates/workspace/   What `labharness init` copies, journals included

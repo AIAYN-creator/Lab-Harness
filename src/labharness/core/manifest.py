@@ -14,6 +14,9 @@ from labharness.core.templates import DEFAULT_JOURNAL
 MANIFEST_NAME = "labharness.toml"
 DOCUMENT_NAME = "paper.tex"
 STYLE_NAME = "labharness-style.tex"
+# How the document is compiled: LabHarness's own passes, or latexmk for those who want it.
+BUILDERS = ("labharness", "latexmk")
+DEFAULT_BUILDER = "labharness"
 
 
 @dataclass(frozen=True)
@@ -39,6 +42,7 @@ class Workspace:
     root: Path
     journal: str
     figures: tuple[Figure, ...]
+    builder: str = DEFAULT_BUILDER
 
     @property
     def document(self) -> Path:
@@ -86,7 +90,13 @@ def load_workspace(root: Path | None = None) -> Workspace:
 
     figures = tuple(_figure(entry, manifest) for entry in data.get("figure", []))
     _reject_duplicates(figures, manifest)
-    return Workspace(root=root, journal=str(data.get("journal", DEFAULT_JOURNAL)), figures=figures)
+    builder = str(data.get("builder", DEFAULT_BUILDER))
+    if builder not in BUILDERS:
+        raise LabHarnessError(
+            f"{manifest}: builder must be one of {', '.join(BUILDERS)}, not '{builder}'"
+        )
+    journal = str(data.get("journal", DEFAULT_JOURNAL))
+    return Workspace(root=root, journal=journal, figures=figures, builder=builder)
 
 
 def _figure(entry: dict[str, object], manifest: Path) -> Figure:

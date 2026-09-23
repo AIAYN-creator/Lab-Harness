@@ -80,7 +80,7 @@ def test_a_missing_script_is_reported(workspace: Workspace) -> None:
 
 
 @pytest.mark.latex
-@pytest.mark.skipif(shutil.which("latexmk") is None, reason="needs a LaTeX distribution")
+@pytest.mark.skipif(shutil.which("pdflatex") is None, reason="needs a LaTeX distribution")
 def test_a_tex_figure_is_built_through_the_diagrams_module(tmp_path: Path) -> None:
     (tmp_path / "labharness.toml").write_text(
         '[[figure]]\noutput = "figures/m.pdf"\nscript = "scripts/m.tex"\n', encoding="utf-8"
@@ -140,7 +140,7 @@ def test_a_save_rebuilds_only_the_affected_figures(
     # The unrelated file produced no cycle at all; the document change compiles with no figures.
     assert rebuilt == [["value"], []]
     assert [cycle.changed[0].name for cycle in cycles] == ["value.txt", "paper.tex"]
-    # A data change needs one LaTeX pass; a change to the document itself needs latexmk.
+    # A data change needs one LaTeX pass; a change to the document itself needs a full build.
     assert quick_calls == [True, False]
 
 

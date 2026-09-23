@@ -8,6 +8,7 @@
 *.out
 *.synctex.gz
 *.toc
+.*.labharness-bib
 acs-*.bib
 
 # Figure previews for review (labharness preview)

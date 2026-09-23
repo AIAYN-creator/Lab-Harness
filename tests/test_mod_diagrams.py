@@ -13,7 +13,7 @@ from labharness.style import load_style
 TEMPLATES = Path(__file__).resolve().parents[1] / "templates" / "figures"
 
 needs_latex = pytest.mark.skipif(
-    shutil.which("latexmk") is None, reason="needs a LaTeX distribution with latexmk"
+    shutil.which("pdflatex") is None, reason="needs a LaTeX distribution"
 )
 
 SIMPLE = r"\begin{tikzpicture}\draw (0,0) -- (1,1);\end{tikzpicture}"

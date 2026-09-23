@@ -16,6 +16,10 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- **Perl is no longer needed.** LabHarness runs the full LaTeX build itself: pdflatex, BibTeX or
+  Biber only when the citations or the bibliography changed, and more passes only when LaTeX asks.
+  A change to the manuscript text now compiles in about 0.9 s instead of 4.1 s. latexmk stays
+  available with `builder = "latexmk"` in the manifest, and `doctor` reports it as optional.
 - A journal is now one folder under `templates/workspace/journals/`, holding its style, manuscript
   and bibliography. `init` records the journal in the manifest and generates
   `labharness-style.tex` from the style.

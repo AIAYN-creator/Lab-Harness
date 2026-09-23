@@ -21,13 +21,13 @@ with the watcher running, on a document using the ACS template:
 | A measurement in a CSV | 0.20 s | 1.1 s | **1.3 s** |
 | A SMILES string | 0.05 s | 1.05 s | **1.1 s** |
 | A reaction mechanism | 3.1 s | 1.0 s | **4.1 s** |
-| The text of the manuscript | — | 4.1 s | **4.1 s** |
+| The text of the manuscript | — | 0.85 s | **0.85 s** |
 
 Two things make that possible. Figure scripts run inside the watcher process, so a rebuild
 never pays again for starting Python and importing RDKit or Matplotlib: the same figure takes
 1.8 s from a cold start and 0.2 s once the watcher is up. And when only a figure changed,
-LaTeX needs a single pass, which is what it gets — latexmk costs about a second before it runs
-anything, so it is kept for the cases that need it, such as a changed bibliography.
+LaTeX needs a single pass, which is what it gets. A full build runs BibTeX only when the
+citations or the bibliography changed, and another pass only when LaTeX asks for one.
 
 What is left is LaTeX itself, and mechanisms drawn with chemfig, which are slow to compile.
 
@@ -63,7 +63,6 @@ comfortable with a terminal and an editor such as VS Code or Zed.
 | Python ≥ 3.11 | The harness | Developed on 3.12 |
 | [uv](https://docs.astral.sh/uv/) | Environment and lockfile | `pip install .` also works |
 | A LaTeX distribution | Compiling the document and the diagrams | MiKTeX or TeX Live/MacTeX |
-| Perl | `latexmk` needs it | Ships with TeX Live; on Windows with MiKTeX install Strawberry Perl |
 | A PDF viewer that does not lock files | Live reload | SumatraPDF (Windows), Skim (macOS). **Adobe Acrobat will not work**: it locks the PDF |
 | Java *(optional)* | IUPAC name resolution with OPSIN | Only for the `iupac` extra |
 
@@ -76,7 +75,6 @@ comfortable with a terminal and an editor such as VS Code or Zed.
 
 ```powershell
 winget install astral-sh.uv
-winget install StrawberryPerl.StrawberryPerl   # latexmk needs Perl; skip it if you use TeX Live
 winget install SumatraPDF.SumatraPDF
 winget install MiKTeX.MiKTeX                   # or TeX Live
 winget install EclipseAdoptium.Temurin.21.JDK  # optional, only for the iupac extra
