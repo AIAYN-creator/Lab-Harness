@@ -104,6 +104,40 @@ jobs:
       - run: uv sync --all-extras
       - run: uv run pytest -m latex
 
+  # macOS is supported at tier 2 (ADR 24): this job runs everything, with BasicTeX, but it is
+  # not part of ci-pass. Once it has been green for a while, add it to ci-pass below.
+  macos:
+    name: macos
+    runs-on: macos-latest
+    continue-on-error: true
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      # BasicTeX is about 100 MB against 5 GB for MacTeX, so it gets the packages LabHarness
+      # and its templates use on top: the journal classes, chemfig and TikZ, the typeface
+      # catalogue, and the table packages.
+      - name: Install BasicTeX and poppler
+        run: |
+          brew install --cask basictex
+          brew install poppler
+          echo "/Library/TeX/texbin" >> "$GITHUB_PATH"
+          export PATH="/Library/TeX/texbin:$PATH"
+          sudo tlmgr update --self
+          sudo tlmgr install latexmk achemso mciteplus natbib chemfig simplekv pgf standalone \
+            xkeyval etoolbox setspace caption float lm tex-gyre newtx newpx fontaxes xstring \
+            stix2-type1 stix2-otf libertinus-type1 libertinus-fonts libertinust1math \
+            siunitx booktabs threeparttable
+      - name: Report the environment
+        run: |
+          pdflatex --version | head -1
+          bibtex --version | head -1
+          pdftoppm -v 2>&1 | head -1
+      - run: uv sync --all-extras
+      - run: uv run pytest
+
   # Single required check: the ruleset references this name, so it stays stable
   # however the matrix above changes.
   ci-pass:
