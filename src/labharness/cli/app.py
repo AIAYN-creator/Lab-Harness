@@ -9,6 +9,7 @@ import os
 import shlex
 import shutil
 import subprocess
+import sys
 import time
 from pathlib import Path
 from typing import Annotated
@@ -26,6 +27,7 @@ from labharness.core.templates import DEFAULT_JOURNAL
 from labharness.core.workspace import create_workspace
 from labharness.doctor import everything_required_passes, run_checks
 from labharness.eject import eject
+from labharness.hints import detect_system
 from labharness.modules.chem import resolve_name
 from labharness.preview import DEFAULT_DPI, Preview, preview_document, preview_figures
 from labharness.watch.runner import BuildResult
@@ -255,6 +257,9 @@ def resolve(
 @app.command()
 def doctor() -> None:
     """Check that this machine has everything LabHarness needs."""
+    typer.echo(
+        f"LabHarness {__version__} on {detect_system().label}, Python {sys.version.split()[0]}"
+    )
     checks = run_checks()
     for check in checks:
         if check.ok:

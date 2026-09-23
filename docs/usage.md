@@ -225,6 +225,11 @@ default viewer is Adobe Acrobat, which locks the file — and the tool `preview`
 into images. `latexmk` is reported but optional. Exits non-zero if something required is
 missing. Run it first whenever something does not work.
 
+Every problem comes with the command that fixes it **on your system**: `winget` on Windows,
+Homebrew on macOS, and `apt`, `dnf` or `pacman` on Linux, and for a missing extra the command
+that matches how you installed LabHarness (`uv tool`, `pipx`, `pip`, or a clone of the
+repository). `doctor` never installs anything itself.
+
 ## The manifest
 
 `labharness.toml`, at the root of the workspace. One entry per figure:

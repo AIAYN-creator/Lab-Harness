@@ -38,6 +38,9 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - New workspaces ship `.claude/settings.json`, which stops Claude Code from writing anything in
   `data/`, editing `labharness.lock` or running `labharness accept`, and their `AGENTS.md` states
   the same rule for every other agent.
+- `doctor` prints the exact command that installs what is missing on the system it runs on, and
+  for a missing extra the command that matches how LabHarness was installed, instead of
+  `uv sync`, which only works in a clone of the repository.
 
 - A journal is now one folder under `templates/workspace/journals/`, holding its style, manuscript
   and bibliography. `init` records the journal in the manifest and generates

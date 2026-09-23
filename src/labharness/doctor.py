@@ -12,7 +12,8 @@ import subprocess
 import sys
 from dataclasses import dataclass
 
-from labharness.preview import INSTALL_HINT, find_rasteriser
+from labharness.hints import command_for, extra_command, tex_package_command
+from labharness.preview import find_rasteriser
 from labharness.style import load_style
 from labharness.style.fonts import find_font_file
 from labharness.watch.viewer import find_viewer
@@ -72,7 +73,7 @@ def _extras() -> list[Check]:
                 installed,
                 "installed" if installed else f"not installed ({purpose} unavailable)",
                 required=False,
-                hint="" if installed else f"uv sync --extra {extra}",
+                hint="" if installed else extra_command(extra),
             )
         )
     return checks
@@ -84,7 +85,7 @@ def _latex() -> Check:
         "pdflatex",
         pdflatex is not None,
         pdflatex or "not found",
-        hint="" if pdflatex else "Install MiKTeX or TeX Live",
+        hint="" if pdflatex else command_for("latex"),
     )
 
 
@@ -136,10 +137,7 @@ def _latexmk() -> Check:
             False,
             "found, but it does not run (optional: LabHarness compiles without it)",
             required=False,
-            hint=(
-                'Only needed for builder = "latexmk". It is a Perl script: on Windows with '
-                "MiKTeX, winget install StrawberryPerl.StrawberryPerl"
-            ),
+            hint=f'Only needed for builder = "latexmk". It is a Perl script: {command_for("perl")}',
         )
     return Check("latexmk", True, output.strip().splitlines()[0] if output.strip() else latexmk)
 
@@ -154,7 +152,7 @@ def _fonts() -> Check:
             "document font",
             False,
             str(error),
-            hint=f"Install the '{typography.tex_package}' package of your LaTeX distribution",
+            hint=tex_package_command(typography.tex_package),
         )
 
 
@@ -166,7 +164,7 @@ def _java() -> Check:
         java is not None or not needed,
         java or "not found",
         required=needed,
-        hint="" if java or not needed else "Needed by the 'iupac' extra. Install Eclipse Temurin",
+        hint="" if java or not needed else f"Needed by the 'iupac' extra: {command_for('java')}",
     )
 
 
@@ -177,7 +175,7 @@ def _rasteriser() -> Check:
         tool is not None,
         f"{tool[0]} ({tool[1]})" if tool else "not found",
         required=False,
-        hint="" if tool else f"'labharness preview' needs it. {INSTALL_HINT}",
+        hint="" if tool else f"'labharness preview' needs it: {command_for('rasteriser')}",
     )
 
 
@@ -191,7 +189,7 @@ def _viewer() -> Check:
         hint=(
             ""
             if viewer
-            else "Install SumatraPDF (Windows) or Skim (macOS). Adobe Acrobat locks the PDF "
-            "and stops the rebuild"
+            else f"{command_for('viewer')}. Not Adobe Acrobat: it locks the PDF and stops "
+            "the rebuild"
         ),
     )
