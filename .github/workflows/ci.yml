@@ -77,10 +77,22 @@ jobs:
           enable-cache: true
       - name: Install MiKTeX and Perl
         shell: pwsh
+        timeout-minutes: 25
         run: |
-          choco install miktex --no-progress -y
+          # The MiKTeX installer downloads its package set from miktex.org, which sometimes
+          # times out (curl code 28). choco reports that as a failure but the step would carry
+          # on, so check for pdflatex itself and retry with a pause before giving up.
+          $bin = "C:\Program Files\MiKTeX\miktex\bin\x64"
+          foreach ($attempt in 1..3) {
+            choco install miktex --no-progress -y
+            if (Test-Path "$bin\pdflatex.exe") { break }
+            if ($attempt -eq 3) { throw "MiKTeX did not install after 3 attempts" }
+            Write-Host "::warning::MiKTeX install failed (attempt $attempt of 3), retrying in 60 s"
+            choco uninstall miktex miktex.install --no-progress -y --force
+            Start-Sleep -Seconds 60
+          }
           choco install strawberryperl --no-progress -y
-          $env:PATH = "C:\Program Files\MiKTeX\miktex\bin\x64;C:\Strawberry\perl\bin;$env:PATH"
+          $env:PATH = "$bin;C:\Strawberry\perl\bin;$env:PATH"
           echo "C:\Program Files\MiKTeX\miktex\bin\x64" >> $env:GITHUB_PATH
           echo "C:\Strawberry\perl\bin" >> $env:GITHUB_PATH
           initexmf --set-config-value "[MPM]AutoInstall=1"
