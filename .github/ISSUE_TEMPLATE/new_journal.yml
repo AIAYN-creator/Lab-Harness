@@ -1,0 +1,42 @@
+name: New journal
+description: Ask for a journal template, or offer to add one.
+labels: ["journal", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        A journal can only be added if its LaTeX class has a free licence, because the template
+        is copied into every workspace. Classes on CTAN usually say so on their page.
+  - type: input
+    id: journal
+    attributes:
+      label: Journal or publisher
+      placeholder: e.g. Elsevier, Journal of Catalysis
+    validations:
+      required: true
+  - type: input
+    id: class
+    attributes:
+      label: LaTeX class and where it comes from
+      description: A CTAN link if there is one.
+      placeholder: e.g. elsarticle, https://ctan.org/pkg/elsarticle
+    validations:
+      required: true
+  - type: input
+    id: licence
+    attributes:
+      label: Licence of the class
+      placeholder: e.g. LPPL 1.3
+  - type: textarea
+    id: figures
+    attributes:
+      label: Figure requirements
+      description: Column widths, minimum text size, anything the author guidelines say about figures. A link to the guidelines is enough.
+  - type: dropdown
+    id: help
+    attributes:
+      label: Would you open the pull request?
+      options:
+        - Yes
+        - I could help test it
+        - No, just asking

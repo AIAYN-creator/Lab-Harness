@@ -1,0 +1,28 @@
+name: New figure kind or module
+description: A kind of figure or table LabHarness cannot make yet.
+labels: ["module", "triage"]
+body:
+  - type: textarea
+    id: figure
+    attributes:
+      label: What figure or table do you make today, and how?
+      description: The friction in your workflow. A screenshot or a sketch of the figure helps a lot.
+    validations:
+      required: true
+  - type: textarea
+    id: data
+    attributes:
+      label: What does the raw data look like?
+      description: Instrument or software, file format, and a few lines of a real (or anonymised) file.
+    validations:
+      required: true
+  - type: input
+    id: domain
+    attributes:
+      label: Field
+      placeholder: e.g. analytical chemistry, spectroscopy, economics
+  - type: textarea
+    id: tools
+    attributes:
+      label: Python or LaTeX tools that already do part of it
+      description: A library that draws it, a LaTeX package, anything.

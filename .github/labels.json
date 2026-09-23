@@ -1,0 +1,18 @@
+[
+  { "name": "triage", "color": "fbca04", "description": "New: not looked at by the maintainer yet" },
+  { "name": "bug", "color": "d73a4a", "description": "Something does not work as documented" },
+  { "name": "enhancement", "color": "a2eeef", "description": "A new capability or a change in behaviour" },
+  { "name": "question", "color": "d876e3", "description": "How do I…? Questions about using LabHarness" },
+  { "name": "documentation", "color": "0075ca", "description": "README, usage guide, docstrings" },
+  { "name": "journal", "color": "5319e7", "description": "A journal template or its style file" },
+  { "name": "module", "color": "1d76db", "description": "A figure kind or a domain module" },
+  { "name": "latex", "color": "008672", "description": "Compiling the document or the diagrams" },
+  { "name": "platform:windows", "color": "c5def5", "description": "Only happens on Windows" },
+  { "name": "platform:macos", "color": "c5def5", "description": "Only happens on macOS" },
+  { "name": "platform:linux", "color": "c5def5", "description": "Only happens on Linux" },
+  { "name": "needs-repro", "color": "e99695", "description": "Waiting for files or steps that reproduce it" },
+  { "name": "good first issue", "color": "7057ff", "description": "Small, well defined, good for a first contribution" },
+  { "name": "help wanted", "color": "008672", "description": "The maintainer would welcome a pull request" },
+  { "name": "duplicate", "color": "cfd3d7", "description": "Already reported elsewhere" },
+  { "name": "wontfix", "color": "ffffff", "description": "Out of scope, or a deliberate decision" }
+]

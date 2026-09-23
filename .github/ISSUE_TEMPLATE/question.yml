@@ -1,0 +1,17 @@
+name: Question
+description: How do I…? Something unclear in the documentation.
+labels: ["question", "triage"]
+body:
+  - type: textarea
+    id: question
+    attributes:
+      label: Your question
+      description: What you are trying to do, and what you tried.
+    validations:
+      required: true
+  - type: textarea
+    id: doctor
+    attributes:
+      label: Output of `labharness doctor`
+      description: Optional, but it answers half the questions about installation.
+      render: text
