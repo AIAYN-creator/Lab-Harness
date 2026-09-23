@@ -41,8 +41,9 @@ def render_diagram(
     output: Path | str,
     style: Style | None = None,
     border_pt: float = DEFAULT_BORDER_PT,
+    engine: str = "pdflatex",
 ) -> Path:
-    """Compile a TikZ or chemfig source into ``output``."""
+    """Compile a TikZ or chemfig source into ``output``, with the workspace's engine."""
     source = Path(source)
     if not source.is_file():
         raise LabHarnessError(f"'{source}' does not exist")
@@ -56,7 +57,7 @@ def render_diagram(
 
         # A standalone diagram has no bibliography and no table of contents: pdflatex, and a
         # second pass only when LaTeX asks for it, which chemfig arrows do.
-        result = run_pdflatex(working, passes=3)
+        result = run_pdflatex(working, passes=3, engine=engine)
         if not result.ok or result.pdf is None:
             raise LabHarnessError(f"'{source.name}' did not compile:\n{result.summary}")
 

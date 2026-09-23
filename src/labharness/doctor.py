@@ -33,6 +33,7 @@ def run_checks() -> list[Check]:
         *_extras(),
         _latex(),
         _bibtex(),
+        *_engine(),
         _latexmk(),
         _fonts(),
         _java(),
@@ -85,6 +86,28 @@ def _latex() -> Check:
         pdflatex or "not found",
         hint="" if pdflatex else "Install MiKTeX or TeX Live",
     )
+
+
+def _engine() -> list[Check]:
+    """The engine of the workspace doctor runs in, when it is not pdflatex."""
+    from labharness.core.errors import LabHarnessError
+    from labharness.core.manifest import DEFAULT_ENGINE, load_workspace
+
+    try:
+        engine = load_workspace().engine
+    except LabHarnessError:
+        return []
+    if engine == DEFAULT_ENGINE:
+        return []
+    found = shutil.which(engine)
+    return [
+        Check(
+            f"{engine} (this workspace)",
+            found is not None,
+            found or "not found",
+            hint="" if found else f"The manifest asks for {engine}: install it, or remove 'engine'",
+        )
+    ]
 
 
 def _bibtex() -> Check:

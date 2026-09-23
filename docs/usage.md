@@ -192,11 +192,12 @@ script = "scripts/mechanism.tex"
 Editing the manifest or the style file rebuilds every figure. `labharness add` keeps the file up to
 date for you, but it is plain text you can edit by hand.
 
-Two optional keys go at the top of the file:
+Optional keys go at the top of the file:
 
 | Key | Default | Meaning |
 |---|---|---|
 | `journal` | `"acs"` | The journal the workspace was created for; `init` writes it |
+| `engine` | `"pdflatex"` | The LaTeX engine: `"pdflatex"`, `"xelatex"` or `"lualatex"`. Every typeface LabHarness offers works with pdflatex, the fastest; the other two are for `fontspec` and packages that only exist for them. They take about twice as long per rebuild, and the very first build with them builds a font cache, which can take a minute |
 | `builder` | `"labharness"` | How the document is compiled. `"labharness"`: pdflatex, BibTeX or Biber only when citations or the bibliography changed, and more passes only when LaTeX asks. `"latexmk"`: hand it to latexmk instead, which needs Perl |
 
 ## Figure kinds

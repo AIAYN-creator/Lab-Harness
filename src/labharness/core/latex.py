@@ -23,6 +23,7 @@ from labharness.core.errors import LabHarnessError
 MAX_PASSES = 5
 # Written next to the document: which citations and bibliography files the last BibTeX run saw.
 BIBLIOGRAPHY_STATE = ".{stem}.labharness-bib"
+LATEXMK_ENGINE_FLAGS = {"pdflatex": "-pdf", "xelatex": "-xelatex", "lualatex": "-lualatex"}
 
 
 @dataclass(frozen=True)
@@ -104,7 +105,7 @@ def run_pdflatex(document: Path, passes: int = 2, engine: str = "pdflatex") -> L
     )
 
 
-def run_latexmk(document: Path) -> LatexResult:
+def run_latexmk(document: Path, engine: str = "pdflatex") -> LatexResult:
     """Compile ``document`` with latexmk, for workspaces that ask for it.
 
     No -halt-on-error: latexmk needs its extra passes for bibliographies and
@@ -117,7 +118,7 @@ def run_latexmk(document: Path) -> LatexResult:
     )
 
     result = subprocess.run(
-        [latexmk, "-pdf", "-interaction=nonstopmode", document.name],
+        [latexmk, LATEXMK_ENGINE_FLAGS[engine], "-interaction=nonstopmode", document.name],
         cwd=document.parent,
         capture_output=True,
         text=True,

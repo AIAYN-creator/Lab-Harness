@@ -17,6 +17,10 @@ STYLE_NAME = "labharness-style.tex"
 # How the document is compiled: LabHarness's own passes, or latexmk for those who want it.
 BUILDERS = ("labharness", "latexmk")
 DEFAULT_BUILDER = "labharness"
+# The LaTeX engine. Every typeface in the catalogue works with pdflatex, the fastest; the
+# others are for fontspec and packages that only exist for them.
+ENGINES = ("pdflatex", "xelatex", "lualatex")
+DEFAULT_ENGINE = "pdflatex"
 
 
 @dataclass(frozen=True)
@@ -43,6 +47,7 @@ class Workspace:
     journal: str
     figures: tuple[Figure, ...]
     builder: str = DEFAULT_BUILDER
+    engine: str = DEFAULT_ENGINE
 
     @property
     def document(self) -> Path:
@@ -95,8 +100,13 @@ def load_workspace(root: Path | None = None) -> Workspace:
         raise LabHarnessError(
             f"{manifest}: builder must be one of {', '.join(BUILDERS)}, not '{builder}'"
         )
+    engine = str(data.get("engine", DEFAULT_ENGINE))
+    if engine not in ENGINES:
+        raise LabHarnessError(
+            f"{manifest}: engine must be one of {', '.join(ENGINES)}, not '{engine}'"
+        )
     journal = str(data.get("journal", DEFAULT_JOURNAL))
-    return Workspace(root=root, journal=journal, figures=figures, builder=builder)
+    return Workspace(root=root, journal=journal, figures=figures, builder=builder, engine=engine)
 
 
 def _figure(entry: dict[str, object], manifest: Path) -> Figure:

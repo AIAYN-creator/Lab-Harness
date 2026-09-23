@@ -7,13 +7,15 @@ compile LaTeX, one the manuscript and the other each figure on its own.
 from pathlib import Path
 
 from labharness.core.latex import LatexResult, run_full_build, run_latexmk
-from labharness.core.manifest import DEFAULT_BUILDER
+from labharness.core.manifest import DEFAULT_BUILDER, DEFAULT_ENGINE
 
 CompileResult = LatexResult
 
 
-def compile_document(document: Path, builder: str = DEFAULT_BUILDER) -> LatexResult:
+def compile_document(
+    document: Path, builder: str = DEFAULT_BUILDER, engine: str = DEFAULT_ENGINE
+) -> LatexResult:
     """Compile ``document`` completely, with LabHarness's own passes or with latexmk."""
     if builder == "latexmk":
-        return run_latexmk(document)
-    return run_full_build(document)
+        return run_latexmk(document, engine=engine)
+    return run_full_build(document, engine=engine)

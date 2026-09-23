@@ -13,6 +13,8 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   manifest; `--insert` also places the figure block in `paper.tex`.
 - `labharness preview`: renders figures, and with `--document` the pages of the PDF, as PNG images
   to review them by eye. `doctor` reports the tool it uses.
+- `engine` in the manifest: `pdflatex` (default), `xelatex` or `lualatex`, used for the
+  document and for every diagram.
 
 ### Changed
 

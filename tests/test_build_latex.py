@@ -143,8 +143,12 @@ def test_the_build_never_needs_latexmk(tmp_path: Path, monkeypatch: pytest.Monke
 def test_the_manifest_can_ask_for_latexmk(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     (tmp_path / "labharness.toml").write_text('builder = "latexmk"\n', encoding="utf-8")
     used: list[str] = []
-    monkeypatch.setattr("labharness.watch.latex.run_latexmk", lambda d: used.append("latexmk"))
-    monkeypatch.setattr("labharness.watch.latex.run_full_build", lambda d: used.append("own"))
+    monkeypatch.setattr(
+        "labharness.watch.latex.run_latexmk", lambda d, engine: used.append("latexmk")
+    )
+    monkeypatch.setattr(
+        "labharness.watch.latex.run_full_build", lambda d, engine: used.append("own")
+    )
 
     workspace = load_workspace(tmp_path)
     compile_document(workspace.document, workspace.builder)
@@ -165,3 +169,59 @@ def test_biblatex_documents_use_biber(tmp_path: Path) -> None:
     document.with_suffix(".bcf").write_text("<bcf/>", encoding="utf-8")
 
     assert latex_module._bibliography_tool(document) == "biber"
+
+
+ENGINES = ["pdflatex", "xelatex", "lualatex"]
+
+
+@pytest.mark.latex
+@pytest.mark.parametrize("engine", ENGINES)
+def test_every_engine_builds_the_document_and_its_bibliography(tmp_path: Path, engine: str) -> None:
+    if shutil.which(engine) is None or shutil.which("bibtex") is None:
+        pytest.skip(f"needs {engine}")
+    document = paper(tmp_path, r"See \cite{first}.")
+
+    result = run_full_build(document, engine=engine)
+
+    assert result.ok, result.errors
+    assert result.bibliography
+    assert (tmp_path / "paper.pdf").read_bytes().startswith(b"%PDF")
+
+
+@pytest.mark.latex
+@pytest.mark.parametrize("engine", ["xelatex", "lualatex"])
+def test_diagrams_compile_with_the_workspace_engine(tmp_path: Path, engine: str) -> None:
+    if shutil.which(engine) is None:
+        pytest.skip(f"needs {engine}")
+    from labharness.modules.diagrams import render_diagram
+
+    source = tmp_path / "scheme.tex"
+    source.write_text(r"\begin{tikzpicture}\draw (0,0) -- (1,1);\end{tikzpicture}", "utf-8")
+
+    output = render_diagram(source, tmp_path / "scheme.pdf", engine=engine)
+
+    assert output.read_bytes().startswith(b"%PDF")
+
+
+def test_the_manifest_engine_reaches_every_compilation(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    (tmp_path / "labharness.toml").write_text('engine = "lualatex"\n', encoding="utf-8")
+    seen: list[str] = []
+    monkeypatch.setattr(
+        "labharness.watch.latex.run_full_build",
+        lambda document, engine: seen.append(engine),
+    )
+
+    workspace = load_workspace(tmp_path)
+    compile_document(workspace.document, workspace.builder, workspace.engine)
+
+    assert workspace.engine == "lualatex"
+    assert seen == ["lualatex"]
+
+
+def test_an_unknown_engine_is_rejected(tmp_path: Path) -> None:
+    (tmp_path / "labharness.toml").write_text('engine = "context"\n', encoding="utf-8")
+
+    with pytest.raises(LabHarnessError, match="pdflatex, xelatex, lualatex"):
+        load_workspace(tmp_path)

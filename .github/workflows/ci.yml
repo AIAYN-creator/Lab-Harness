@@ -60,7 +60,7 @@ jobs:
       - name: Install TeX Live
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends lmodern texlive-latex-recommended texlive-latex-extra texlive-science texlive-fonts-recommended poppler-utils
+          sudo apt-get install -y --no-install-recommends lmodern texlive-latex-recommended texlive-latex-extra texlive-science texlive-fonts-recommended texlive-xetex texlive-luatex poppler-utils
           pdflatex --version | head -1
       - run: uv sync --all-extras
       - run: uv run pytest -m latex

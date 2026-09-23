@@ -61,14 +61,18 @@ def build(
     if compile_latex and all(item.ok for item in result.figures):
         started = time.perf_counter()
         if quick:
-            result.compilation = run_pdflatex(workspace.document)
+            result.compilation = run_pdflatex(workspace.document, engine=workspace.engine)
             if not result.compilation.ok:
-                result.compilation = compile_document(workspace.document, workspace.builder)
+                result.compilation = _compile(workspace)
         else:
-            result.compilation = compile_document(workspace.document, workspace.builder)
+            result.compilation = _compile(workspace)
         result.latex_seconds = time.perf_counter() - started
 
     return result
+
+
+def _compile(workspace: Workspace) -> CompileResult:
+    return compile_document(workspace.document, workspace.builder, workspace.engine)
 
 
 def build_figure(workspace: Workspace, figure: Figure) -> FigureResult:
@@ -121,7 +125,12 @@ def _build_diagram(
     from labharness.style import load_style
 
     try:
-        render_diagram(script, workspace.root / figure.output, style=load_style(workspace.journal))
+        render_diagram(
+            script,
+            workspace.root / figure.output,
+            style=load_style(workspace.journal),
+            engine=workspace.engine,
+        )
     except Exception as error:  # noqa: BLE001 - a broken figure must not stop the watcher
         return FigureResult(
             figure, ok=False, seconds=time.perf_counter() - started, error=str(error)
