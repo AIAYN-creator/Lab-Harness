@@ -317,6 +317,12 @@ a fitted value in your text: it updates when the data does.
 
 ## Data formats
 
+**Good practice: export to a format that cannot be misread.** Tables go into `data/` as CSV,
+which every instrument and database can export, however old. Spectra, chromatograms or anything
+that is only an image of the data go in as PNG or PDF, and are placed in the manuscript as they
+are. Proprietary instrument files are kept elsewhere, as the raw record; LabHarness reads what
+was exported from them.
+
 ### CSV
 
 Files with a header row. Columns are chosen by name in the script. CSV exported by Excel in
