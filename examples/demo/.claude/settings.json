@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "deny": [
+      "Write(data/**)",
+      "Edit(data/**)",
+      "MultiEdit(data/**)",
+      "NotebookEdit(data/**)",
+      "Bash(labharness accept:*)",
+      "Bash(uv run labharness accept:*)",
+      "PowerShell(labharness accept:*)",
+      "PowerShell(uv run labharness accept:*)",
+      "Write(labharness.lock)",
+      "Edit(labharness.lock)"
+    ]
+  }
+}

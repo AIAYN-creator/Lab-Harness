@@ -169,6 +169,7 @@ my-paper/
 ├── scripts/               # Transparent scripts, one per figure
 ├── references.bib
 ├── AGENTS.md  CLAUDE.md   # Rules for AI agents working in this workspace
+├── .claude/settings.json  # Stops Claude Code from writing to data/ or accepting data changes
 └── compile.sh  compile.ps1
 ```
 

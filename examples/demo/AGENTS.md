@@ -8,11 +8,17 @@ transparent scripts in `scripts/`, generated figures in `figures/`, and the manu
 
 ## Rules
 
-1. **`data/` holds raw data: never modify it.**
+1. **`data/` holds raw data: never create, modify, move or delete anything in it.** If a value
+   looks wrong, say so and let the human decide; do not correct it. Every file there is
+   fingerprinted in `labharness.lock`, and the build reports any change.
+   **Never run `labharness accept`**: accepting a change to raw data is the human's decision,
+   not yours. Do not edit `labharness.lock` either.
 2. **Never edit files in `figures/` by hand.** Figures are produced by the scripts in `scripts/`
    and declared in `labharness.toml`.
-3. A new figure means a script in `scripts/` plus its entry in `labharness.toml`
-   (`labharness add` does both).
+3. A new figure means a script in `scripts/` plus its entry in `labharness.toml`. Create both
+   with `labharness add <kind> <name> --input data/...` (kinds: `structure`, `plot`,
+   `mechanism`, `flow`, `network`), then edit the script it writes. Add `--insert` only when
+   the human asked for the figure to go into `paper.tex`.
 4. Use the right module for each kind of figure:
    - chemical structures → the `chem` module (RDKit);
    - reaction mechanisms with arrows, flowcharts and diagrams → the `diagrams` module
@@ -28,3 +34,6 @@ transparent scripts in `scripts/`, generated figures in `figures/`, and the manu
    leave the SMILES in `data/` so the human can check it.
 9. Do not rewrite the scientific text of `paper.tex` unless explicitly asked. Insert and update
    figures; do not write the discussion.
+10. **Look at a figure before calling it done.** A figure that builds can still read wrong.
+    Run `labharness preview --only <name>` and open the PNG it writes; use `--document` to see
+    it in place on the page.

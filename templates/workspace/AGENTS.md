@@ -8,7 +8,11 @@ transparent scripts in `scripts/`, generated figures in `figures/`, and the manu
 
 ## Rules
 
-1. **`data/` holds raw data: never modify it.**
+1. **`data/` holds raw data: never create, modify, move or delete anything in it.** If a value
+   looks wrong, say so and let the human decide; do not correct it. Every file there is
+   fingerprinted in `labharness.lock`, and the build reports any change.
+   **Never run `labharness accept`**: accepting a change to raw data is the human's decision,
+   not yours. Do not edit `labharness.lock` either.
 2. **Never edit files in `figures/` by hand.** Figures are produced by the scripts in `scripts/`
    and declared in `labharness.toml`.
 3. A new figure means a script in `scripts/` plus its entry in `labharness.toml`. Create both

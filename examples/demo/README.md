@@ -17,6 +17,20 @@ Four things to try, each exercising a different module:
 | A value in `data/kapp.csv` | The straight line and its slope, quoted in the text, follow |
 | A label in `scripts/mechanism.tex` | The scheme is recompiled |
 
+## Raw data is protected
+
+`data/` is the part of a paper that must never change by accident, and the demo shows the three
+layers that guard it:
+
+| Try this | What happens |
+|---|---|
+| Change a value in `data/decay.csv` and save | The figure follows, and the build says in red that `data/decay.csv` changed since it was accepted, on every rebuild, until you run `labharness accept data/decay.csv` |
+| Ask an AI agent (Claude Code) to "fix" a value in `data/` | It cannot: `.claude/settings.json` denies it any write to `data/`, and denies it `labharness accept` too. `AGENTS.md` gives every other agent the same rule |
+| Commit a changed data file without accepting it | The git hook installed by `labharness hook install` refuses the commit |
+
+The first time you change a data point in a rehearsal, the red line is the point: the tool noticed
+that raw data was touched.
+
 ## About the data
 
 The subject follows a published study of the electrochemical oxidation of atenolol, cited in
