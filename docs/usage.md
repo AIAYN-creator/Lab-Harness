@@ -163,6 +163,18 @@ replaced, in the history at the end of `labharness.lock`. Keep that file in vers
 
 Spreadsheet lock files (`~$...`) and hidden files are not data and are ignored.
 
+### `labharness hook`
+
+```
+labharness hook install [--force]
+```
+
+Installs a git pre-commit hook that refuses a commit changing or deleting a data file whose
+change was not accepted. New files always pass. After `labharness accept`, stage `labharness.lock`
+with the data and the commit goes through. `init` installs it on its own when the workspace is
+inside a git repository; it never replaces a hook it did not write. `git commit --no-verify`
+skips it once.
+
 ### `labharness resolve`
 
 ```

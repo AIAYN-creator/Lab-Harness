@@ -18,6 +18,7 @@ import typer
 from labharness import __version__
 from labharness.core.add import KINDS, add_figure
 from labharness.core.errors import LabHarnessError, MissingExtraError
+from labharness.core.githook import git_root, install_hook, main_check
 from labharness.core.lock import LOCK_NAME
 from labharness.core.lock import accept as accept_changes
 from labharness.core.manifest import MANIFEST_NAME, Figure, Workspace, load_workspace
@@ -40,6 +41,10 @@ app = typer.Typer(
     invoke_without_command=True,
     help="Turn raw lab data into publication-ready LaTeX figures, and keep the PDF in sync.",
 )
+hook_app = typer.Typer(
+    no_args_is_help=True, help="The git hook that stops unaccepted data changes being committed."
+)
+app.add_typer(hook_app, name="hook")
 
 
 @app.callback()
@@ -68,6 +73,12 @@ def init(
         target = create_workspace(path, journal=journal, force=force)
 
     typer.secho(f"Workspace created in {target}", fg=typer.colors.GREEN)
+    if git_root(target) is not None:
+        with _reporting_errors():
+            hook = install_hook(target)
+        typer.echo(f"Git hook installed in {hook}: unaccepted data changes cannot be committed.")
+    else:
+        typer.echo("Not a git repository: after 'git init', run 'labharness hook install'.")
     typer.echo("Next: add a figure with 'labharness add', then run 'labharness watch'.")
 
 
@@ -189,6 +200,25 @@ def accept(
     for change in accepted:
         typer.secho(f"Accepted: {change.message}", fg=typer.colors.GREEN)
     typer.echo(f"Recorded in {LOCK_NAME}.")
+
+
+@hook_app.command("install")
+def hook_install(
+    force: Annotated[
+        bool, typer.Option(help="Replace a pre-commit hook LabHarness did not write.")
+    ] = False,
+) -> None:
+    """Install the pre-commit hook in the git repository of this workspace."""
+    with _reporting_errors():
+        workspace = load_workspace()
+        hook = install_hook(workspace.root, force=force)
+    typer.secho(f"Installed {hook}", fg=typer.colors.GREEN)
+
+
+@hook_app.command("check")
+def hook_check() -> None:
+    """What the hook runs: refuse staged data changes that were not accepted."""
+    raise typer.Exit(main_check(Path.cwd()))
 
 
 @app.command()

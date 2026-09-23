@@ -21,6 +21,9 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `labharness.lock` and `labharness accept`: every file in `data/` is fingerprinted, and a change
   to a registered file is reported on every build until a person accepts it, with who, when and
   what it replaced recorded. The build still runs.
+- A git pre-commit hook, installed by `init` in a git repository or with `labharness hook
+  install`, refuses to commit a change to raw data that was not accepted.
+- `python -m labharness` runs the command line.
 
 ### Changed
 
