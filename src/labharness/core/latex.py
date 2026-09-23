@@ -239,12 +239,13 @@ def _run_bibliography(tool: str, document: Path) -> list[str]:
     failed = result.returncode >= 2 or "error message" in output
     if tool == "biber":
         failed = result.returncode != 0 or "ERROR -" in output
-    if not failed:
-        return []
-
     messages = [
         line.strip()
         for line in output.splitlines()
         if line.startswith(("I couldn't", "I found no", "ERROR -"))
+        # A manuscript that cites nothing yet is how every paper starts, not an error.
+        and not line.startswith("I found no \\citation commands")
     ]
+    if not failed or (tool == "bibtex" and not messages):
+        return []
     return [f"{tool}: {message}" for message in dict.fromkeys(messages)] or [f"{tool} failed"]

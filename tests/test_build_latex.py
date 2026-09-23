@@ -225,3 +225,14 @@ def test_an_unknown_engine_is_rejected(tmp_path: Path) -> None:
 
     with pytest.raises(LabHarnessError, match="pdflatex, xelatex, lualatex"):
         load_workspace(tmp_path)
+
+
+@pytest.mark.latex
+@needs_latex
+def test_a_manuscript_that_cites_nothing_yet_builds(tmp_path: Path) -> None:
+    # Every new paper starts like this; BibTeX complains, but it is not an error.
+    document = paper(tmp_path, "No citations yet.")
+
+    result = run_full_build(document)
+
+    assert result.ok, result.errors
