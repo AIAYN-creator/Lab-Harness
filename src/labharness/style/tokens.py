@@ -49,6 +49,12 @@ class Structures:
     wedge_width_pt: float
     double_bond_offset: float
     hash_spacing_pt: float
+    # How a structure fills the room the layout gives it (one column, or the text width of a
+    # single-column document): as large as fits, but with bonds at most this many times the
+    # journal's, so a small molecule does not turn into a poster; and no taller than this
+    # fraction of its width, so a tall one does not take the page.
+    max_bond_scale: float = 1.3
+    max_height_ratio: float = 1.0
 
 
 @dataclass(frozen=True)

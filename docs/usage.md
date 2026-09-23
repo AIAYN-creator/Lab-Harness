@@ -216,6 +216,14 @@ render_structure(smiles_file="data/catalyst.smi", output="figures/catalyst.pdf")
 ```
 
 Drawn with RDKit using the journal's geometry (bond length, line widths) and the document typeface.
+A structure is drawn **as large as the layout allows**, with no blank canvas around it. The room
+it gets is the journal's column width, which in a single-column document (an article or a report)
+is the text width, or `width_in=` for a figure that spans more (`width_in=7.0` for a
+double-column ACS figure); it is never taller than that width. Within that room the molecule grows
+until it fills it, with bonds up to 1.3 times the journal's so a small molecule does not turn into
+a poster (`max_bond_scale` in the style). A molecule too large for the room shrinks to fit, and the
+build prints a warning saying by how much, because its bonds are then shorter than the journal
+asks for.
 
 ### `mechanism` and `flow` — diagrams
 

@@ -5,10 +5,12 @@ import os
 import runpy
 import time
 import traceback
+import warnings
 from collections.abc import Iterator, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from labharness.core.errors import LabHarnessWarning
 from labharness.core.latex import run_pdflatex
 from labharness.core.manifest import Figure, Workspace
 from labharness.watch.latex import CompileResult, compile_document
@@ -20,6 +22,7 @@ class FigureResult:
     ok: bool
     seconds: float
     error: str | None = None
+    warnings: tuple[str, ...] = ()
 
 
 @dataclass
@@ -120,23 +123,46 @@ def build_figure(workspace: Workspace, figure: Figure) -> FigureResult:
 
     from labharness.style.tokens import using_journal
 
-    try:
-        with _working_directory(workspace.root), using_journal(workspace.journal, workspace.font):
-            runpy.run_path(str(script), run_name="__main__")
-    except Exception:  # noqa: BLE001 - a broken script must not stop the watcher
-        return FigureResult(
-            figure,
-            ok=False,
-            seconds=time.perf_counter() - started,
-            error=traceback.format_exc(limit=3),
-        )
+    with _collecting_warnings() as collected:
+        try:
+            with (
+                _working_directory(workspace.root),
+                using_journal(workspace.journal, workspace.font),
+            ):
+                runpy.run_path(str(script), run_name="__main__")
+        except Exception:  # noqa: BLE001 - a broken script must not stop the watcher
+            return FigureResult(
+                figure,
+                ok=False,
+                seconds=time.perf_counter() - started,
+                error=traceback.format_exc(limit=3),
+                warnings=tuple(collected),
+            )
 
     seconds = time.perf_counter() - started
     if not (workspace.root / figure.output).is_file():
         return FigureResult(
             figure, ok=False, seconds=seconds, error=f"{figure.script} produced no {figure.output}"
         )
-    return FigureResult(figure, ok=True, seconds=seconds)
+    return FigureResult(figure, ok=True, seconds=seconds, warnings=tuple(collected))
+
+
+@contextlib.contextmanager
+def _collecting_warnings() -> Iterator[list[str]]:
+    """The LabHarness warnings a figure raised, every time it is built.
+
+    Python shows a warning once per place in the code; the watcher rebuilds the same figure
+    many times, and the person has to see it on every rebuild that still has the problem.
+    """
+    collected: list[str] = []
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always", LabHarnessWarning)
+        yield collected
+    collected.extend(
+        str(warning.message)
+        for warning in caught
+        if issubclass(warning.category, LabHarnessWarning)
+    )
 
 
 def _build_diagram(

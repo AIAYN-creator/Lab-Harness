@@ -31,6 +31,14 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- Chemical structures were drawn on a fixed 4:3 canvas, leaving blank space around a long
+  molecule. They are now cropped to the molecule and drawn as large as the layout allows: the
+  column width, or the text width of a single-column document, with bonds up to 1.3 times the
+  journal's. One that does not fit shrinks, with a warning.
+- Warnings from figure modules (a structure that does not fit, error bars inferred from the
+  decimals) never reached the terminal when the watcher ran the script. They are now printed
+  under the figure on every rebuild.
+
 - Python figure scripts always used the ACS style, whatever journal the workspace had.
 
 ## [0.1.0] - 2026-09-21

@@ -177,3 +177,31 @@ def test_a_latex_failure_is_explained_from_the_log(
 
     assert not result.ok
     assert result.errors[0].startswith("! Undefined control sequence")
+
+
+WARNING_SCRIPT = """
+import warnings
+from pathlib import Path
+from labharness.core import LabHarnessWarning
+
+warnings.warn("value.pdf: something to look at", LabHarnessWarning)
+Path("figures").mkdir(exist_ok=True)
+Path("figures/value.pdf").write_text("%PDF-1.4", encoding="utf-8")
+"""
+
+
+def test_a_warning_is_reported_on_every_rebuild(tmp_path: Path) -> None:
+    (tmp_path / "labharness.toml").write_text(
+        '[[figure]]\noutput = "figures/value.pdf"\nscript = "scripts/value.py"\n',
+        encoding="utf-8",
+    )
+    (tmp_path / "scripts").mkdir()
+    (tmp_path / "scripts" / "value.py").write_text(WARNING_SCRIPT, encoding="utf-8")
+    workspace = load_workspace(tmp_path)
+
+    first = build_figure(workspace, workspace.figures[0])
+    second = build_figure(workspace, workspace.figures[0])
+
+    assert first.ok and second.ok
+    # Python would show it once; the watcher must show it every time the figure is rebuilt.
+    assert first.warnings == second.warnings == ("value.pdf: something to look at",)

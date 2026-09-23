@@ -1,13 +1,14 @@
 """Drawing a regression: points with their error bars, the fit, and the numbers it produced."""
 
 import re
+import warnings
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
 from labharness.core.atomic import atomic_output
-from labharness.core.errors import LabHarnessError
+from labharness.core.errors import LabHarnessError, LabHarnessWarning
 from labharness.core.extras import require
 from labharness.modules.plots.data import Points, Series, read_series
 from labharness.modules.plots.fits import Fit, fit
@@ -64,8 +65,10 @@ def regression_plot(
     _draw(output, measurements, fits, x_title, y_title, style, width_in, show_equation)
     macros = _write_macros(output, fits)
 
-    warnings = tuple(warning for points in measurements for warning in points.warnings)
-    return PlotResult(output=output, fits=tuple(fits), macros=macros, warnings=warnings)
+    found = tuple(warning for points in measurements for warning in points.warnings)
+    for warning in found:
+        warnings.warn(f"{output.name}: {warning}", LabHarnessWarning, stacklevel=2)
+    return PlotResult(output=output, fits=tuple(fits), macros=macros, warnings=found)
 
 
 def _axis_title(style: Style, label: Label | None, argument: str) -> str:

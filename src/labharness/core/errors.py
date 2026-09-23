@@ -5,6 +5,14 @@ class LabHarnessError(Exception):
     """Base class for every error raised by LabHarness."""
 
 
+class LabHarnessWarning(UserWarning):
+    """Something a person should know about a figure that still built.
+
+    Modules emit these with :func:`warnings.warn`; the watcher collects them and prints them
+    next to the figure, so they are seen even when the script ignores its return value.
+    """
+
+
 class MissingExtraError(LabHarnessError, ImportError):
     """A feature needs an optional extra that is not installed."""
 

@@ -228,6 +228,8 @@ def _print_result(result: BuildResult) -> None:
         else:
             typer.secho(f"  {figure.figure.output}  failed", fg=typer.colors.RED)
             typer.echo(f"      {figure.error}")
+        for warning in figure.warnings:
+            typer.secho(f"      warning: {warning}", fg=typer.colors.YELLOW)
 
     compilation = result.compilation
     if compilation is not None and not compilation.ok:
