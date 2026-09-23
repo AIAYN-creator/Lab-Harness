@@ -2,16 +2,34 @@
 
 ## Supported versions
 
-LabHarness is pre-1.0: only the latest version on `main` receives fixes.
+LabHarness is pre-1.0: only the latest release and `main` receive fixes.
 
 ## Reporting a vulnerability
 
-Please **do not open a public issue** for security problems.
+Please **do not open a public issue** for security problems. Report it privately, whichever way
+suits you:
 
-Email labharness.project@gmail.com with the details and, if you can, a way to reproduce the
-problem. Once the repository is public you can also use GitHub's private vulnerability reporting:
-the **Security** tab, then **Report a vulnerability**. We aim to acknowledge reports within a week.
+- through GitHub: the **Security** tab of the repository, then **Report a vulnerability**;
+- by email to labharness.project@gmail.com, with the details and, if you can, a way to reproduce
+  the problem.
+
+We aim to acknowledge reports within a week, and to agree with you on when a fix is disclosed.
+
+## What is in scope
 
 LabHarness runs locally and makes no network requests by default. The most relevant risks are
-malicious input files (data, scripts or LaTeX sources) processed on your machine. Only run
-workspaces you trust.
+input files processed on your machine:
+
+- **Figure scripts are Python and run with your permissions.** The watcher runs every script
+  listed in `labharness.toml`, so only open workspaces you trust, as with any code you run.
+- **LaTeX sources** are compiled without ever asking for `-shell-escape`. A way to make
+  LabHarness run shell commands through LaTeX is in scope.
+- **Data files** (CSV, SMILES, spreadsheets) must never execute anything: if one can, that is a
+  vulnerability.
+
+## What the repository does
+
+- **Dependabot security alerts** are on: the maintainer is told when a dependency in `uv.lock` has
+  a published vulnerability.
+- **Secret scanning with push protection** is on: a push containing a credential is blocked.
+- There are no automatic dependency update pull requests: upgrades are deliberate.

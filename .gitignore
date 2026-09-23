@@ -37,3 +37,13 @@ examples/**/.labharness/
 .DS_Store
 Thumbs.db
 acs-*.bib
+
+# Credentials never belong in the repository
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.pfx
+.pypirc
+.netrc
