@@ -59,8 +59,10 @@ def test_nothing_imports_labharness_any_more(ejected: Path) -> None:
 def test_labharness_files_are_left_behind_and_the_original_is_untouched(
     ejected: Path, tmp_path: Path
 ) -> None:
-    for name in ("labharness.toml", "AGENTS.md", "CLAUDE.md", "compile.sh"):
+    for name in ("labharness.toml", "AGENTS.md", "CLAUDE.md"):
         assert not (ejected / name).exists(), name
+    # The compile shortcuts are rewritten: they call build.py, not labharness watch.
+    assert "labharness" not in (ejected / "compile.sh").read_text(encoding="utf-8")
     assert (tmp_path / "demo" / "labharness.toml").is_file()
     assert (tmp_path / "demo" / "scripts" / "decay.py").read_text(encoding="utf-8") == (
         DEMO / "scripts" / "decay.py"
@@ -128,3 +130,55 @@ def test_a_folder_with_something_in_it_needs_force(tmp_path: Path) -> None:
 
     with pytest.raises(LabHarnessError, match="--force"):
         eject(load_workspace(workspace), tmp_path / "busy")
+
+
+def test_the_ejected_folder_says_how_to_rebuild_it(ejected: Path) -> None:
+    for name in ("build.py", "requirements.txt", "EJECTED.md", "compile.sh", "compile.ps1"):
+        assert (ejected / name).is_file(), name
+    assert "python build.py" in (ejected / "compile.sh").read_text(encoding="utf-8")
+    assert "pip install -r requirements.txt" in (ejected / "EJECTED.md").read_text("utf-8")
+
+
+@needs("rdkit", "scipy", "matplotlib")
+def test_requirements_pin_the_versions_that_drew_the_figures(ejected: Path) -> None:
+    from importlib import metadata
+
+    pins = (ejected / "requirements.txt").read_text(encoding="utf-8").splitlines()
+
+    for name in ("rdkit", "svglib", "reportlab", "numpy", "scipy", "matplotlib"):
+        assert f"{name}=={metadata.version(name)}" in pins, name
+
+
+def test_build_py_lists_every_figure_in_manifest_order(ejected: Path) -> None:
+    text = (ejected / "build.py").read_text(encoding="utf-8")
+
+    positions = [text.index(f"'figures/{name}.pdf'") for name in ("atenolol", "decay", "kapp")]
+    assert positions == sorted(positions)
+    assert "'scripts/mechanism.tex'" in text
+    compile(text, "build.py", "exec")  # it is valid Python
+
+
+@pytest.mark.latex
+@needs("rdkit", "scipy", "matplotlib")
+@pytest.mark.skipif(
+    shutil.which("pdflatex") is None or shutil.which("bibtex") is None,
+    reason="needs a LaTeX distribution",
+)
+def test_build_py_regenerates_the_whole_paper_without_labharness(ejected: Path) -> None:
+    for stale in [*(ejected / "figures").glob("*.pdf"), ejected / "paper.pdf"]:
+        stale.unlink(missing_ok=True)
+
+    result = subprocess.run(
+        [sys.executable, "-c", WITHOUT_LABHARNESS, "build.py"],
+        cwd=ejected,
+        capture_output=True,
+        text=True,
+        errors="replace",
+    )
+
+    assert result.returncode == 0, result.stdout[-2000:] + result.stderr[-2000:]
+    for figure in ("atenolol", "decay", "kapp", "mechanism"):
+        assert (ejected / "figures" / f"{figure}.pdf").read_bytes().startswith(b"%PDF"), figure
+    assert (ejected / "paper.pdf").read_bytes().startswith(b"%PDF")
+    # The citation of the demo was resolved: BibTeX ran.
+    assert "moragomez2020" in (ejected / "paper.bbl").read_text(encoding="utf-8")

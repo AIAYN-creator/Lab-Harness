@@ -193,6 +193,11 @@ original workspace is not touched.
 There is no `un-eject` and no updates: the copy is frozen on purpose. Keep working in the
 original.
 
+The copy rebuilds with `python build.py` (or `compile.sh` / `compile.ps1`), which runs the
+scripts in order, compiles the diagrams and the paper with pdflatex and BibTeX. `requirements.txt`
+pins the exact versions of the packages that drew the figures, and `EJECTED.md` explains all of it
+to whoever opens the folder.
+
 ### `labharness resolve`
 
 ```

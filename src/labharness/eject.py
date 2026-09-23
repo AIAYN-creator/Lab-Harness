@@ -20,6 +20,7 @@ from pathlib import Path
 from labharness.core.errors import LabHarnessError
 from labharness.core.manifest import MANIFEST_NAME, Workspace
 from labharness.core.templates import JOURNALS, STYLE_FILE, journal_template
+from labharness.eject_build import write_build_files
 
 VENDOR = "_labharness"
 PACKAGE = Path(__file__).resolve().parent
@@ -95,6 +96,7 @@ def eject(workspace: Workspace, target: Path, force: bool = False) -> Ejected:
             script.write_text(_standalone(workspace, script), encoding="utf-8", newline="\n")
             diagrams.append(figure.script.as_posix())
 
+    write_build_files(workspace, target, modules)
     return Ejected(target, tuple(modules), tuple(scripts), tuple(diagrams))
 
 

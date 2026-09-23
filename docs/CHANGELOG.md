@@ -26,7 +26,8 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `python -m labharness` runs the command line.
 - `labharness eject TARGET`: a copy of the workspace whose scripts import a local, frozen
   `_labharness` with only the modules they use, and whose diagrams are standalone documents, so
-  the figures regenerate without LabHarness installed.
+  the figures regenerate without LabHarness installed. It writes `build.py`, pinned
+  `requirements.txt` and an `EJECTED.md` explaining how to rebuild.
 
 ### Changed
 
