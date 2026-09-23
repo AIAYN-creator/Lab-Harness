@@ -48,6 +48,8 @@ class Workspace:
     figures: tuple[Figure, ...]
     builder: str = DEFAULT_BUILDER
     engine: str = DEFAULT_ENGINE
+    # The typeface chosen for this workspace; None uses the journal's default.
+    font: str | None = None
 
     @property
     def document(self) -> Path:
@@ -106,7 +108,21 @@ def load_workspace(root: Path | None = None) -> Workspace:
             f"{manifest}: engine must be one of {', '.join(ENGINES)}, not '{engine}'"
         )
     journal = str(data.get("journal", DEFAULT_JOURNAL))
-    return Workspace(root=root, journal=journal, figures=figures, builder=builder, engine=engine)
+    font = _font(data.get("font"), manifest)
+    return Workspace(
+        root=root, journal=journal, figures=figures, builder=builder, engine=engine, font=font
+    )
+
+
+def _font(value: object, manifest: Path) -> str | None:
+    if value is None:
+        return None
+    from labharness.style.typefaces import load_typeface
+
+    try:
+        return load_typeface(str(value)).id
+    except LabHarnessError as error:
+        raise LabHarnessError(f"{manifest}: {error}") from None
 
 
 def _figure(entry: dict[str, object], manifest: Path) -> Figure:

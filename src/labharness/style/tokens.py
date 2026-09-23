@@ -20,13 +20,17 @@ from labharness.core.errors import LabHarnessError
 from labharness.core.templates import DEFAULT_JOURNAL, STYLE_FILE, journal_template
 
 _active_journal: ContextVar[str | None] = ContextVar("labharness_journal", default=None)
+_active_typeface: ContextVar[str | None] = ContextVar("labharness_typeface", default=None)
 
 
 @dataclass(frozen=True)
 class Typography:
+    typeface: str
     family: str
-    latex_package: str
+    latex_packages: tuple[str, ...]
     font_file: str
+    mathtext: str
+    tex_package: str
     base_size_pt: float
     small_size_pt: float
 
@@ -82,13 +86,29 @@ class Style:
 
 
 @contextlib.contextmanager
-def using_journal(journal: str) -> Iterator[None]:
-    """Make ``journal`` the one :func:`load_style` returns when it is not given one."""
-    token = _active_journal.set(journal)
+def using_journal(journal: str, typeface: str | None = None) -> Iterator[None]:
+    """Make ``journal`` (and ``typeface``) what :func:`load_style` uses when not told."""
+    journal_token = _active_journal.set(journal)
+    typeface_token = _active_typeface.set(typeface)
     try:
         yield
     finally:
-        _active_journal.reset(token)
+        _active_typeface.reset(typeface_token)
+        _active_journal.reset(journal_token)
+
+
+def current_typeface() -> str | None:
+    """The typeface the workspace chose, or None to use the journal's default."""
+    active = _active_typeface.get()
+    if active is not None or _active_journal.get() is not None:
+        return active
+
+    from labharness.core.manifest import find_workspace, load_workspace
+
+    try:
+        return load_workspace(find_workspace()).font
+    except LabHarnessError:
+        return None
 
 
 def current_journal() -> str:
@@ -109,8 +129,15 @@ def current_journal() -> str:
         return DEFAULT_JOURNAL
 
 
-def load_style(journal: str | None = None) -> Style:
-    """Load the style of a journal: the workspace's own when none is named."""
+def load_style(journal: str | None = None, typeface: str | None = None) -> Style:
+    """Load the style of a journal: the workspace's own journal and typeface when not named.
+
+    Naming a journal without a typeface gives that journal's default typeface.
+    """
+    from labharness.style.typefaces import load_typeface
+
+    if journal is None:
+        typeface = typeface or current_typeface()
     source = journal_template(journal or current_journal()) / STYLE_FILE
     try:
         data: dict[str, Any] = tomllib.loads(source.read_text(encoding="utf-8"))
@@ -118,10 +145,21 @@ def load_style(journal: str | None = None) -> Style:
         raise LabHarnessError(f"{source} is not valid TOML: {error}") from error
 
     plots = data["plots"]
+    sizes = data["typography"]
+    face = load_typeface(typeface or sizes["typeface"])
     return Style(
         name=data["name"],
         description=data["description"],
-        typography=Typography(**data["typography"]),
+        typography=Typography(
+            typeface=face.id,
+            family=face.family,
+            latex_packages=face.latex_packages,
+            font_file=face.font_file,
+            mathtext=face.mathtext,
+            tex_package=face.tex_package,
+            base_size_pt=sizes["base_size_pt"],
+            small_size_pt=sizes["small_size_pt"],
+        ),
         dimensions=Dimensions(**data["dimensions"]),
         structures=Structures(**data["structures"]),
         plots=Plots(**{**plots, "palette": tuple(plots["palette"])}),

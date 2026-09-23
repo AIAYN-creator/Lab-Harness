@@ -1,0 +1,65 @@
+# The typefaces a workspace can use: one per document, for text, maths, plots, structures and
+# diagrams alike.
+#
+# The catalogue is closed on purpose. Every entry has matching maths, runs on pdflatex, ships
+# with TeX Live and MiKTeX, and is tested in every engine LabHarness drives; an arbitrary font
+# promises none of that, and the maths is where "one typeface" breaks first.
+#
+# latex_packages   loaded in this order after \usepackage[T1]{fontenc}. The typefaces other
+#                  than Latin Modern only replace the serif face, so lmodern goes first: a
+#                  journal class that sets its headings in sans or an address in mono (achemso
+#                  does both) then gets Latin Modern vector fonts, not bitmap EC fonts
+# font_file        the OpenType file Matplotlib and RDKit draw with, found with kpsewhich
+# mathtext         Matplotlib's mathtext font set. "cm" is Computer Modern, which Latin Modern
+#                  digitises. "custom" draws maths in the family itself; Matplotlib's own
+#                  "stix" set is STIX General, a different face, so it is not used
+# pdf_fonts        name prefixes of the fonts this typeface puts in a PDF: its text faces and
+#                  the maths faces designed to go with it
+# tex_package      the distribution package to install when font_file is missing
+
+[latin-modern]
+name = "Latin Modern"
+family = "Latin Modern Roman"
+latex_packages = ["lmodern"]
+font_file = "lmroman10-regular.otf"
+mathtext = "cm"
+# Matplotlib draws maths with its own Computer Modern (Cmr10...), the design Latin Modern
+# digitises.
+pdf_fonts = ["LM", "Cm"]
+tex_package = "lm"
+
+[termes]
+name = "TeX Gyre Termes (Times)"
+family = "TeX Gyre Termes"
+latex_packages = ["lmodern", "tgtermes", "newtxmath"]
+font_file = "texgyretermes-regular.otf"
+mathtext = "custom"
+pdf_fonts = ["TeXGyreTermes", "NewTX", "txmia", "txsys", "txex", "txsy", "LMSans", "LMMono"]
+tex_package = "tex-gyre"
+
+[pagella]
+name = "TeX Gyre Pagella (Palatino)"
+family = "TeX Gyre Pagella"
+latex_packages = ["lmodern", "tgpagella", "newpxmath"]
+font_file = "texgyrepagella-regular.otf"
+mathtext = "custom"
+pdf_fonts = ["TeXGyrePagella", "NewPX", "pxmia", "pxsys", "pxex", "pxsy", "LMSans", "LMMono"]
+tex_package = "tex-gyre"
+
+[stix]
+name = "STIX Two"
+family = "STIX Two Text"
+latex_packages = ["lmodern", "stix2"]
+font_file = "STIXTwoText-Regular.otf"
+mathtext = "custom"
+pdf_fonts = ["STIXTwo", "LMSans", "LMMono"]
+tex_package = "stix2-otf"
+
+[libertinus]
+name = "Libertinus"
+family = "Libertinus Serif"
+latex_packages = ["lmodern", "libertinus-type1", "libertinust1math"]
+font_file = "LibertinusSerif-Regular.otf"
+mathtext = "custom"
+pdf_fonts = ["Libertinus", "LMSans", "LMMono"]
+tex_package = "libertinus-fonts"

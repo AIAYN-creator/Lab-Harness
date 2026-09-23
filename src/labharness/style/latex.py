@@ -2,12 +2,14 @@
 
 from labharness.style.tokens import Style
 
+GENERATED_MARK = "% LabHarness document style -- generated"
+
 DOCUMENT_PREAMBLE = r"""% LabHarness document style -- generated from the {name} journal style.
 %
 % One typeface for the whole document, text and figures alike: {family}.
 % Do not set fonts anywhere else; change them in the journal style file instead.
 \usepackage[T1]{{fontenc}}
-\usepackage{{{latex_package}}}
+{packages}
 \usepackage{{graphicx}}
 {journal_preamble}
 % \labfigure{{path}}: include a generated figure at its natural (final) size.
@@ -30,7 +32,7 @@ TIKZ_PREAMBLE = r"""% LabHarness figure style -- generated from the {name} journ
 % Shared by every standalone diagram, so mechanisms, flowcharts and structures match the
 % document and each other.
 \usepackage[T1]{{fontenc}}
-\usepackage{{{latex_package}}}
+{packages}
 \usepackage{{tikz}}
 \usepackage{{chemfig}}
 % arrows.meta for the arrowheads used below, positioning for "right=of", calc for coordinates.
@@ -59,7 +61,7 @@ def document_preamble(style: Style) -> str:
     return DOCUMENT_PREAMBLE.format(
         name=style.name.upper(),
         family=style.typography.family,
-        latex_package=style.typography.latex_package,
+        packages=_packages(style),
         journal_preamble=f"\n{journal}\n" if journal else "",
     )
 
@@ -69,12 +71,16 @@ def tikz_preamble(style: Style) -> str:
     structures = style.structures
     return TIKZ_PREAMBLE.format(
         name=style.name.upper(),
-        latex_package=style.typography.latex_package,
+        packages=_packages(style),
         bond_length=_number(structures.bond_length_pt),
         line_width=_number(structures.line_width_pt),
         wedge_width=_number(structures.wedge_width_pt),
         double_bond_sep=_number(structures.bond_length_pt * structures.double_bond_offset),
     )
+
+
+def _packages(style: Style) -> str:
+    return "\n".join(f"\\usepackage{{{package}}}" for package in style.typography.latex_packages)
 
 
 def _number(value: float) -> str:

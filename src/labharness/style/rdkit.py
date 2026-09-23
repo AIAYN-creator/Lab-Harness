@@ -21,7 +21,8 @@ def apply_to_draw_options(options: Any, style: Style) -> None:
     options.multipleBondOffset = structures.double_bond_offset
 
     # Atom labels in the document typeface, taken from the LaTeX installation.
-    options.fontFile = str(find_font_file(style.typography.font_file))
+    typography = style.typography
+    options.fontFile = str(find_font_file(typography.font_file, typography.tex_package))
 
     # Structures are monochrome unless a figure asks otherwise.
     options.useBWAtomPalette()

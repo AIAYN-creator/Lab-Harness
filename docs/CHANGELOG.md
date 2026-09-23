@@ -15,6 +15,9 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   to review them by eye. `doctor` reports the tool it uses.
 - `engine` in the manifest: `pdflatex` (default), `xelatex` or `lualatex`, used for the
   document and for every diagram.
+- A catalogue of five typefaces (Latin Modern, TeX Gyre Termes, TeX Gyre Pagella, STIX Two,
+  Libertinus), chosen with `font = "..."` in the manifest. The document style, plots, structures
+  and diagrams all follow, and `labharness-style.tex` is regenerated when the choice changes.
 
 ### Changed
 

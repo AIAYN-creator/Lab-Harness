@@ -17,7 +17,7 @@ def test_acs_style_loads_with_the_acs_1996_geometry() -> None:
     assert style.structures.bond_length_pt == 14.4
     assert style.structures.line_width_pt == 0.6
     assert style.dimensions.single_column_in == 3.25
-    assert style.typography.latex_package == "lmodern"
+    assert style.typography.latex_packages == ("lmodern",)
 
 
 def test_acs_is_the_default_and_the_only_journal_in_v0_1() -> None:
@@ -95,7 +95,7 @@ def test_the_document_font_is_found_in_the_latex_installation() -> None:
 
 @pytest.mark.skipif(shutil.which("kpsewhich") is None, reason="needs a LaTeX distribution")
 def test_a_missing_font_explains_how_to_install_it() -> None:
-    with pytest.raises(LabHarnessError, match="Latin Modern"):
+    with pytest.raises(LabHarnessError, match="'lm' package"):
         find_font_file("labharness-no-such-font.otf")
 
 

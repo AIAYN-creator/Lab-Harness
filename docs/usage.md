@@ -197,6 +197,7 @@ Optional keys go at the top of the file:
 | Key | Default | Meaning |
 |---|---|---|
 | `journal` | `"acs"` | The journal the workspace was created for; `init` writes it |
+| `font` | the journal's | The typeface, from the catalogue in *Typefaces* below |
 | `engine` | `"pdflatex"` | The LaTeX engine: `"pdflatex"`, `"xelatex"` or `"lualatex"`. Every typeface LabHarness offers works with pdflatex, the fastest; the other two are for `fontspec` and packages that only exist for them. They take about twice as long per rebuild, and the very first build with them builds a font cache, which can take a minute |
 | `builder` | `"labharness"` | How the document is compiled. `"labharness"`: pdflatex, BibTeX or Biber only when citations or the bibliography changed, and more passes only when LaTeX asks. `"latexmk"`: hand it to latexmk instead, which needs Perl |
 
@@ -283,6 +284,28 @@ switching style files.
 | Plots | No grid, Okabe-Ito colours, fit line drawn only over the data range |
 
 Figures are generated at their final size and included without scaling.
+
+### Typefaces
+
+One typeface per document, chosen from a tested catalogue. Add `font = "..."` at the top of
+`labharness.toml` to change it; the document style and every figure follow on the next build.
+Sizes stay the journal's.
+
+| `font` | Typeface | Maths |
+|---|---|---|
+| `latin-modern` *(default)* | Latin Modern, the LaTeX default | Computer Modern |
+| `termes` | TeX Gyre Termes, in the style of Times | newtxmath |
+| `pagella` | TeX Gyre Pagella, in the style of Palatino | newpxmath |
+| `stix` | STIX Two, designed for scientific publishing | STIX Two Math |
+| `libertinus` | Libertinus Serif | Libertinus Math |
+
+All five run on pdflatex and ship with TeX Live and MiKTeX. If a font file is missing, the error
+names the package to install. Headings or addresses that a journal class sets in sans-serif or
+monospace stay in Latin Modern Sans and Mono, so nothing falls back to bitmap fonts.
+
+The catalogue is closed on purpose: every entry has maths designed to match and is checked to
+leave no other font in the PDF. A font outside it can still be used by writing your own
+`labharness-style.tex` without the first "generated" line, which LabHarness then leaves alone.
 
 ## Troubleshooting
 

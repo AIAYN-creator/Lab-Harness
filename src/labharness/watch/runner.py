@@ -60,6 +60,7 @@ def build(
 
     if compile_latex and all(item.ok for item in result.figures):
         started = time.perf_counter()
+        refresh_document_style(workspace)
         if quick:
             result.compilation = run_pdflatex(workspace.document, engine=workspace.engine)
             if not result.compilation.ok:
@@ -73,6 +74,27 @@ def build(
 
 def _compile(workspace: Workspace) -> CompileResult:
     return compile_document(workspace.document, workspace.builder, workspace.engine)
+
+
+def refresh_document_style(workspace: Workspace) -> bool:
+    """Rewrite ``labharness-style.tex`` if the workspace's journal or typeface changed.
+
+    The file is generated, and says so in its first line; one without that line was written
+    by someone, and is left alone. Returns whether it was rewritten.
+    """
+    from labharness.core.manifest import STYLE_NAME
+    from labharness.style import load_style
+    from labharness.style.latex import GENERATED_MARK, document_preamble
+
+    path = workspace.root / STYLE_NAME
+    wanted = document_preamble(load_style(workspace.journal, workspace.font))
+    current = path.read_text(encoding="utf-8") if path.is_file() else None
+    if current is not None and not current.startswith(GENERATED_MARK):
+        return False
+    if current is not None and current.splitlines() == wanted.splitlines():
+        return False
+    path.write_text(wanted, encoding="utf-8", newline="\n")
+    return True
 
 
 def build_figure(workspace: Workspace, figure: Figure) -> FigureResult:
@@ -99,7 +121,7 @@ def build_figure(workspace: Workspace, figure: Figure) -> FigureResult:
     from labharness.style.tokens import using_journal
 
     try:
-        with _working_directory(workspace.root), using_journal(workspace.journal):
+        with _working_directory(workspace.root), using_journal(workspace.journal, workspace.font):
             runpy.run_path(str(script), run_name="__main__")
     except Exception:  # noqa: BLE001 - a broken script must not stop the watcher
         return FigureResult(
@@ -128,7 +150,7 @@ def _build_diagram(
         render_diagram(
             script,
             workspace.root / figure.output,
-            style=load_style(workspace.journal),
+            style=load_style(workspace.journal, workspace.font),
             engine=workspace.engine,
         )
     except Exception as error:  # noqa: BLE001 - a broken figure must not stop the watcher

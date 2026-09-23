@@ -20,9 +20,11 @@ from labharness.style.tokens import (
     Style,
     Typography,
     current_journal,
+    current_typeface,
     load_style,
     using_journal,
 )
+from labharness.style.typefaces import Typeface, available_typefaces, load_typeface
 
 __all__ = [
     "Dimensions",
@@ -30,10 +32,14 @@ __all__ = [
     "Plots",
     "Structures",
     "Style",
+    "Typeface",
     "Typography",
     "available_journals",
+    "available_typefaces",
     "current_journal",
+    "current_typeface",
     "find_font_file",
     "load_style",
+    "load_typeface",
     "using_journal",
 ]

@@ -145,15 +145,16 @@ def _latexmk() -> Check:
 
 
 def _fonts() -> Check:
-    font_file = load_style().typography.font_file
+    typography = load_style().typography
     try:
-        return Check("document font", True, str(find_font_file(font_file)))
+        found = find_font_file(typography.font_file, typography.tex_package)
+        return Check("document font", True, f"{typography.family}: {found}")
     except Exception as error:  # noqa: BLE001 - the message is the whole point
         return Check(
             "document font",
             False,
             str(error),
-            hint="Install the Latin Modern fonts ('lm' in TeX Live, 'lmodern' on Debian)",
+            hint=f"Install the '{typography.tex_package}' package of your LaTeX distribution",
         )
 
 

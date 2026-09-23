@@ -25,7 +25,7 @@ def rcparams(style: Style, width_in: float | None = None) -> dict[str, Any]:
         # Same typeface as the document. No usetex: it would cost seconds per figure.
         "font.family": "serif",
         "font.serif": [typography.family],
-        "mathtext.fontset": "cm",
+        **_mathtext(typography.mathtext, typography.family),
         "font.size": typography.base_size_pt,
         "axes.labelsize": typography.base_size_pt,
         "axes.titlesize": typography.base_size_pt,
@@ -50,6 +50,18 @@ def rcparams(style: Style, width_in: float | None = None) -> dict[str, Any]:
     }
 
 
+def _mathtext(fontset: str, family: str) -> dict[str, Any]:
+    """Maths in the same typeface: a built-in set when one matches, the family otherwise."""
+    if fontset != "custom":
+        return {"mathtext.fontset": fontset}
+    return {
+        "mathtext.fontset": "custom",
+        "mathtext.rm": family,
+        "mathtext.it": f"{family}:italic",
+        "mathtext.bf": f"{family}:bold",
+    }
+
+
 def palette(style: Style) -> list[str]:
     """Series colours, in order. Readable with any colour vision deficiency."""
     return list(style.plots.palette)
@@ -62,5 +74,15 @@ def apply(matplotlib: ModuleType, style: Style, width_in: float | None = None) -
     registry, so the file has to be handed to it first or it silently falls back to its
     default face and the figure stops matching the document.
     """
-    matplotlib.font_manager.fontManager.addfont(str(find_font_file(style.typography.font_file)))
+    typography = style.typography
+    font = find_font_file(typography.font_file, typography.tex_package)
+    matplotlib.font_manager.fontManager.addfont(str(font))
+    # The italic and bold faces too, when they sit next to the regular one: maths is set in
+    # italic, and without them Matplotlib fakes both from the upright face.
+    for face in ("Italic", "Bold"):
+        sibling = font.with_name(
+            font.name.replace("Regular", face).replace("regular", face.lower())
+        )
+        if sibling != font and sibling.is_file():
+            matplotlib.font_manager.fontManager.addfont(str(sibling))
     matplotlib.rcParams.update(rcparams(style, width_in=width_in))

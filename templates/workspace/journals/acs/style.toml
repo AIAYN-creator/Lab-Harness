@@ -8,12 +8,10 @@ name = "acs"
 description = "American Chemical Society journals (achemso class)"
 
 [typography]
-# v0.1 uses the LaTeX default typeface for the text and for every figure, so the document
-# never mixes typefaces. Latin Modern is its OpenType digitisation.
-family = "Latin Modern Roman"
-latex_package = "lmodern"
-# Looked up inside the installed LaTeX distribution with kpsewhich; never bundled here.
-font_file = "lmroman10-regular.otf"
+# The default typeface for this journal, from the catalogue in labharness/style/typefaces.toml.
+# A workspace can choose another with `font = "..."` in its manifest; the sizes stay the
+# journal's. Latin Modern is the LaTeX default, so a document never mixes typefaces.
+typeface = "latin-modern"
 base_size_pt = 8.0
 small_size_pt = 7.0
 

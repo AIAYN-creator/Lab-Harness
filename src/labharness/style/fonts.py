@@ -13,8 +13,11 @@ from labharness.core.errors import LabHarnessError
 
 
 @cache
-def find_font_file(file_name: str) -> Path:
-    """Locate a font shipped with the LaTeX distribution, e.g. ``lmroman10-regular.otf``."""
+def find_font_file(file_name: str, package: str = "lm") -> Path:
+    """Locate a font shipped with the LaTeX distribution, e.g. ``lmroman10-regular.otf``.
+
+    ``package`` is the distribution package that contains it, named in the error.
+    """
     kpsewhich = shutil.which("kpsewhich")
     if kpsewhich is None:
         raise LabHarnessError(
@@ -26,8 +29,7 @@ def find_font_file(file_name: str) -> Path:
     path = Path(result.stdout.strip().splitlines()[0]) if result.stdout.strip() else None
     if path is None or not path.is_file():
         raise LabHarnessError(
-            f"the font '{file_name}' is not installed in your LaTeX distribution. "
-            "Install the Latin Modern fonts (package 'lm' in TeX Live, 'lmodern' on Debian "
-            "and Ubuntu)."
+            f"the font '{file_name}' is not installed in your LaTeX distribution. Install the "
+            f"'{package}' package (MiKTeX console, or 'tlmgr install {package}' in TeX Live)."
         )
     return path
