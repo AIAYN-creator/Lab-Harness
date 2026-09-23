@@ -25,6 +25,7 @@ from labharness.core.manifest import MANIFEST_NAME, Figure, Workspace, load_work
 from labharness.core.templates import DEFAULT_JOURNAL
 from labharness.core.workspace import create_workspace
 from labharness.doctor import everything_required_passes, run_checks
+from labharness.eject import eject
 from labharness.modules.chem import resolve_name
 from labharness.preview import DEFAULT_DPI, Preview, preview_document, preview_figures
 from labharness.watch.runner import BuildResult
@@ -186,6 +187,23 @@ def preview(
         _print_preview(result, workspace.root)
     if not all(result.ok for result in results):
         raise typer.Exit(EXIT_ERROR)
+
+
+@app.command("eject")
+def eject_command(
+    target: Annotated[Path, typer.Argument(help="New folder for the standalone copy.")],
+    force: Annotated[bool, typer.Option(help="Write into a folder that is not empty.")] = False,
+) -> None:
+    """Copy this workspace into a folder that regenerates without LabHarness."""
+    with _reporting_errors():
+        workspace = load_workspace()
+        ejected = eject(workspace, target, force=force)
+
+    typer.secho(f"Ejected to {ejected.target}", fg=typer.colors.GREEN)
+    modules = ", ".join(ejected.modules) or "none"
+    typer.echo(f"  _labharness/  core, style and the modules the scripts use: {modules}")
+    typer.echo(f"  scripts       {len(ejected.scripts)} Python, {len(ejected.diagrams)} diagrams")
+    typer.echo("The original workspace is untouched; keep working there with LabHarness.")
 
 
 @app.command()

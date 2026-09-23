@@ -175,6 +175,24 @@ with the data and the commit goes through. `init` installs it on its own when th
 inside a git repository; it never replaces a hook it did not write. `git commit --no-verify`
 skips it once.
 
+### `labharness eject`
+
+```
+labharness eject TARGET [--force]
+```
+
+Copies the workspace into `TARGET` so that its figures regenerate **without LabHarness
+installed**: for a reviewer, for whoever inherits the project, or for you in five years. The
+original workspace is not touched.
+
+- Each Python script imports `_labharness`, a local copy of only the modules it uses, with the
+  journal style frozen as it was. The scripts stay as short as they were.
+- Each diagram becomes a complete standalone LaTeX document that compiles with plain pdflatex.
+- Data, manuscript, bibliography and the figures already built are copied as they are.
+
+There is no `un-eject` and no updates: the copy is frozen on purpose. Keep working in the
+original.
+
 ### `labharness resolve`
 
 ```

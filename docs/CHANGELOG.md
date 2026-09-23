@@ -24,6 +24,9 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - A git pre-commit hook, installed by `init` in a git repository or with `labharness hook
   install`, refuses to commit a change to raw data that was not accepted.
 - `python -m labharness` runs the command line.
+- `labharness eject TARGET`: a copy of the workspace whose scripts import a local, frozen
+  `_labharness` with only the modules they use, and whose diagrams are standalone documents, so
+  the figures regenerate without LabHarness installed.
 
 ### Changed
 

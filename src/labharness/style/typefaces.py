@@ -7,7 +7,7 @@ RDKit draw with, and which fonts it may leave in a PDF. Choosing one never touch
 import tomllib
 from dataclasses import dataclass
 from functools import cache
-from importlib import resources
+from pathlib import Path
 
 from labharness.core.errors import LabHarnessError
 
@@ -34,7 +34,8 @@ class Typeface:
 
 @cache
 def _catalogue() -> dict[str, Typeface]:
-    text = resources.files("labharness.style").joinpath(CATALOGUE).read_text(encoding="utf-8")
+    # Next to this module, by path: an ejected copy is not called labharness any more.
+    text = Path(__file__).with_name(CATALOGUE).read_text(encoding="utf-8")
     entries = tomllib.loads(text)
     typefaces = {}
     for key, entry in entries.items():
