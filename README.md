@@ -221,7 +221,7 @@ See [`docs/ROADMAP.md`](docs/ROADMAP.md) for the detail.
 
 ## Contributing
 
-External contributions open with v1.0. See [`CONTRIBUTING.md`](CONTRIBUTING.md) and the
+Issues and pull requests are welcome. See [`CONTRIBUTING.md`](CONTRIBUTING.md) and the
 [Code of Conduct](CODE_OF_CONDUCT.md). If you want to work on LabHarness itself, start with
 [`docs/onboarding.md`](docs/onboarding.md); the decisions behind the design are in
 [`docs/adr/`](docs/adr/).
