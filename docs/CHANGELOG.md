@@ -18,6 +18,9 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - A catalogue of five typefaces (Latin Modern, TeX Gyre Termes, TeX Gyre Pagella, STIX Two,
   Libertinus), chosen with `font = "..."` in the manifest. The document style, plots, structures
   and diagrams all follow, and `labharness-style.tex` is regenerated when the choice changes.
+- `labharness.lock` and `labharness accept`: every file in `data/` is fingerprinted, and a change
+  to a registered file is reported on every build until a person accepts it, with who, when and
+  what it replaced recorded. The build still runs.
 
 ### Changed
 

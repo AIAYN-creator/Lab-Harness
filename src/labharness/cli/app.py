@@ -18,6 +18,8 @@ import typer
 from labharness import __version__
 from labharness.core.add import KINDS, add_figure
 from labharness.core.errors import LabHarnessError, MissingExtraError
+from labharness.core.lock import LOCK_NAME
+from labharness.core.lock import accept as accept_changes
 from labharness.core.manifest import MANIFEST_NAME, Figure, Workspace, load_workspace
 from labharness.core.templates import DEFAULT_JOURNAL
 from labharness.core.workspace import create_workspace
@@ -176,6 +178,20 @@ def preview(
 
 
 @app.command()
+def accept(
+    files: Annotated[list[str], typer.Argument(help="Data files whose change you accept.")],
+) -> None:
+    """Accept a change to a raw data file, recording who, when and what it replaced."""
+    with _reporting_errors():
+        workspace = load_workspace()
+        accepted = accept_changes(workspace.root, files)
+
+    for change in accepted:
+        typer.secho(f"Accepted: {change.message}", fg=typer.colors.GREEN)
+    typer.echo(f"Recorded in {LOCK_NAME}.")
+
+
+@app.command()
 def resolve(
     name: Annotated[str, typer.Argument(help="Systematic IUPAC name, in quotes.")],
     output: Annotated[Path, typer.Option("--output", "-o", help="Where to write the SMILES.")],
@@ -222,6 +238,12 @@ def _build(workspace: Workspace, figures: list[Figure] | None, compile_latex: bo
 
 
 def _print_result(result: BuildResult) -> None:
+    for name in result.data.registered:
+        typer.echo(f"  {name}  registered in {LOCK_NAME}")
+    for change in result.data.changes:
+        typer.secho(f"  {change.message}", fg=typer.colors.RED)
+    if result.data.changes:
+        typer.echo("      If the change is intended: labharness accept <file>")
     for figure in result.figures:
         if figure.ok:
             typer.echo(f"  {figure.figure.output}  {_ms(figure.seconds)}")

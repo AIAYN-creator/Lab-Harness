@@ -142,6 +142,27 @@ calling a figure done.
 Uses `pdftoppm` (included in MiKTeX; `poppler-utils` on Debian and Ubuntu, `poppler` in Homebrew)
 or, failing that, Ghostscript. `labharness doctor` says which one it found.
 
+### `labharness accept`
+
+```
+labharness accept FILE...
+```
+
+Raw data in `data/` is fingerprinted in `labharness.lock`. A new file is registered on the next
+build without fuss. A registered file that changes or disappears is reported in red on **every**
+build until you accept it:
+
+```
+  data/kinetics.csv changed since it was accepted (12 lines -> 11 lines)
+      If the change is intended: labharness accept <file>
+```
+
+The figures are rebuilt with the new data all the same: a correction must be possible. What it
+must not be is silent. `accept` records the file, who accepted it, when, and the fingerprint it
+replaced, in the history at the end of `labharness.lock`. Keep that file in version control.
+
+Spreadsheet lock files (`~$...`) and hidden files are not data and are ignored.
+
 ### `labharness resolve`
 
 ```

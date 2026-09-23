@@ -27,6 +27,8 @@ htmlcov/
 examples/**/figures/*
 !examples/**/figures/.gitkeep
 examples/**/paper.pdf
+# The demo is rehearsed by editing its data: each rehearsal starts from a fresh lock.
+examples/**/labharness.lock
 examples/**/.labharness/
 
 # Editors and OS

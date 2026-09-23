@@ -12,6 +12,7 @@ from pathlib import Path
 
 from labharness.core.errors import LabHarnessWarning
 from labharness.core.latex import run_pdflatex
+from labharness.core.lock import DataReport, check_data
 from labharness.core.manifest import Figure, Workspace
 from labharness.watch.latex import CompileResult, compile_document
 
@@ -29,6 +30,8 @@ class FigureResult:
 class BuildResult:
     figures: list[FigureResult] = field(default_factory=list)
     compilation: CompileResult | None = None
+    # What changed in data/ since it was last accepted. Reported, never blocking.
+    data: DataReport = field(default_factory=DataReport)
     figures_seconds: float = 0.0
     latex_seconds: float = 0.0
 
@@ -54,7 +57,7 @@ def build(
     If it fails, the full build happens anyway, so a bibliography that needed it is never
     left broken.
     """
-    result = BuildResult()
+    result = BuildResult(data=check_data(workspace.root))
 
     started = time.perf_counter()
     for figure in workspace.figures if figures is None else figures:
