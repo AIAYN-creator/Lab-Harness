@@ -33,6 +33,7 @@ def main(apply: bool) -> int:
         ],
         capture_output=True,
         text=True,
+        encoding="utf-8",
         check=True,
     )
     live = {label["name"]: label for label in json.loads(listing.stdout)}

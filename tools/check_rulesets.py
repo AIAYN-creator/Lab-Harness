@@ -27,7 +27,11 @@ SERVER_ONLY = {
 
 def gh(path: str) -> Any:
     result = subprocess.run(
-        ["gh", "api", f"repos/{REPOSITORY}/{path}"], capture_output=True, text=True, check=True
+        ["gh", "api", f"repos/{REPOSITORY}/{path}"],
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        check=True,
     )
     return json.loads(result.stdout)
 
