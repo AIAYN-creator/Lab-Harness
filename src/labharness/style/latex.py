@@ -11,6 +11,11 @@ DOCUMENT_PREAMBLE = r"""% LabHarness document style -- generated from the {name}
 \usepackage[T1]{{fontenc}}
 {packages}
 \usepackage{{graphicx}}
+% Editorial tables: rules, numbers aligned on the decimal mark, and notes under the table.
+\usepackage{{booktabs}}
+\usepackage{{siunitx}}
+\usepackage{{threeparttable}}
+\sisetup{{separate-uncertainty = true}}
 {journal_preamble}
 % \labfigure{{path}}: include a generated figure at its natural (final) size.
 % If the figure does not exist yet, show a placeholder so the document still compiles.
@@ -20,6 +25,14 @@ DOCUMENT_PREAMBLE = r"""% LabHarness document style -- generated from the {name}
     {{\fbox{{\parbox{{0.9\linewidth}}{{%
       \centering\ttfamily Figure not generated yet:\\\detokenize{{#1}}%
     }}}}}}%
+}}
+
+% \labtable{{path}}: include a generated table. Put it inside a table environment, which
+% carries the caption and the label. If it does not exist yet, show a placeholder.
+\newcommand{{\labtable}}[1]{{%
+  \IfFileExists{{#1}}%
+    {{\input{{#1}}}}%
+    {{\fbox{{\ttfamily Table not generated yet: \detokenize{{#1}}}}}}%
 }}
 
 % \labresults{{path}}: load the macros written next to a fitted plot

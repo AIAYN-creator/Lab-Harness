@@ -29,6 +29,12 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   the figures regenerate without LabHarness installed. It writes `build.py`, pinned
   `requirements.txt` and an `EJECTED.md` explaining how to rebuild.
 
+- `tables` module: `read_table` reads any delimited table, every cell as text, in UTF-8,
+  UTF-16 or the Windows encodings old instruments write; `write_table` writes it in LaTeX exactly
+  as it is, with booktabs rules and siunitx columns; and explicit operations change it on
+  request: correct rounding to significant figures or decimals, value ± uncertainty, footnotes,
+  groups, column choice. `\labtable` includes it in the manuscript.
+
 ### Changed
 
 - **Perl is no longer needed.** LabHarness runs the full LaTeX build itself: pdflatex, BibTeX or

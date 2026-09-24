@@ -5,6 +5,11 @@
 \usepackage[T1]{fontenc}
 \usepackage{lmodern}
 \usepackage{graphicx}
+% Editorial tables: rules, numbers aligned on the decimal mark, and notes under the table.
+\usepackage{booktabs}
+\usepackage{siunitx}
+\usepackage{threeparttable}
+\sisetup{separate-uncertainty = true}
 
 % achemso loads mciteplus, which initialises its label-width counters at the first
 % \bibitem. A document with an empty bibliography never reaches one, and then fails at
@@ -27,6 +32,14 @@
     {\fbox{\parbox{0.9\linewidth}{%
       \centering\ttfamily Figure not generated yet:\\\detokenize{#1}%
     }}}%
+}
+
+% \labtable{path}: include a generated table. Put it inside a table environment, which
+% carries the caption and the label. If it does not exist yet, show a placeholder.
+\newcommand{\labtable}[1]{%
+  \IfFileExists{#1}%
+    {\input{#1}}%
+    {\fbox{\ttfamily Table not generated yet: \detokenize{#1}}}%
 }
 
 % \labresults{path}: load the macros written next to a fitted plot

@@ -315,6 +315,46 @@ Fitted parameters, their uncertainties and R² are written next to the figure as
 (`figures/calibration.fit.tex`). Load them with `\labresults{figures/calibration.fit.tex}` and cite
 a fitted value in your text: it updates when the data does.
 
+## Tables
+
+A table is **whatever table you have**: a CSV exported from an instrument, a spreadsheet, a
+database. LabHarness reads it with every cell as text and writes it in LaTeX **exactly as it
+is**: same columns, same headers, same decimals. There is no template and no expected column.
+Anything else is an operation you ask for, one line each, and the script reads as the list of
+what was done to the table:
+
+```python
+# tables/optimisation.tex -- optimisation of the reaction conditions
+from labharness.modules.tables import read_table, write_table
+
+table = read_table("data/optimisation.csv")  # as it is
+table = table.with_uncertainty("ee (%)", "ee_err")  # value ± error, rounded together
+table = table.round(significant=2, columns=["conversion (%)"])
+table = table.footnotes("note").rule_between("catalyst")
+write_table(table, "tables/optimisation.tex")
+```
+
+```latex
+\begin{table}
+  \caption{Optimisation of the reaction conditions.}
+  \label{tab:optimisation}
+  \labtable{tables/optimisation.tex}
+\end{table}
+```
+
+| Operation | What it does |
+|---|---|
+| `round(significant=n)` / `round(decimals=n)` | Rounds numbers, only in `columns=` if given. Decimal arithmetic on the number as written (2.675 → 2.68), trailing zeros kept (0.0996 → 0.10), and 1234 to two figures written 1.2e3 rather than a misleading 1200. `rule="half-up"` (default) or `"half-even"` (ISO 80000-1) |
+| `with_uncertainty(value, error, significant=1)` | Shows value ± error: the error to `significant` figures, the value to the same decimal place |
+| `select(...)`, `drop(...)`, `rename({...})` | Chooses, orders and renames columns |
+| `footnotes(column)` | Turns a column of notes into table footnotes; the same text shares a letter |
+| `rule_between(column)` | A rule wherever that column changes, to separate groups |
+
+Numbers go in siunitx columns aligned on the decimal mark; a decimal comma is read as a decimal;
+text is escaped and `$...$` is kept as maths; an empty cell is a dash. The original table is never
+modified: every operation returns a new one. Formats other than delimited text are exported to CSV
+first.
+
 ## Data formats
 
 **Good practice: export to a format that cannot be misread.** Tables go into `data/` as CSV,

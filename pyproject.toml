@@ -43,6 +43,7 @@ Repository = "https://github.com/AIAYN-creator/Lab-Harness"
 chem = "labharness.modules.chem"
 diagrams = "labharness.modules.diagrams"
 plots = "labharness.modules.plots"
+tables = "labharness.modules.tables"
 
 [dependency-groups]
 dev = ["pytest>=8", "pytest-cov", "pypdf>=5", "ruff", "mypy", "pre-commit"]
