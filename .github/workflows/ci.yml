@@ -129,7 +129,7 @@ jobs:
           sudo tlmgr install latexmk achemso mciteplus natbib chemfig simplekv pgf standalone \
             xkeyval etoolbox setspace caption float lm tex-gyre newtx newpx fontaxes xstring \
             stix2-type1 stix2-otf libertinus-type1 libertinus-fonts libertinust1math \
-            siunitx booktabs threeparttable elsarticle rsc
+            siunitx booktabs threeparttable elsarticle rsc luatex85
       - name: Report the environment
         run: |
           pdflatex --version | head -1
