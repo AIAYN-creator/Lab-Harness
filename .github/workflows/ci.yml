@@ -60,7 +60,7 @@ jobs:
       - name: Install TeX Live
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends lmodern texlive-latex-recommended texlive-latex-extra texlive-science texlive-fonts-recommended texlive-xetex texlive-luatex texlive-plain-generic poppler-utils
+          sudo apt-get install -y --no-install-recommends lmodern texlive-latex-recommended texlive-latex-extra texlive-science texlive-fonts-recommended texlive-xetex texlive-luatex texlive-plain-generic texlive-publishers poppler-utils
           pdflatex --version | head -1
       - run: uv sync --all-extras
       - run: uv run pytest -m latex
@@ -129,7 +129,7 @@ jobs:
           sudo tlmgr install latexmk achemso mciteplus natbib chemfig simplekv pgf standalone \
             xkeyval etoolbox setspace caption float lm tex-gyre newtx newpx fontaxes xstring \
             stix2-type1 stix2-otf libertinus-type1 libertinus-fonts libertinust1math \
-            siunitx booktabs threeparttable
+            siunitx booktabs threeparttable elsarticle rsc
       - name: Report the environment
         run: |
           pdflatex --version | head -1
