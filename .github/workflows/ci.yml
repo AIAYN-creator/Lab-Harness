@@ -104,12 +104,10 @@ jobs:
       - run: uv sync --all-extras
       - run: uv run pytest -m latex
 
-  # macOS is supported at tier 2 (ADR 24): this job runs everything, with BasicTeX, but it is
-  # not part of ci-pass. Once it has been green for a while, add it to ci-pass below.
+  # macOS runs everything, with BasicTeX, and is part of ci-pass like Linux and Windows.
   macos:
     name: macos
     runs-on: macos-latest
-    continue-on-error: true
     timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
@@ -143,7 +141,7 @@ jobs:
   ci-pass:
     name: ci-pass
     if: always()
-    needs: [lint, test, latex, latex-windows]
+    needs: [lint, test, latex, latex-windows, macos]
     runs-on: ubuntu-latest
     steps:
       - name: Fail if any job did not succeed

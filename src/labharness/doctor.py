@@ -12,7 +12,7 @@ import subprocess
 import sys
 from dataclasses import dataclass
 
-from labharness.hints import command_for, extra_command, tex_package_command
+from labharness.hints import command_for, detect_system, extra_command, tex_package_command
 from labharness.preview import find_rasteriser
 from labharness.style import load_style
 from labharness.style.fonts import find_font_file
@@ -101,7 +101,7 @@ def _engine() -> list[Check]:
     if engine == DEFAULT_ENGINE:
         return []
     found = shutil.which(engine)
-    return [
+    checks = [
         Check(
             f"{engine} (this workspace)",
             found is not None,
@@ -109,6 +109,28 @@ def _engine() -> list[Check]:
             hint="" if found else f"The manifest asks for {engine}: install it, or remove 'engine'",
         )
     ]
+    # standalone, which every diagram uses, loads luatex85 under LuaLaTeX. Small distributions
+    # such as BasicTeX leave it out; MiKTeX installs it the first time it is needed.
+    if engine == "lualatex" and found and not _tex_file("luatex85.sty"):
+        checks.append(
+            Check(
+                "luatex85 (diagrams with lualatex)",
+                False,
+                "not installed",
+                required=detect_system().name != "windows",
+                hint=tex_package_command("luatex85"),
+            )
+        )
+    return checks
+
+
+def _tex_file(name: str) -> bool:
+    """Whether the LaTeX distribution has ``name``, as kpsewhich finds it."""
+    kpsewhich = shutil.which("kpsewhich")
+    if kpsewhich is None:
+        return False
+    result = subprocess.run([kpsewhich, name], capture_output=True, text=True, check=False)
+    return bool(result.stdout.strip())
 
 
 def _bibtex() -> Check:

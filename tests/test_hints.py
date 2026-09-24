@@ -90,3 +90,21 @@ def test_doctor_prints_the_system_and_the_fix(monkeypatch: pytest.MonkeyPatch) -
 
     assert "Debian 12" in result.stdout
     assert "sudo apt install texlive-latex-extra" in result.stdout
+
+
+def test_doctor_asks_for_luatex85_when_lualatex_draws_the_diagrams(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from labharness import doctor
+
+    (tmp_path / "labharness.toml").write_text('engine = "lualatex"\n', encoding="utf-8")
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr("shutil.which", lambda name: f"/usr/bin/{name}")
+    monkeypatch.setattr(doctor, "_tex_file", lambda name: False)
+    for module in (doctor, hints):
+        monkeypatch.setattr(module, "detect_system", lambda: System("macos", ""))
+
+    check = next(check for check in doctor._engine() if check.name.startswith("luatex85"))
+
+    assert not check.ok and check.required
+    assert check.hint == "sudo tlmgr install luatex85"

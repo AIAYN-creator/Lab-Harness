@@ -43,6 +43,8 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- macOS is a tier-1 platform: its CI job is part of `ci-pass`. `doctor` asks for `luatex85`
+  when a workspace compiles with LuaLaTeX and the distribution lacks it, as BasicTeX does.
 - **Perl is no longer needed.** LabHarness runs the full LaTeX build itself: pdflatex, BibTeX or
   Biber only when the citations or the bibliography changed, and more passes only when LaTeX asks.
   A change to the manuscript text now compiles in about 0.9 s instead of 4.1 s. latexmk stays
