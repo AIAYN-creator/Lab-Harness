@@ -78,6 +78,18 @@ def test_insert_puts_the_figure_before_the_references(root: Path) -> None:
     assert document.index(r"\labfigure{figures/catalyst.pdf}") < document.index(r"\bibliography")
 
 
+@pytest.mark.parametrize("journal", ["article", "report", "elsevier", "rsc-draft"])
+def test_insert_goes_before_the_bibliography_style_too(tmp_path: Path, journal: str) -> None:
+    workspace = create_workspace(tmp_path / "paper", journal=journal)
+
+    add_figure(load_workspace(workspace), "structure", "catalyst", insert=True)
+
+    document = (workspace / "paper.tex").read_text(encoding="utf-8")
+    figure = document.index(r"\labfigure{figures/catalyst.pdf}")
+    assert figure < document.index(r"\bibliographystyle")
+    assert r"\begin{figure}[htbp]" in document
+
+
 def test_without_insert_the_document_is_not_touched(root: Path) -> None:
     before = (root / "paper.tex").read_text(encoding="utf-8")
 

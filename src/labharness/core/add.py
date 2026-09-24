@@ -30,7 +30,12 @@ KINDS: dict[str, str] = {
 
 _NAME = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_-]*$")
 # Where a new figure block goes: before the bibliography, or before the end of the document.
-_DOCUMENT_ENDS = (r"\bibliography{", r"\printbibliography", r"\end{document}")
+_DOCUMENT_ENDS = (
+    r"\bibliographystyle{",
+    r"\bibliography{",
+    r"\printbibliography",
+    r"\end{document}",
+)
 
 
 @dataclass(frozen=True)
@@ -100,10 +105,14 @@ def add_figure(
 
 
 def figure_block(output: Path, name: str) -> str:
-    """The LaTeX that places a generated figure in the manuscript."""
+    """The LaTeX that places a generated figure in the manuscript.
+
+    ``[htbp]`` lets LaTeX put it where it is written when it fits there, as the templates do;
+    without it, a figure placed after the text of a page always moves to the next one.
+    """
     return "\n".join(
         [
-            r"\begin{figure}",
+            r"\begin{figure}[htbp]",
             r"  \centering",
             rf"  \labfigure{{{output.as_posix()}}}",
             r"  \caption{TODO: write the caption.}",

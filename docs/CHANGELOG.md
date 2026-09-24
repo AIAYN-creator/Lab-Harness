@@ -59,6 +59,10 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- `labharness add --insert` put the figure block between `\bibliographystyle` and
+  `\bibliography` in the templates that have both. It now goes before them.
+- The figure block `add` writes had no placement, so a figure added after the text of a page
+  always moved to the next one. It is now `[htbp]`, as in the templates.
 - Chemical structures were drawn on a fixed 4:3 canvas, leaving blank space around a long
   molecule. They are now cropped to the molecule and drawn as large as the layout allows: the
   column width, or the text width of a single-column document, with bonds up to 1.3 times the
