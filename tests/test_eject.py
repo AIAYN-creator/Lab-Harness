@@ -59,7 +59,7 @@ def test_nothing_imports_labharness_any_more(ejected: Path) -> None:
 def test_labharness_files_are_left_behind_and_the_original_is_untouched(
     ejected: Path, tmp_path: Path
 ) -> None:
-    for name in ("labharness.toml", "AGENTS.md", "CLAUDE.md"):
+    for name in ("labharness.toml", "AGENTS.md", "AGENTS.chemistry.md", "CLAUDE.md"):
         assert not (ejected / name).exists(), name
     # The compile shortcuts are rewritten: they call build.py, not labharness watch.
     assert "labharness" not in (ejected / "compile.sh").read_text(encoding="utf-8")

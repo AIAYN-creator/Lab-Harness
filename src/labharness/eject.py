@@ -31,6 +31,7 @@ LEFT_BEHIND = (
     MANIFEST_NAME,
     "labharness.lock",
     "AGENTS.md",
+    "AGENTS.chemistry.md",
     "CLAUDE.md",
     "compile.sh",
     "compile.ps1",

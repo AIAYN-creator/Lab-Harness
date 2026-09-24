@@ -40,6 +40,24 @@ def test_the_demo_shows_the_same_protection() -> None:
     template = Path(__file__).resolve().parents[1] / "templates" / "workspace"
 
     assert deny_rules(demo) == deny_rules(template)
-    assert (demo / "AGENTS.md").read_text(encoding="utf-8") == (template / "AGENTS.md").read_text(
-        encoding="utf-8"
-    )
+    for name in ("AGENTS.md", "AGENTS.chemistry.md", "CLAUDE.md"):
+        assert (demo / name).read_text(encoding="utf-8") == (template / name).read_text(
+            encoding="utf-8"
+        )
+
+
+def test_rules_are_modular_a_general_file_and_one_per_field(tmp_path: Path) -> None:
+    root = create_workspace(tmp_path / "paper")
+    general = (root / "AGENTS.md").read_text(encoding="utf-8")
+    chemistry = (root / "AGENTS.chemistry.md").read_text(encoding="utf-8")
+
+    # The general file points at the field files, and knows nothing about chemistry.
+    assert "AGENTS.<field>.md" in general
+    for word in ("SMILES", "enantiomer", "RDKit"):
+        assert word not in general, word
+    assert "SMILES" in chemistry and "enantiomer" in chemistry
+    # Claude Code reads both through CLAUDE.md.
+    assert (root / "CLAUDE.md").read_text(encoding="utf-8").split() == [
+        "@AGENTS.md",
+        "@AGENTS.chemistry.md",
+    ]
