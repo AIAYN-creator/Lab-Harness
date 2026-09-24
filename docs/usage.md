@@ -61,7 +61,7 @@ Creates a workspace from the template: `paper.tex`, `labharness-style.tex`, `ref
 | Option | Default | Meaning |
 |---|---|---|
 | `PATH` | `.` | Where to create the workspace |
-| `--journal` | `acs` | Journal template. v0.1 ships ACS only |
+| `--journal` | `acs` | The template: `acs` (achemso), `elsevier` (elsarticle), `rsc-draft`, `article` (a short lab report) or `report` (a long report or a thesis chapter) |
 | `--force` | off | Write into a folder that is not empty |
 
 ### `labharness add`
@@ -229,6 +229,23 @@ Every problem comes with the command that fixes it **on your system**: `winget` 
 Homebrew on macOS, and `apt`, `dnf` or `pacman` on Linux, and for a missing extra the command
 that matches how you installed LabHarness (`uv tool`, `pipx`, `pip`, or a clone of the
 repository). `doctor` never installs anything itself.
+
+### Templates
+
+| `--journal` | Class | Figures drawn at |
+|---|---|---|
+| `acs` | achemso | 3.25 in (one column), 7 in (two) |
+| `elsevier` | elsarticle | 90 mm (one column), 190 mm (full width) |
+| `rsc-draft` | article, two columns | 8.3 cm (one column), 17.1 cm (two) |
+| `article` | article, A4, 2.5 cm and 3.25 cm margins | 14.5 cm, the text width |
+| `report` | report, same page | 14.5 cm, the text width |
+
+**`rsc-draft` is not the official RSC template.** That one has no free licence, so it cannot be
+copied into workspaces. Write and review in `rsc-draft`, then paste the body into the official
+template to submit: the figures are already at RSC's widths and go in unchanged.
+
+`article` and `report` map a Unicode minus sign, as pasted from a spreadsheet, to a hyphen, so
+it does not stop pdfLaTeX.
 
 ## The manifest
 

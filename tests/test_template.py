@@ -1,13 +1,15 @@
-"""The ACS workspace template must compile, and everything in it must use one typeface."""
+"""Every workspace template must compile, and everything in it must use one typeface."""
 
 import io
 import shutil
-import subprocess
 
 import pytest
 from pypdf import PdfReader
 
 from labharness.core import create_workspace
+from labharness.core.lock import check_data
+from labharness.core.templates import available_journals
+from labharness.watch.latex import compile_document
 
 pytestmark = [
     pytest.mark.latex,
@@ -15,20 +17,18 @@ pytestmark = [
 ]
 
 
-@pytest.fixture(scope="module")
-def compiled_pdf(tmp_path_factory: pytest.TempPathFactory) -> bytes:
+@pytest.fixture(scope="module", params=available_journals())
+def compiled_pdf(request: pytest.FixtureRequest, tmp_path_factory: pytest.TempPathFactory) -> bytes:
+    """A new workspace for each journal, built the way labharness build does it."""
     # Through init, as a user would get it: the style file is generated, not shipped.
-    workspace = create_workspace(tmp_path_factory.mktemp("acs"), journal="acs", force=True)
+    journal = str(request.param)
+    workspace = create_workspace(tmp_path_factory.mktemp(journal), journal=journal, force=True)
+    check_data(workspace)
 
-    result = subprocess.run(
-        ["pdflatex", "-interaction=nonstopmode", "-halt-on-error", "paper.tex"],
-        cwd=workspace,
-        capture_output=True,
-        text=True,
-    )
-    pdf = workspace / "paper.pdf"
-    assert result.returncode == 0 and pdf.exists(), result.stdout[-3000:]
-    return pdf.read_bytes()
+    result = compile_document(workspace / "paper.tex")
+
+    assert result.ok and result.pdf is not None, (journal, result.errors)
+    return result.pdf.read_bytes()
 
 
 def embedded_fonts(pdf: bytes) -> set[str]:

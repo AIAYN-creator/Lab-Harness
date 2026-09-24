@@ -34,6 +34,9 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   as it is, with booktabs rules and siunitx columns; and explicit operations change it on
   request: correct rounding to significant figures or decimals, value ± uncertainty, footnotes,
   groups, column choice. `\labtable` includes it in the manuscript.
+- Templates for Elsevier (`elsarticle`), an RSC working layout (`rsc-draft`, not the official
+  template), and a short `article` and a long `report` for lab work on A4:
+  `labharness init --journal elsevier`.
 
 ### Changed
 

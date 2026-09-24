@@ -1,0 +1,65 @@
+# rsc-draft: a working layout with the column widths of RSC journals.
+#
+# This file is the single source of truth for how every figure of this document looks.
+# Each engine (RDKit, LaTeX/TikZ, Matplotlib) translates these values; no module may
+# hard-code a font, a size or a colour.
+#
+# NOT the official RSC template, which has no free licence and cannot be copied into
+# workspaces. Write here, then paste the body into the official template to submit:
+# figures are already at the RSC widths (8.3 cm, 17.1 cm) and go in unchanged.
+
+name = "rsc-draft"
+description = "A working layout with RSC column widths. NOT the official RSC template"
+
+[typography]
+# From the catalogue in labharness/style/typefaces.toml; `font = "..."` in the manifest
+# chooses another. Latin Modern is the LaTeX default.
+typeface = "latin-modern"
+base_size_pt = 8.0
+small_size_pt = 7.0
+
+[dimensions]
+single_column_in = 3.268
+double_column_in = 6.732
+# Width divided by height, used when a figure does not ask for a size of its own.
+aspect_ratio = 1.3333
+
+[structures]
+# ACS Document 1996 geometry, the convention ChemDraw ships for ACS submissions.
+bond_length_pt = 14.4
+line_width_pt = 0.6
+wedge_width_pt = 2.0
+double_bond_offset = 0.18
+hash_spacing_pt = 2.5
+# A structure is drawn as large as the room allows: the column width, or width_in=. Bonds grow
+# up to this factor over bond_length_pt and never beyond, and a structure is never taller than
+# this fraction of its width.
+max_bond_scale = 1.3
+max_height_ratio = 1.0
+
+[plots]
+grid = false
+line_width_pt = 0.8
+marker_size_pt = 3.0
+error_capsize_pt = 2.0
+axis_label_format = "{quantity} ({unit})"
+# Okabe-Ito, readable with any colour vision deficiency. Black first: most figures are monochrome.
+palette = [
+  "#000000",
+  "#E69F00",
+  "#56B4E9",
+  "#009E73",
+  "#D55E00",
+  "#0072B2",
+  "#CC79A7",
+  "#F0E442",
+]
+
+[latex]
+preamble = '''
+% Two columns of 8.3 cm with a 0.5 cm gap: 17.1 cm of text, the widths RSC asks figures to
+% fit. Superscript numbered citations, as RSC journals print them.
+\usepackage[a4paper, textwidth=17.1cm, top=2.5cm, bottom=2.5cm]{geometry}
+\setlength{\columnsep}{0.5cm}
+\usepackage[numbers, super, sort&compress]{natbib}
+'''

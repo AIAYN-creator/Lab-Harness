@@ -20,9 +20,9 @@ def test_acs_style_loads_with_the_acs_1996_geometry() -> None:
     assert style.typography.latex_packages == ("lmodern",)
 
 
-def test_acs_is_the_default_and_the_only_journal_in_v0_1() -> None:
+def test_acs_is_the_default_and_every_template_is_listed() -> None:
     assert load_style() == load_style("acs")
-    assert available_journals() == ["acs"]
+    assert available_journals() == ["acs", "article", "elsevier", "report", "rsc-draft"]
 
 
 def test_an_unknown_journal_says_which_ones_exist() -> None:
