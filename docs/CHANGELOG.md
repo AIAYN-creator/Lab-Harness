@@ -51,6 +51,8 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   for a missing extra the command that matches how LabHarness was installed, instead of
   `uv sync`, which only works in a clone of the repository.
 
+- The agent rules are split: `AGENTS.md` holds the rules for every field and
+  `AGENTS.chemistry.md` those only chemistry needs; `CLAUDE.md` imports both.
 - A journal is now one folder under `templates/workspace/journals/`, holding its style, manuscript
   and bibliography. `init` records the journal in the manifest and generates
   `labharness-style.tex` from the style.
