@@ -72,14 +72,16 @@ labharness add <kind> <name> [--input FILE...] [--insert] [--edit] [--force]
 ```
 
 Writes `scripts/<name>.py` (or `.tex` for diagrams) from a commented template **and** adds the
-matching `[[figure]]` entry to the manifest, so the watcher picks it up immediately. It then
-prints the LaTeX block that places the figure in the manuscript, or adds it with `--insert`.
+matching `[[figure]]` or `[[table]]` entry to the manifest, so the watcher picks it up
+immediately. It then prints the LaTeX block that places it in the manuscript, or adds it with
+`--insert`: a `figure` environment for a figure, and a `table` environment with the caption
+above for a table.
 
 | Argument | Meaning |
 |---|---|
-| `kind` | `structure`, `plot`, `mechanism`, `flow` or `network` |
-| `name` | Used for the script and for `figures/<name>.pdf`: letters, digits, `-` and `_` |
-| `--input` | Input files the figure depends on. Repeatable. A `structure` without one reads `data/<name>.smi`; a `plot` fills in its column names from the CSV header |
+| `kind` | `structure`, `plot`, `mechanism`, `flow`, `network` or `table` |
+| `name` | Used for the script and for `figures/<name>.pdf` or `tables/<name>.tex`: letters, digits, `-` and `_` |
+| `--input` | Input files the figure depends on. Repeatable. A `structure` without one reads `data/<name>.smi`; a `plot` fills in its column names from the CSV header, and a `table` reads its file as it is |
 | `--insert` | Also add the figure block to `paper.tex`, just before the bibliography |
 | `--edit` | Open the new script in `$VISUAL`, `$EDITOR` or VS Code |
 | `--force` | Replace a script that already exists (the manifest entry is not duplicated) |

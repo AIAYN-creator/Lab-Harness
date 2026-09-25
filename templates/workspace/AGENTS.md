@@ -41,13 +41,14 @@ chemistry). Where the two disagree, the field's file wins.
 
 9. **Never edit `figures/` or `tables/` by hand.** They are produced by the scripts in
    `scripts/` and declared in `labharness.toml`.
-10. A new figure means a script in `scripts/` plus its entry in `labharness.toml`. Create both
-    with `labharness add <kind> <name> --input data/...` (kinds: `structure`, `plot`,
-    `mechanism`, `flow`, `network`), then edit the script it writes. Add `--insert` only when
-    the human asked for the figure to go into `paper.tex`.
-11. **A table is written as it was given.** Read it with `read_table` and write it with
-    `write_table`; apply only the operations the human asked for (rounding, uncertainties,
-    columns), each as its own line, so the script shows what was done to the table.
+10. A new figure or table means a script in `scripts/` plus its entry in `labharness.toml`.
+    Create both with `labharness add <kind> <name> --input data/...` (kinds: `structure`,
+    `plot`, `mechanism`, `flow`, `network`, `table`), then edit the script it writes. Add
+    `--insert` only when the human asked for it to go into `paper.tex`.
+11. **A table is written as it was given.** `labharness add table` writes a script that reads it
+    with `read_table` and writes it with `write_table`; apply only the operations the human
+    asked for (rounding, uncertainties, columns), each as its own line, so the script shows what
+    was done to the table.
 12. **Never set fonts, sizes or colours** in a script or in a figure's `.tex` file. Everything
     comes from the shared style: one typeface for the whole document.
 13. Keep scripts short, readable and runnable on their own. Start each one with a comment saying

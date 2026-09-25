@@ -1,22 +1,24 @@
-"""Adding a figure to a workspace: the script, the manifest entry and, if asked, the LaTeX.
+"""Adding a figure or a table to a workspace: the script, the manifest entry and the LaTeX.
 
 This is what a person or an agent would otherwise do by hand in three files, and where the
 mistakes happen: a figure missing from the manifest never rebuilds, a manifest entry with a
 typo points at nothing. Doing it in one call keeps the three consistent.
 """
 
-import csv
 import re
 import string
+import warnings
 from dataclasses import dataclass, field
 from pathlib import Path
 
 from labharness.core.atomic import atomic_output
 from labharness.core.errors import LabHarnessError
 from labharness.core.manifest import MANIFEST_NAME, Workspace
+from labharness.core.tabular import TEXT_FORMATS, read_rows
 from labharness.core.templates import template_root
 
 FIGURES_FOLDER = "figures"
+TABLES_FOLDER = "tables"
 SCRIPTS_FOLDER = "scripts"
 
 # Each kind: the template it starts from and the suffix of the script it writes.
@@ -26,7 +28,10 @@ KINDS: dict[str, str] = {
     "mechanism": "mechanism.tex",
     "flow": "flow.tex",
     "network": "network.tex",
+    "table": "table.py.template",
 }
+# What a table can be read from.
+READABLE = TEXT_FORMATS | {".xlsx"}
 
 _NAME = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_-]*$")
 # Where a new figure block goes: before the bibliography, or before the end of the document.
@@ -75,7 +80,10 @@ def add_figure(
     template = template_root().parent / "figures" / KINDS[kind]
     suffix = ".tex" if template.suffix == ".tex" else ".py"
     script = Path(SCRIPTS_FOLDER) / f"{name}{suffix}"
-    output = Path(FIGURES_FOLDER) / f"{name}.pdf"
+    if kind == "table":
+        output = Path(TABLES_FOLDER) / f"{name}.tex"
+    else:
+        output = Path(FIGURES_FOLDER) / f"{name}.pdf"
     declared = [_relative(workspace.root, path) for path in inputs or []]
     notes: list[str] = []
 
@@ -97,9 +105,10 @@ def add_figure(
     _write(workspace.root / script, text)
 
     if not any(figure.output == output for figure in workspace.figures):
-        _append_to_manifest(workspace.root / MANIFEST_NAME, output, script, declared)
+        section = "table" if kind == "table" else "figure"
+        _append_to_manifest(workspace.root / MANIFEST_NAME, section, output, script, declared)
 
-    latex = figure_block(output, name)
+    latex = table_block(output, name) if kind == "table" else figure_block(output, name)
     inserted = insert and _insert_into_document(workspace.document, latex, notes)
     return AddedFigure(name, script, output, tuple(declared), latex, inserted, notes)
 
@@ -122,16 +131,32 @@ def figure_block(output: Path, name: str) -> str:
     )
 
 
+def table_block(output: Path, name: str) -> str:
+    """The LaTeX that places a generated table: the caption goes above a table."""
+    return "\n".join(
+        [
+            r"\begin{table}[htbp]",
+            r"  \centering",
+            r"  \caption{TODO: write the caption.}",
+            rf"  \label{{tab:{name}}}",
+            rf"  \labtable{{{output.as_posix()}}}",
+            r"\end{table}",
+        ]
+    )
+
+
 def _fields_for(kind: str, root: Path, inputs: list[Path], notes: list[str]) -> dict[str, str]:
     if kind == "structure":
         return {"smiles_file": inputs[0].as_posix()}
-    if kind != "plot":
+    if kind not in ("plot", "table"):
         return {}
 
-    table = next((path for path in inputs if path.suffix.lower() in (".csv", ".txt")), None)
+    table = next((path for path in inputs if path.suffix.lower() in READABLE), None)
     if table is None:
         notes.append("No CSV given: fill in the file and the column names in the script.")
         return {"csv": "data/FILE.csv", "x": "x", "y": "y"}
+    if kind == "table":
+        return {"csv": table.as_posix()}
 
     columns = _columns(root / table)
     if len(columns) < 2:
@@ -141,15 +166,13 @@ def _fields_for(kind: str, root: Path, inputs: list[Path], notes: list[str]) -> 
 
 
 def _columns(path: Path) -> list[str]:
-    """The header of a CSV, with its delimiter guessed the way the plots module does."""
+    """The header of a table, read the way the plot will read it."""
     try:
-        header = path.read_text(encoding="utf-8-sig").splitlines()[0]
-    except (OSError, UnicodeDecodeError, IndexError):
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")  # the plot reports skipped metadata when it runs
+            return read_rows(path).headers
+    except LabHarnessError:
         return []
-    delimiter = max(";,\t", key=header.count)
-    if not header.count(delimiter):
-        return [header.strip()] if header.strip() else []
-    return [column.strip() for column in next(csv.reader([header], delimiter=delimiter))]
 
 
 def _relative(root: Path, path: Path) -> Path:
@@ -169,16 +192,18 @@ def _refuse_to_overwrite(workspace: Workspace, script: Path, output: Path, force
         raise LabHarnessError(f"{script.as_posix()} already exists. Use --force to replace it.")
     if any(figure.output == output for figure in workspace.figures):
         raise LabHarnessError(
-            f"the manifest already has a figure writing {output.as_posix()}. "
+            f"the manifest already has an entry writing {output.as_posix()}. "
             "Pick another name, or use --force."
         )
 
 
-def _append_to_manifest(manifest: Path, output: Path, script: Path, inputs: list[Path]) -> None:
+def _append_to_manifest(
+    manifest: Path, section: str, output: Path, script: Path, inputs: list[Path]
+) -> None:
     """Append an entry as text, so the comments and layout of the file survive."""
     lines = [
         "",
-        "[[figure]]",
+        f"[[{section}]]",
         f'output = "{output.as_posix()}"',
         f'script = "{script.as_posix()}"',
     ]

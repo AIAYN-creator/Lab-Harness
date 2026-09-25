@@ -100,19 +100,22 @@ def init(
 
 @app.command()
 def add(
-    kind: Annotated[str, typer.Argument(help=f"Kind of figure: {', '.join(KINDS)}.")],
-    name: Annotated[str, typer.Argument(help="Name of the script and of figures/<name>.pdf.")],
+    kind: Annotated[str, typer.Argument(help=f"What to add: {', '.join(KINDS)}.")],
+    name: Annotated[
+        str,
+        typer.Argument(help="Name of the script, and of figures/<name>.pdf or tables/<name>.tex."),
+    ],
     input_files: Annotated[
         list[Path] | None,
-        typer.Option("--input", help="A file the figure depends on. Repeatable."),
+        typer.Option("--input", help="A file it depends on. Repeatable."),
     ] = None,
     insert: Annotated[
-        bool, typer.Option(help="Also add the figure block to paper.tex, before the references.")
+        bool, typer.Option(help="Also add its block to paper.tex, before the references.")
     ] = False,
     edit: Annotated[bool, typer.Option(help="Open the new script in your editor.")] = False,
     force: Annotated[bool, typer.Option(help="Replace a script that already exists.")] = False,
 ) -> None:
-    """Add a figure: write its script from a template and declare it in the manifest."""
+    """Add a figure or a table: write its script from a template and declare it."""
     with _reporting_errors():
         workspace = load_workspace()
         added = add_figure(workspace, kind, name, inputs=input_files, insert=insert, force=force)
@@ -126,9 +129,9 @@ def add(
         typer.secho(f"  note: {note}", fg=typer.colors.YELLOW)
 
     if added.inserted:
-        typer.echo(f"  document  figure block added to {workspace.document.name}")
+        typer.echo(f"  document  block added to {workspace.document.name}")
     else:
-        typer.echo("\nPaste this where the figure belongs in paper.tex:\n")
+        typer.echo("\nPaste this where it belongs in paper.tex:\n")
         typer.echo(added.latex)
 
     if edit:

@@ -13,6 +13,8 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   named by `[library]` in the manifest. `resolve` looks in it first, by name, code or alias,
   `render_structure(compound=..., library=...)` draws from it, and `labharness library check`
   reviews it: unreadable SMILES, unspecified stereochemistry and formulas that do not match.
+- `labharness add table NAME --input data/FILE.csv`: a script that writes the table as it is,
+  its `[[table]]` entry and, with `--insert`, a `table` environment with the caption above.
 - The `excel` extra: tables and plots read `.xlsx` workbooks through the same reader as CSV,
   with `sheet=` and `cells=`, each cell as Excel shows it and formulas by their saved value.
   An ejected workspace that reads one pins openpyxl in `requirements.txt`.

@@ -1,0 +1,11 @@
+# $output -- the table in $csv, exactly as it is
+#
+# Every cell is written as the file has it. Change it only when asked, one line each, so
+# the script reads as the list of what was done to the table:
+#   table = table.round(significant=2, columns=["conversion (%)"])
+#   table = table.with_uncertainty("ee (%)", "ee_err")
+#   table = table.select("entry", "ee (%)").rename({"ee (%)": "ee / %"})
+from labharness.modules.tables import read_table, write_table
+
+table = read_table("$csv")
+write_table(table, "$output")

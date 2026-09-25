@@ -158,3 +158,34 @@ def test_the_command_line_reports_a_clash_as_an_error(
 
     assert result.exit_code == 1
     assert "already exists" in result.stdout
+
+
+def test_a_table_is_added_like_a_figure(root: Path) -> None:
+    (root / "data" / "screening.csv").write_text("entry;ee (%)\n1;92\n2;88\n", encoding="utf-8")
+
+    added = add_figure(
+        load_workspace(root), "table", "screening", [Path("data/screening.csv")], insert=True
+    )
+
+    script = (root / added.script).read_text(encoding="utf-8")
+    assert added.output == Path("tables/screening.tex")
+    assert 'read_table("data/screening.csv")' in script
+    assert 'write_table(table, "tables/screening.tex")' in script
+    workspace = load_workspace(root)
+    assert [(item.name, item.kind) for item in workspace.figures] == [("screening", "table")]
+    document = (root / "paper.tex").read_text(encoding="utf-8")
+    assert r"\labtable{tables/screening.tex}" in document
+    assert document.index(r"\caption{TODO") < document.index(r"\labtable")  # caption above
+
+
+def test_an_added_table_builds_and_reaches_the_document(root: Path) -> None:
+    from labharness.watch.runner import build_figure
+
+    (root / "data" / "screening.csv").write_text("entry;ee (%)\n1;92\n", encoding="utf-8")
+    add_figure(load_workspace(root), "table", "screening", [Path("data/screening.csv")])
+    workspace = load_workspace(root)
+
+    result = build_figure(workspace, workspace.figures[0])
+
+    assert result.ok, result.error
+    assert "92" in (root / "tables" / "screening.tex").read_text(encoding="utf-8")
