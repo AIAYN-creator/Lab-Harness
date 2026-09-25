@@ -265,9 +265,18 @@ inputs = ["data/kinetics_25C.csv", "data/kinetics_40C.csv"]
 [[figure]]
 output = "figures/mechanism.pdf"
 script = "scripts/mechanism.tex"
+
+[[table]]
+output = "tables/optimisation.tex"
+script = "scripts/optimisation.py"
+inputs = ["data/optimisation.csv"]
 ```
 
-Editing the manifest or the style file rebuilds every figure. `labharness add` keeps the file up to
+A `[[table]]` is built exactly like a figure: the watcher reruns its script when its data
+changes, and LaTeX takes the same short path. `preview` skips tables, which are LaTeX; see them
+in place with `preview --document`.
+
+Editing the manifest or the style file rebuilds every figure and table. `labharness add` keeps the file up to
 date for you, but it is plain text you can edit by hand.
 
 Optional keys go at the top of the file:

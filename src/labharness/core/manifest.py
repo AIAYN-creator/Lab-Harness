@@ -25,11 +25,15 @@ DEFAULT_ENGINE = "pdflatex"
 
 @dataclass(frozen=True)
 class Figure:
-    """One generated figure, with the script that builds it and the files it depends on."""
+    """One generated figure or table, with the script that builds it and the files it uses.
+
+    Both are built the same way; ``kind`` only says which section of the manifest declared it.
+    """
 
     output: Path
     script: Path
     inputs: tuple[Path, ...]
+    kind: str = "figure"
 
     @property
     def name(self) -> str:
@@ -45,6 +49,7 @@ class Workspace:
 
     root: Path
     journal: str
+    # Every generated output: the [[figure]] entries, then the [[table]] entries.
     figures: tuple[Figure, ...]
     builder: str = DEFAULT_BUILDER
     engine: str = DEFAULT_ENGINE
@@ -95,7 +100,11 @@ def load_workspace(root: Path | None = None) -> Workspace:
     except tomllib.TOMLDecodeError as error:
         raise LabHarnessError(f"{manifest} is not valid TOML: {error}") from error
 
-    figures = tuple(_figure(entry, manifest) for entry in data.get("figure", []))
+    figures = tuple(
+        _figure(entry, manifest, kind)
+        for kind in ("figure", "table")
+        for entry in data.get(kind, [])
+    )
     _reject_duplicates(figures, manifest)
     builder = str(data.get("builder", DEFAULT_BUILDER))
     if builder not in BUILDERS:
@@ -125,10 +134,10 @@ def _font(value: object, manifest: Path) -> str | None:
         raise LabHarnessError(f"{manifest}: {error}") from None
 
 
-def _figure(entry: dict[str, object], manifest: Path) -> Figure:
+def _figure(entry: dict[str, object], manifest: Path, kind: str) -> Figure:
     for key in ("output", "script"):
         if key not in entry:
-            raise LabHarnessError(f"{manifest}: a [[figure]] entry has no '{key}'")
+            raise LabHarnessError(f"{manifest}: a [[{kind}]] entry has no '{key}'")
 
     inputs = entry.get("inputs", [])
     if not isinstance(inputs, list):
@@ -138,6 +147,7 @@ def _figure(entry: dict[str, object], manifest: Path) -> Figure:
         output=Path(str(entry["output"])),
         script=Path(str(entry["script"])),
         inputs=tuple(Path(str(item)) for item in inputs),
+        kind=kind,
     )
 
 
@@ -145,7 +155,7 @@ def _reject_duplicates(figures: tuple[Figure, ...], manifest: Path) -> None:
     seen: set[Path] = set()
     for figure in figures:
         if figure.output in seen:
-            raise LabHarnessError(f"{manifest}: two [[figure]] entries write to '{figure.output}'")
+            raise LabHarnessError(f"{manifest}: two entries write to '{figure.output}'")
         seen.add(figure.output)
 
 

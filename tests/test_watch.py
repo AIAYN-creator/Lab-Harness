@@ -205,3 +205,29 @@ def test_a_warning_is_reported_on_every_rebuild(tmp_path: Path) -> None:
     assert first.ok and second.ok
     # Python would show it once; the watcher must show it every time the figure is rebuilt.
     assert first.warnings == second.warnings == ("value.pdf: something to look at",)
+
+
+def test_a_table_is_rebuilt_in_the_watcher_like_a_figure(tmp_path: Path) -> None:
+    (tmp_path / "labharness.toml").write_text(
+        """
+[[table]]
+output = "tables/yields.tex"
+script = "scripts/yields.py"
+inputs = ["data/yields.csv"]
+""",
+        encoding="utf-8",
+    )
+    (tmp_path / "data").mkdir()
+    (tmp_path / "scripts").mkdir()
+    (tmp_path / "data" / "yields.csv").write_text("entry;yield (%)\n1;92\n", encoding="utf-8")
+    (tmp_path / "scripts" / "yields.py").write_text(
+        "from labharness.modules.tables import read_table, write_table\n"
+        'write_table(read_table("data/yields.csv"), "tables/yields.tex")\n',
+        encoding="utf-8",
+    )
+    workspace = load_workspace(tmp_path)
+
+    result = build_figure(workspace, workspace.figures[0])
+
+    assert result.ok, result.error
+    assert "92" in (tmp_path / "tables" / "yields.tex").read_text(encoding="utf-8")

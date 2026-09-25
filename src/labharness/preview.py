@@ -60,6 +60,8 @@ def preview_figures(
     folder = workspace.root / PREVIEW_FOLDER
     results = []
     for figure in workspace.figures if figures is None else figures:
+        if figure.kind == "table":  # a table is LaTeX: it is seen in place, with --document
+            continue
         pdf = workspace.root / figure.output
         results.append(_rasterise(tool, pdf, folder / figure.name, dpi, first_page_only=True))
     return results

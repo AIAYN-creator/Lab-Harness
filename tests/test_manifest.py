@@ -110,3 +110,37 @@ def test_a_broken_manifest_says_so(tmp_path: Path) -> None:
 
     with pytest.raises(LabHarnessError, match="not valid TOML"):
         load_workspace(tmp_path)
+
+
+def test_tables_are_declared_like_figures_and_rebuilt_from_their_data(tmp_path: Path) -> None:
+    (tmp_path / "labharness.toml").write_text(
+        MANIFEST
+        + """
+[[table]]
+output = "tables/optimisation.tex"
+script = "scripts/optimisation.py"
+inputs = ["data/optimisation.csv"]
+""",
+        encoding="utf-8",
+    )
+
+    workspace = load_workspace(tmp_path)
+    affected = workspace.figures_affected_by(tmp_path / "data" / "optimisation.csv")
+
+    assert [(item.name, item.kind) for item in affected] == [("optimisation", "table")]
+    assert [item.kind for item in workspace.figures] == ["figure", "figure", "table"]
+
+
+def test_a_table_and_a_figure_writing_to_the_same_file_are_rejected(tmp_path: Path) -> None:
+    (tmp_path / "labharness.toml").write_text(
+        MANIFEST
+        + """
+[[table]]
+output = "figures/catalyst.pdf"
+script = "scripts/other.py"
+""",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(LabHarnessError, match="two entries write to"):
+        load_workspace(tmp_path)
