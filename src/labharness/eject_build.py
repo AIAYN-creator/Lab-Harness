@@ -158,7 +158,7 @@ def write_build_files(workspace: Workspace, target: Path, modules: list[str]) ->
             document=workspace.document.name,
             figures=pprint.pformat(figures, width=90),
         ),
-        "requirements.txt": requirements(modules),
+        "requirements.txt": requirements([*modules, *_data_extras(workspace)]),
         "EJECTED.md": EJECTED_MD.format(version=__version__, date=date, journal=workspace.journal),
         "compile.sh": "#!/usr/bin/env sh\n# Regenerate the figures and the paper.\n"
         'exec python build.py "$@"\n',
@@ -167,6 +167,12 @@ def write_build_files(workspace: Workspace, target: Path, modules: list[str]) ->
     for name, text in files.items():
         (target / name).write_text(text, encoding="utf-8", newline="\n")
     return list(files)
+
+
+def _data_extras(workspace: Workspace) -> list[str]:
+    """Extras the data needs to be read, whatever module reads it: excel for a workbook."""
+    inputs = [path for figure in workspace.figures for path in figure.inputs]
+    return ["excel"] if any(path.suffix.lower() == ".xlsx" for path in inputs) else []
 
 
 def requirements(modules: list[str]) -> str:

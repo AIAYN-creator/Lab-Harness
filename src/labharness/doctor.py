@@ -63,6 +63,7 @@ def _extras() -> list[Check]:
         "chem": ("rdkit", "chemical structures"),
         "plots": ("matplotlib", "plots and regressions"),
         "iupac": ("py2opsin", "IUPAC name resolution"),
+        "excel": ("openpyxl", "reading .xlsx workbooks"),
     }
     checks = []
     for extra, (module, purpose) in extras.items():

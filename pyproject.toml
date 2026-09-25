@@ -30,8 +30,9 @@ dependencies = [
 [project.optional-dependencies]
 chem = ["rdkit>=2023.9", "svglib>=1.5", "reportlab>=4.0"]
 iupac = ["py2opsin"]
+excel = ["openpyxl>=3.1"]
 plots = ["numpy>=1.26", "scipy>=1.11", "matplotlib>=3.8"]
-all = ["labharness[chem,iupac,plots]"]
+all = ["labharness[chem,excel,iupac,plots]"]
 
 [project.scripts]
 labharness = "labharness.cli.app:main"

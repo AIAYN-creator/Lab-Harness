@@ -141,6 +141,19 @@ def test_the_ejected_folder_says_how_to_rebuild_it(ejected: Path) -> None:
 
 
 @needs("rdkit", "scipy", "matplotlib")
+def test_a_workbook_in_the_data_pins_the_reader_it_needs(tmp_path: Path) -> None:
+    from labharness.eject_build import _data_extras
+
+    workspace = tmp_path / "demo"
+    shutil.copytree(DEMO, workspace)
+    with (workspace / "labharness.toml").open("a", encoding="utf-8") as manifest:
+        manifest.write('\n[[table]]\noutput = "tables/t.tex"\nscript = "scripts/t.py"\n')
+        manifest.write('inputs = ["data/results.xlsx"]\n')
+
+    assert _data_extras(load_workspace(workspace)) == ["excel"]
+    assert _data_extras(load_workspace(DEMO)) == []
+
+
 def test_requirements_pin_the_versions_that_drew_the_figures(ejected: Path) -> None:
     from importlib import metadata
 

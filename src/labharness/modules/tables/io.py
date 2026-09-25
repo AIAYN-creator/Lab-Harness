@@ -22,15 +22,20 @@ def read_table(
     delimiter: str | None = None,
     skip: int | None = None,
     skip_footer: int = 0,
+    sheet: str | int | None = None,
+    cells: str | None = None,
 ) -> Table:
-    """Read a delimited text table (CSV, TSV, TXT), every cell as text.
+    """Read a table (CSV, TSV, TXT, or .xlsx with the excel extra), every cell as text.
 
     The delimiter is worked out from the file unless given. ``skip`` is the number of lines
     above the header; left out, metadata lines an instrument writes there are skipped, with a
-    warning. ``skip_footer`` drops lines at the end, such as totals. For any other format,
+    warning. ``skip_footer`` drops lines at the end, such as totals. In a workbook, ``sheet``
+    and ``cells`` choose the sheet and a range such as ``"A3:D20"``. For any other format,
     export it to CSV first, which every spreadsheet, database and instrument can do.
     """
-    read = read_rows(path, delimiter=delimiter, skip=skip, skip_footer=skip_footer)
+    read = read_rows(
+        path, delimiter=delimiter, skip=skip, skip_footer=skip_footer, sheet=sheet, cells=cells
+    )
     return from_rows(read.headers, read.rows, source=Path(path).as_posix())
 
 

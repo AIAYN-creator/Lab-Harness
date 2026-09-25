@@ -9,6 +9,9 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- The `excel` extra: tables and plots read `.xlsx` workbooks through the same reader as CSV,
+  with `sheet=` and `cells=`, each cell as Excel shows it and formulas by their saved value.
+  An ejected workspace that reads one pins openpyxl in `requirements.txt`.
 - A GIF at the top of the README, from a CSV to a figure in the PDF and a changed measurement
   that moves its point and the number in the text. `tools/make_readme_gif.py` makes it by
   running every step for real.

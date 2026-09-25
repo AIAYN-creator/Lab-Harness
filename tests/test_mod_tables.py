@@ -92,7 +92,7 @@ def test_metadata_lines_before_the_header_can_be_skipped(tmp_path: Path) -> None
 
 
 def test_a_file_that_is_not_a_text_table_asks_for_a_csv(tmp_path: Path) -> None:
-    path = tmp_path / "results.xlsx"
+    path = tmp_path / "results.ods"
     path.write_bytes(b"PK")
 
     with pytest.raises(LabHarnessError, match="Export it to CSV"):

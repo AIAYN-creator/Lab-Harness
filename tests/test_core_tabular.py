@@ -100,8 +100,8 @@ def test_what_is_not_clearly_a_number_is_not_read_as_one(text: str) -> None:
 
 
 def test_other_formats_are_asked_to_be_exported(tmp_path: Path) -> None:
-    source = tmp_path / "t.xlsx"
-    source.write_bytes(b"PK")
+    source = tmp_path / "t.xls"  # the Excel format before 2007
+    source.write_bytes(b"\xd0\xcf\x11\xe0")
 
     with pytest.raises(LabHarnessError, match="Export it to CSV"):
         read_rows(source)

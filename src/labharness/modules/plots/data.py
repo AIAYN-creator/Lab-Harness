@@ -34,6 +34,9 @@ class Series:
     # Lines above the header and at the end of the file; see core.tabular.read_rows.
     skip: int | None = None
     skip_footer: int = 0
+    # In an .xlsx workbook: the sheet, by name or number, and a range such as "A3:D20".
+    sheet: str | int | None = None
+    cells: str | None = None
 
 
 @dataclass
@@ -117,7 +120,13 @@ def read_series(series: Series) -> Points:
 
 
 def _read_rows(path: Path, series: Series) -> list[dict[str, str]]:
-    read = read_rows(path, skip=series.skip, skip_footer=series.skip_footer)
+    read = read_rows(
+        path,
+        skip=series.skip,
+        skip_footer=series.skip_footer,
+        sheet=series.sheet,
+        cells=series.cells,
+    )
     if not read.rows:
         raise LabHarnessError(f"'{path}' has no data rows")
     return [dict(zip(read.headers, row, strict=True)) for row in read.rows]

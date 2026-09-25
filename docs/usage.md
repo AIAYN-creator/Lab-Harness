@@ -407,6 +407,20 @@ the same way, and put up with what old instrument software writes:
 
 `skip=` and `skip_footer=` are arguments of `read_table` and of `Series`.
 
+### Excel workbooks
+
+With the `excel` extra, `read_table` and `Series` also read `.xlsx`, through the same reader, so
+metadata rows, summary rows and errors behave as in a CSV. `sheet=` picks the sheet, by name or
+by number from 0, and `cells="A3:D20"` a range.
+
+- **Each cell is read as Excel shows it.** A number with a fixed number of decimals (`0.000`)
+  keeps its trailing zeros. One in the General format may have lost them, since Excel stores
+  0.120 as 0.12, and LabHarness says so, because plots infer the resolution from the decimals.
+- **Formulas are read by the value Excel last calculated and saved.** LabHarness never
+  recalculates, and a formula that was never calculated stops the read instead of reading as
+  empty.
+- The old `.xls` format is not read: save it as `.xlsx` or export it to CSV.
+
 ### Error bars, in priority order
 
 1. **An explicit error column** in the CSV, e.g. `abs_sd`.

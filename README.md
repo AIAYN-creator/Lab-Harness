@@ -134,6 +134,7 @@ Install only what you need:
 | `chem` | RDKit, SVG to PDF conversion | Chemical structures |
 | `plots` | NumPy, SciPy, Matplotlib | Regressions and plots |
 | `iupac` | OPSIN (needs Java) | Names to SMILES |
+| `excel` | openpyxl | Reading `.xlsx` workbooks |
 | `all` | Everything above | — |
 
 ## Quickstart
