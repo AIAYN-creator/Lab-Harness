@@ -28,7 +28,9 @@ from labharness.core.workspace import create_workspace
 from labharness.doctor import everything_required_passes, run_checks
 from labharness.eject import eject
 from labharness.hints import detect_system
-from labharness.modules.chem import resolve_name
+from labharness.modules.chem import check as check_compound
+from labharness.modules.chem import load_library, resolve_name, write_smiles
+from labharness.modules.chem.library import workspace_library
 from labharness.preview import DEFAULT_DPI, Preview, preview_document, preview_figures
 from labharness.style.typefaces import available_typefaces
 from labharness.watch.runner import BuildResult
@@ -49,6 +51,10 @@ hook_app = typer.Typer(
     no_args_is_help=True, help="The git hook that stops unaccepted data changes being committed."
 )
 app.add_typer(hook_app, name="hook")
+library_app = typer.Typer(
+    no_args_is_help=True, help="The lab's compound inventory, named by [library] in the manifest."
+)
+app.add_typer(library_app, name="library")
 
 
 @app.callback()
@@ -250,15 +256,51 @@ def hook_check() -> None:
 
 @app.command()
 def resolve(
-    name: Annotated[str, typer.Argument(help="Systematic IUPAC name, in quotes.")],
+    name: Annotated[
+        str, typer.Argument(help="A compound of the lab library, or a systematic IUPAC name.")
+    ],
     output: Annotated[Path, typer.Option("--output", "-o", help="Where to write the SMILES.")],
 ) -> None:
-    """Turn an IUPAC name into a SMILES file, offline, with OPSIN."""
+    """Turn a name into a SMILES file, offline: the lab library first, then OPSIN."""
     with _reporting_errors():
-        smiles = resolve_name(name, output=output)
+        library, problem = workspace_library()
+        found = library.find(name) if library is not None else None
+        if library is not None and found is not None:
+            smiles = found.smiles
+            source = f"from library: {library.source.name}, row {found.row} ({found.label})"
+            write_smiles(output, smiles, source)
+        else:
+            smiles = resolve_name(name, output=output)
 
+    if problem:
+        typer.secho(f"note: {problem}", fg=typer.colors.YELLOW)
     typer.secho(f"{smiles}", fg=typer.colors.GREEN)
-    typer.echo(f"written to {output}. Check it before using it in a figure.")
+    typer.echo(f"{'from the lab library' if found else 'from OPSIN'}, written to {output}.")
+    for finding in check_compound(found) if found else []:
+        typer.secho(f"  warning: {finding}", fg=typer.colors.YELLOW)
+    typer.echo("Check it before using it in a figure.")
+
+
+@library_app.command("check")
+def library_check() -> None:
+    """Check every compound: unreadable SMILES, missing stereochemistry, wrong formula."""
+    with _reporting_errors():
+        workspace = load_workspace()
+        settings = workspace.library
+        if settings is None:
+            raise LabHarnessError(f'{MANIFEST_NAME} has no [library]. Add one: file = "data/..."')
+        library = load_library(
+            workspace.root / settings.file, settings.sheet, dict(settings.columns)
+        )
+
+    problems = [*library.rejected, *library.findings]
+    typer.echo(f"{library.source.name}: {len(library.compounds)} compounds read")
+    for problem in problems:
+        typer.secho(f"  {problem}", fg=typer.colors.YELLOW)
+    if problems:
+        typer.echo(f"{len(problems)} to review. Nothing in the inventory was changed.")
+        raise typer.Exit(EXIT_ERROR)
+    typer.secho("Nothing to review.", fg=typer.colors.GREEN)
 
 
 @app.command()

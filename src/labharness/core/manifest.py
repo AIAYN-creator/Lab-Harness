@@ -44,6 +44,16 @@ class Figure:
 
 
 @dataclass(frozen=True)
+class LibrarySettings:
+    """Where the lab's compound inventory is, from [library] in the manifest."""
+
+    file: Path
+    sheet: str | int | None = None
+    # Field (smiles, name, formula, code, aliases) -> the header that holds it.
+    columns: tuple[tuple[str, str], ...] = ()
+
+
+@dataclass(frozen=True)
 class Workspace:
     """A folder with a manifest in it."""
 
@@ -55,6 +65,7 @@ class Workspace:
     engine: str = DEFAULT_ENGINE
     # The typeface chosen for this workspace; None uses the journal's default.
     font: str | None = None
+    library: LibrarySettings | None = None
 
     @property
     def document(self) -> Path:
@@ -119,7 +130,31 @@ def load_workspace(root: Path | None = None) -> Workspace:
     journal = str(data.get("journal", DEFAULT_JOURNAL))
     font = _font(data.get("font"), manifest)
     return Workspace(
-        root=root, journal=journal, figures=figures, builder=builder, engine=engine, font=font
+        root=root,
+        journal=journal,
+        figures=figures,
+        builder=builder,
+        engine=engine,
+        font=font,
+        library=_library(data.get("library"), manifest),
+    )
+
+
+def _library(value: object, manifest: Path) -> LibrarySettings | None:
+    if value is None:
+        return None
+    if not isinstance(value, dict) or "file" not in value:
+        raise LabHarnessError(f'{manifest}: [library] needs file = "data/..."')
+    columns = value.get("columns", {})
+    if not isinstance(columns, dict):
+        raise LabHarnessError(
+            f'{manifest}: [library] columns must be a table, like {{ smiles = "..." }}'
+        )
+    sheet = value.get("sheet")
+    return LibrarySettings(
+        file=Path(str(value["file"])),
+        sheet=sheet if isinstance(sheet, int) or sheet is None else str(sheet),
+        columns=tuple((str(key), str(header)) for key, header in columns.items()),
     )
 
 

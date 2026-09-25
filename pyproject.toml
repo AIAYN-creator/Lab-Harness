@@ -31,8 +31,10 @@ dependencies = [
 chem = ["rdkit>=2023.9", "svglib>=1.5", "reportlab>=4.0"]
 iupac = ["py2opsin"]
 excel = ["openpyxl>=3.1"]
+# The lab compound inventory: structures (RDKit) and inventories exported to Excel.
+library = ["labharness[chem,excel]"]
 plots = ["numpy>=1.26", "scipy>=1.11", "matplotlib>=3.8"]
-all = ["labharness[chem,excel,iupac,plots]"]
+all = ["labharness[chem,excel,iupac,library,plots]"]
 
 [project.scripts]
 labharness = "labharness.cli.app:main"

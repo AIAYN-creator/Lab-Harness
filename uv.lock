@@ -850,6 +850,12 @@ excel = [
 iupac = [
     { name = "py2opsin" },
 ]
+library = [
+    { name = "openpyxl" },
+    { name = "rdkit" },
+    { name = "reportlab" },
+    { name = "svglib" },
+]
 plots = [
     { name = "matplotlib" },
     { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
@@ -870,7 +876,8 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "labharness", extras = ["chem", "excel", "iupac", "plots"], marker = "extra == 'all'" },
+    { name = "labharness", extras = ["chem", "excel"], marker = "extra == 'library'" },
+    { name = "labharness", extras = ["chem", "excel", "iupac", "library", "plots"], marker = "extra == 'all'" },
     { name = "matplotlib", marker = "extra == 'plots'", specifier = ">=3.8" },
     { name = "numpy", marker = "extra == 'plots'", specifier = ">=1.26" },
     { name = "openpyxl", marker = "extra == 'excel'", specifier = ">=3.1" },
@@ -882,7 +889,7 @@ requires-dist = [
     { name = "typer", specifier = ">=0.12" },
     { name = "watchfiles", specifier = ">=0.21" },
 ]
-provides-extras = ["chem", "iupac", "excel", "plots", "all"]
+provides-extras = ["chem", "iupac", "excel", "library", "plots", "all"]
 
 [package.metadata.requires-dev]
 dev = [

@@ -41,10 +41,10 @@ def test_reading_a_file_without_a_smiles_says_so(tmp_path: Path) -> None:
 
 
 def test_asking_for_both_or_neither_input_is_rejected(tmp_path: Path) -> None:
-    with pytest.raises(LabHarnessError, match="either"):
+    with pytest.raises(LabHarnessError, match="one of .smiles., .smiles_file. or .compound."):
         render_structure(tmp_path / "out.pdf")
 
-    with pytest.raises(LabHarnessError, match="either"):
+    with pytest.raises(LabHarnessError, match="one of .smiles., .smiles_file. or .compound."):
         render_structure(tmp_path / "out.pdf", smiles=ASPIRIN, smiles_file=tmp_path / "x.smi")
 
 

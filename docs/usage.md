@@ -205,14 +205,22 @@ to whoever opens the folder.
 labharness resolve "NAME" -o FILE
 ```
 
-Turns a systematic IUPAC name into a SMILES string with OPSIN, offline, and writes it to `FILE`
-with the original name kept as a comment. Needs the `iupac` extra and Java.
+Turns a name into a SMILES string, offline, and writes it to `FILE` with where it came from
+kept as a comment. It looks in the lab's compound library first, if the manifest has one (see
+*The lab compound library* below), by name, code or alias; then it asks OPSIN, which reads
+systematic IUPAC names and needs the `iupac` extra and Java.
 
 Resolution is a separate step on purpose: the SMILES lands in a file you can check before it
 becomes a figure, and the watcher never pays the cost of starting a JVM.
 
-Reserved for later versions: `--library FILE.csv` (your lab's compound inventory, v0.5) and
-`--online` (PubChem, v1.5).
+Reserved for a later version: `--online` (PubChem, v1.5).
+
+### `labharness library check`
+
+Reads the whole compound library and lists every row to review: SMILES that RDKit cannot read,
+chiral compounds whose stereochemistry is not specified, and molecular formulas that do not
+match their SMILES. Nothing is changed. Exits with 1 when there is something to review, so it can
+run in a lab's own checks.
 
 ### `labharness doctor`
 
@@ -431,6 +439,36 @@ by number from 0, and `cells="A3:D20"` a range.
    in the script if your export trimmed them.
 
 Fits are weighted whenever real uncertainties are available. Errors in x are not handled in v0.1.
+
+### The lab compound library
+
+With the `library` extra, the lab's own inventory can be used by name or in-house code. Export it
+from wherever it lives (Access, Excel, another program) to CSV or `.xlsx`, put it in `data/`, and
+name it in the manifest:
+
+```toml
+[library]
+file = "data/inventario.xlsx"
+sheet = "Compuestos"                               # optional: the first sheet by default
+columns = { smiles = "SMILES_canon", name = "Nombre" }  # optional: only for unknown headers
+```
+
+Columns are recognised by name, without case or accents, in English or Spanish: SMILES; name
+(`nombre`, `nombre común`, `common name`); formula (`fórmula`, `molecular formula`, `FM`); code
+(`código`, `id`, `ref`); aliases (`alias`, `sinónimos`, separated by `;`). A compound is found
+only by an exact name, code or alias, never by one that looks like it. A figure draws one with
+`render_structure(output=..., compound="CAT-7B", library="data/inventario.xlsx")`; list the
+library in the figure's `inputs` so it is redrawn when the inventory changes.
+
+Every compound is checked, and nothing is ever corrected:
+
+| Check | What it reports |
+|---|---|
+| Stereochemistry | A stereocentre or a double bond that could be either way and the SMILES does not say. A chiral catalyst without it draws fine and is the wrong enantiomer, or both. An achiral compound is never flagged |
+| Formula | A molecular formula that is not the one of its SMILES: a SMILES pasted into the wrong row |
+
+A row whose SMILES cannot be read is left out, with its row number; the rest is used. Without the
+extra, or with a library that cannot be read, `resolve` says so and goes on with OPSIN.
 
 ### SMILES
 

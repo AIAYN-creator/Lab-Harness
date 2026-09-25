@@ -36,10 +36,14 @@ def render_structure(
     smiles_file: Path | str | None = None,
     style: Style | None = None,
     width_in: float | None = None,
+    compound: str | None = None,
+    library: Path | str | None = None,
 ) -> Path:
     """Draw a molecule and write it as a vector PDF.
 
-    Give it either a SMILES string or a file containing one. The geometry and the typeface
+    Give it a SMILES string, a file containing one, or a ``compound`` of the lab's
+    ``library`` by its name, code or alias; list the library in the figure's inputs so the
+    figure is redrawn when the inventory changes. The geometry and the typeface
     come from the journal style, so every structure in a document matches.
 
     The structure is drawn as large as the layout allows, with no blank canvas around it.
@@ -50,11 +54,15 @@ def render_structure(
     box is shrunk to fit instead, with a warning: its bonds are then shorter than the
     journal asks for.
     """
-    if (smiles is None) == (smiles_file is None):
-        raise LabHarnessError("give render_structure either 'smiles' or 'smiles_file'")
+    if sum(given is not None for given in (smiles, smiles_file, compound)) != 1:
+        raise LabHarnessError(
+            "give render_structure one of 'smiles', 'smiles_file' or 'compound' (with 'library')"
+        )
 
     if smiles_file is not None:
         smiles = read_smiles(smiles_file)
+    if compound is not None:
+        smiles = _from_library(compound, library)
     assert smiles is not None  # for type checkers; the check above guarantees it
 
     style = style or load_style()
@@ -66,6 +74,21 @@ def render_structure(
     with atomic_output(output) as temporary:
         _svg_to_pdf(svg, temporary, width_pt)
     return output
+
+
+def _from_library(compound: str, library: Path | str | None) -> str:
+    """The SMILES of ``compound`` in the library, with every check on it reported."""
+    from labharness.modules.chem.library import check, load_library, settings_for
+
+    if library is None:
+        raise LabHarnessError("compound= needs library=, the inventory file it is in")
+    inventory = load_library(library, **settings_for(Path(library)))
+    found = inventory.find(compound)
+    if found is None:
+        raise LabHarnessError(f"'{compound}' is not in {Path(library).name}")
+    for finding in check(found):
+        warnings.warn(f"{compound}: {finding}", LabHarnessWarning, stacklevel=3)
+    return found.smiles
 
 
 def _draw_svg(

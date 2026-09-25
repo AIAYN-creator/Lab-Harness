@@ -34,10 +34,16 @@ def resolve_name(name: str, output: Path | str | None = None) -> str:
     smiles = _canonical(smiles)
 
     if output is not None:
-        output = Path(output)
-        with atomic_output(output) as temporary:
-            temporary.write_text(f"{smiles}\n# resolved from: {name}\n", encoding="utf-8")
+        write_smiles(output, smiles, f"resolved from: {name}")
     return smiles
+
+
+def write_smiles(output: Path | str, smiles: str, source: str) -> Path:
+    """Write a .smi file that says where its SMILES came from, so it can be checked."""
+    output = Path(output)
+    with atomic_output(output) as temporary:
+        temporary.write_text(f"{smiles}\n# {source}\n", encoding="utf-8")
+    return output
 
 
 def _canonical(smiles: str) -> str:
