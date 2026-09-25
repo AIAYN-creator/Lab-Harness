@@ -1,0 +1,20 @@
+% figures/iodination.pdf -- acid-catalysed iodination of acetone.
+%
+% The classic physical chemistry kinetics experiment: the rate-determining step is the
+% enolisation, so the rate is first order in acetone and in acid, and zero order in iodine.
+%
+% Only the drawing lives here: LabHarness adds the journal style around it, which is why
+% there is no preamble and no font in this file.
+\begin{tikzpicture}[node distance=1.0cm]
+  \node (ketone) {\chemfig{H_3C-[:30]C(=[:90]O)-[:-30]CH_3}};
+  \node (enol) [right=2.6cm of ketone] {\chemfig{H_3C-[:30]C(-[:90]OH)=[:-30]CH_2}};
+  \node (product) [right=2.6cm of enol] {\chemfig{H_3C-[:30]C(=[:90]O)-[:-30]CH_2I}};
+
+  \draw[electron pair] (ketone) -- node[node label, above] {H$_3$O$^+$}
+    node[node label, below] {slow: enolisation} (enol);
+  \draw[electron pair] (enol) -- node[node label, above] {I$_2$}
+    node[node label, below] {fast} (product);
+
+  \node[node label, below=0.7cm of enol] {rate $= k\,[\mathrm{acetone}][\mathrm{H}^+]$,
+    zero order in I$_2$};
+\end{tikzpicture}

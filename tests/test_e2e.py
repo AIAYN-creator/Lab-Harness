@@ -49,7 +49,7 @@ def test_the_demo_builds_every_kind_of_figure_into_one_document(workspace: Path)
     result = build(load_workspace(workspace))
 
     assert result.ok, [figure.error for figure in result.figures if not figure.ok]
-    for figure in ("atenolol.pdf", "decay.pdf", "kapp.pdf", "mechanism.pdf"):
+    for figure in ("atenolol.pdf", "decay.pdf", "kapp.pdf", "mechanism.pdf", "iodination.pdf"):
         assert (workspace / "figures" / figure).read_bytes().startswith(b"%PDF"), figure
     assert (workspace / "paper.pdf").read_bytes().startswith(b"%PDF")
 

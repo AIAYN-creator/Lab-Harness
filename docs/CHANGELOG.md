@@ -17,6 +17,9 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `[[table]]` entries in the manifest: the watcher rebuilds a table when its data changes, like
   a figure.
 - `labharness init --font NAME` chooses the typeface when the workspace is created.
+- A gallery, `docs/gallery/`, of pages LabHarness built: the demo and the first page of every
+  template, regenerated with `tools/make_gallery.py`. The demo gains a second scheme, the
+  acid-catalysed iodination of acetone.
 - `labharness add <kind> <name>`: writes a figure script from a template and declares it in the
   manifest; `--insert` also places the figure block in `paper.tex`.
 - `labharness preview`: renders figures, and with `--document` the pages of the PDF, as PNG images

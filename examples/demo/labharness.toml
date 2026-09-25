@@ -19,3 +19,7 @@ inputs = ["data/kapp.csv"]
 [[figure]]
 output = "figures/mechanism.pdf"
 script = "scripts/mechanism.tex"
+
+[[figure]]
+output = "figures/iodination.pdf"
+script = "scripts/iodination.tex"
