@@ -12,6 +12,8 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - A GIF at the top of the README, from a CSV to a figure in the PDF and a changed measurement
   that moves its point and the number in the text. `tools/make_readme_gif.py` makes it by
   running every step for real.
+- Plot axis labels can come from the column header: `t (min)`, `t [min]` or `t / min`. A
+  header without a unit is refused rather than drawn without one.
 - `labharness add <kind> <name>`: writes a figure script from a template and declares it in the
   manifest; `--insert` also places the figure block in `paper.tex`.
 - `labharness preview`: renders figures, and with `--document` the pages of the PDF, as PNG images

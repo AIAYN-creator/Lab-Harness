@@ -325,8 +325,10 @@ regression_plot(
 ```
 
 Models: `linear`, `polynomial`, `log`, `exp`, `power`, or your own function (Arrhenius, Eyring,
-Michaelis-Menten…). Axis labels are mandatory: a plot without them fails loudly instead of
-producing an unlabelled figure.
+Michaelis-Menten…). Every axis has a label: a plot without one fails loudly instead of
+producing an unlabelled figure. Leave `x_label` or `y_label` out and it comes from the column
+header, written `t (min)`, `t [min]` or `t / min`; a header with no unit is refused, not drawn
+without one. Pass `(quantity, None)` for a quantity that has no unit.
 
 Fitted parameters, their uncertainties and R² are written next to the figure as LaTeX macros
 (`figures/calibration.fit.tex`). Load them with `\labresults{figures/calibration.fit.tex}` and cite

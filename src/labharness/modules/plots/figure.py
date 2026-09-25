@@ -10,6 +10,7 @@ from typing import Any
 from labharness.core.atomic import atomic_output
 from labharness.core.errors import LabHarnessError, LabHarnessWarning
 from labharness.core.extras import require
+from labharness.core.units import split_unit
 from labharness.modules.plots.data import Points, Series, read_series
 from labharness.modules.plots.fits import Fit, fit
 from labharness.style.mpl import palette
@@ -32,8 +33,8 @@ class PlotResult:
 def regression_plot(
     output: Path | str,
     series: Series | Sequence[Series],
-    x_label: Label,
-    y_label: Label,
+    x_label: Label | None = None,
+    y_label: Label | None = None,
     model: str = "linear",
     degree: int = 2,
     function: Callable[..., Any] | None = None,
@@ -44,16 +45,18 @@ def regression_plot(
 ) -> PlotResult:
     """Plot one or more series with their fit, at the journal's size and typeface.
 
-    Axis labels are required on purpose: an unlabelled axis is the most common defect in a
-    figure, and it is cheaper to refuse than to notice it in proof.
+    Every axis has a label: an unlabelled axis is the most common defect in a figure, and it
+    is cheaper to refuse than to notice it in proof. Left out, a label comes from the column
+    header, ``t (min)``, ``t [min]`` or ``t / min``; a header with no unit is refused rather
+    than drawn without one.
     """
     style = style or load_style()
     all_series = [series] if isinstance(series, Series) else list(series)
     if not all_series:
         raise LabHarnessError("give regression_plot at least one series")
 
-    x_title = _axis_title(style, x_label, "x_label")
-    y_title = _axis_title(style, y_label, "y_label")
+    x_title = _axis_title(style, x_label or _from_headers(all_series, "x"), "x_label")
+    y_title = _axis_title(style, y_label or _from_headers(all_series, "y"), "y_label")
 
     measurements = [read_series(item) for item in all_series]
     fits = [
@@ -69,6 +72,27 @@ def regression_plot(
     for warning in found:
         warnings.warn(f"{output.name}: {warning}", LabHarnessWarning, stacklevel=2)
     return PlotResult(output=output, fits=tuple(fits), macros=macros, warnings=found)
+
+
+def _from_headers(all_series: list[Series], axis: str) -> Label:
+    """The label of an axis from its column headers, when they all say the same."""
+    headers = []
+    for series in all_series:
+        column = series.x if axis == "x" else series.y
+        headers += [column] if isinstance(column, str) else list(column)
+    for header in headers:
+        if split_unit(header)[1] is None:
+            raise LabHarnessError(
+                f"the column '{header}' has no unit in its header, so the {axis} axis cannot "
+                f"be labelled from it. Pass {axis}_label=(quantity, unit), or (quantity, None) "
+                "if it has no unit."
+            )
+    if len({split_unit(header) for header in headers}) > 1:
+        raise LabHarnessError(
+            f"the {axis} columns have different headers ({', '.join(headers)}). "
+            f"Pass {axis}_label= to say what the axis shows."
+        )
+    return split_unit(headers[0])
 
 
 def _axis_title(style: Style, label: Label | None, argument: str) -> str:
