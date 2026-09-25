@@ -166,6 +166,7 @@ All of these work today.
 | `labharness accept FILE` | Accept a change to a raw data file, recording who, when and what it replaced |
 | `labharness hook install` | Install the git hook that refuses unaccepted changes to raw data |
 | `labharness eject TARGET` | Copy the workspace into one that rebuilds without LabHarness |
+| `labharness cite DOI` | Add a work to `references.bib` from its DOI, and print the `\cite{...}` for it |
 | `labharness doctor` | Check the environment and print the command that fixes each problem |
 
 **[Full command reference, options and file formats: `docs/usage.md`](docs/usage.md)**

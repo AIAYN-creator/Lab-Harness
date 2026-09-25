@@ -224,6 +224,27 @@ chiral compounds whose stereochemistry is not specified, and molecular formulas 
 match their SMILES. Nothing is changed. Exits with 1 when there is something to review, so it can
 run in a lab's own checks.
 
+### `labharness cite`
+
+```
+labharness cite DOI [--bib FILE]
+```
+
+Adds a work to the bibliography from its DOI, written as `10.1021/...`, `doi:10.1021/...` or
+`https://doi.org/10.1021/...`. It asks doi.org, the registry every DOI belongs to, for the BibTeX
+of the work, appends it to `references.bib` (or `--bib FILE`) under a short key made of the first
+author's surname and the year (`moragomez2020`, then `moragomez2020a`...), and prints the
+`\cite{...}` to paste. A DOI already in the bibliography is not added again: its key is printed.
+
+The manuscript lists the references where the template puts them, with the journal's style:
+
+```latex
+\bibliographystyle{unsrt}   % or the journal's
+\bibliography{references}
+```
+
+This is the one command that needs the network, and it only goes online when you run it.
+
 ### `labharness doctor`
 
 ```

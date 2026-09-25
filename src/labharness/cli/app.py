@@ -18,6 +18,7 @@ import typer
 
 from labharness import __version__
 from labharness.core.add import KINDS, add_figure
+from labharness.core.cite import cite as add_citation
 from labharness.core.errors import LabHarnessError, MissingExtraError
 from labharness.core.githook import git_root, install_hook, main_check
 from labharness.core.lock import LOCK_NAME
@@ -40,6 +41,7 @@ from labharness.watch.viewer import open_pdf
 
 EXIT_ERROR = 1
 EXIT_MISSING_DEPENDENCY = 3
+BIBLIOGRAPHY_NAME = "references.bib"
 
 app = typer.Typer(
     add_completion=False,
@@ -304,6 +306,25 @@ def library_check() -> None:
         typer.echo(f"{len(problems)} to review. Nothing in the inventory was changed.")
         raise typer.Exit(EXIT_ERROR)
     typer.secho("Nothing to review.", fg=typer.colors.GREEN)
+
+
+@app.command()
+def cite(
+    doi: Annotated[str, typer.Argument(help="The DOI, as 10.1021/... or https://doi.org/...")],
+    bib: Annotated[
+        Path | None, typer.Option(help="The bibliography. Default: the workspace's references.bib.")
+    ] = None,
+) -> None:
+    """Add a work to the bibliography from its DOI, asking doi.org. Needs the network."""
+    with _reporting_errors():
+        bibliography = bib or load_workspace().root / BIBLIOGRAPHY_NAME
+        citation = add_citation(doi, bibliography)
+
+    if citation.added:
+        typer.secho(f"Added {citation.key} to {bibliography.name}", fg=typer.colors.GREEN)
+    else:
+        typer.echo(f"Already in {bibliography.name} as {citation.key}")
+    typer.echo(f"Cite it with \\cite{{{citation.key}}}")
 
 
 @app.command()

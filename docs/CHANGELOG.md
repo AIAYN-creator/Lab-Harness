@@ -17,6 +17,9 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   its `[[table]]` entry and, with `--insert`, a `table` environment with the caption above.
 - A test compiles every template in every typeface, created with `init --font`, and checks with a
   PDF parser that each document embeds only the fonts of that typeface.
+- `labharness cite DOI`: adds the work to `references.bib` from doi.org under a short key
+  (`moragomez2020`) and prints the `\cite{...}` for it; a DOI already there is not added
+  twice. The one command that goes online, and only when it is run.
 - The `excel` extra: tables and plots read `.xlsx` workbooks through the same reader as CSV,
   with `sheet=` and `cells=`, each cell as Excel shows it and formulas by their saved value.
   An ejected workspace that reads one pins openpyxl in `requirements.txt`.
