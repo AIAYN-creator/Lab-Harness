@@ -65,6 +65,8 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- The `article` and `report` templates cite author-year (`apalike`) instead of by number;
+  one argument of `\bibliographystyle` to change back.
 - A cell that is not a number stops a plot with its file, line and column (`'decay.csv', line 6,
   column 'c': 'n.d.' is not a number`), and the watcher prints that message alone instead of a
   traceback, then keeps watching. A traceback is still shown when a script itself is broken.

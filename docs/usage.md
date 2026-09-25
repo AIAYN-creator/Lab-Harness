@@ -239,7 +239,7 @@ author's surname and the year (`moragomez2020`, then `moragomez2020a`...), and p
 The manuscript lists the references where the template puts them, with the journal's style:
 
 ```latex
-\bibliographystyle{unsrt}   % or the journal's
+\bibliographystyle{apalike}   % as article and report have it; or the journal's
 \bibliography{references}
 ```
 
