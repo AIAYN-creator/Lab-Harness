@@ -48,7 +48,11 @@ def workspace(tmp_path_factory: pytest.TempPathFactory) -> Path:
 def test_the_demo_builds_every_kind_of_figure_into_one_document(workspace: Path) -> None:
     result = build(load_workspace(workspace))
 
-    assert result.ok, [figure.error for figure in result.figures if not figure.ok]
+    compiled = result.compilation
+    assert result.ok, (
+        [figure.error for figure in result.figures if not figure.ok],
+        compiled.errors if compiled is not None else "not compiled",
+    )
     for figure in ("atenolol.pdf", "decay.pdf", "kapp.pdf", "mechanism.pdf", "iodination.pdf"):
         assert (workspace / "figures" / figure).read_bytes().startswith(b"%PDF"), figure
     assert (workspace / "paper.pdf").read_bytes().startswith(b"%PDF")
