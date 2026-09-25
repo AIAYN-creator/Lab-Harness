@@ -1,5 +1,6 @@
 """Units written in column headers, and the axis labels that come from them."""
 
+import shutil
 from pathlib import Path
 
 import pytest
@@ -24,6 +25,9 @@ def test_the_unit_is_read_from_the_header(header: str, expected: tuple[str, str 
     assert split_unit(header) == expected
 
 
+@pytest.mark.skipif(
+    shutil.which("kpsewhich") is None, reason="needs a LaTeX distribution for the font"
+)
 def test_a_plot_takes_its_axis_labels_from_the_headers(tmp_path: Path) -> None:
     pytest.importorskip("matplotlib")
     from labharness.modules.plots import Series, regression_plot
