@@ -2,6 +2,7 @@
 
 import io
 import shutil
+from pathlib import Path
 
 import pytest
 from pypdf import PdfReader
@@ -9,6 +10,8 @@ from pypdf import PdfReader
 from labharness.core import create_workspace
 from labharness.core.lock import check_data
 from labharness.core.templates import available_journals
+from labharness.doctor import _tex_file
+from labharness.style.typefaces import available_typefaces, load_typeface
 from labharness.watch.latex import compile_document
 
 pytestmark = [
@@ -63,3 +66,22 @@ def test_missing_figures_do_not_break_the_build(compiled_pdf: bytes) -> None:
     # The template references figures/example.pdf, which does not exist: \labfigure must
     # fall back to a placeholder instead of failing the compilation.
     assert compiled_pdf.startswith(b"%PDF")
+
+
+@pytest.mark.parametrize("typeface", available_typefaces())
+@pytest.mark.parametrize("journal", available_journals())
+def test_every_template_in_every_typeface_embeds_only_that_typeface(
+    tmp_path: Path, journal: str, typeface: str
+) -> None:
+    face = load_typeface(typeface)
+    if not all(_tex_file(f"{package}.sty") for package in face.latex_packages):
+        pytest.skip(f"needs {', '.join(face.latex_packages)}")
+    workspace = create_workspace(tmp_path / journal, journal=journal, font=typeface)
+    check_data(workspace)
+
+    result = compile_document(workspace / "paper.tex")
+
+    assert result.ok and result.pdf is not None, (journal, typeface, result.errors)
+    fonts = embedded_fonts(result.pdf.read_bytes())
+    assert fonts
+    assert all(face.owns_pdf_font(font) for font in fonts), (journal, typeface, sorted(fonts))
