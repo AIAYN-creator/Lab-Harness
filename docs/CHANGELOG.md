@@ -16,6 +16,7 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   header without a unit is refused rather than drawn without one.
 - `[[table]]` entries in the manifest: the watcher rebuilds a table when its data changes, like
   a figure.
+- `labharness init --font NAME` chooses the typeface when the workspace is created.
 - `labharness add <kind> <name>`: writes a figure script from a template and declares it in the
   manifest; `--insert` also places the figure block in `paper.tex`.
 - `labharness preview`: renders figures, and with `--document` the pages of the PDF, as PNG images

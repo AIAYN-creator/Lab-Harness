@@ -51,7 +51,7 @@ Every error says what failed, why, and how to fix it.
 ### `labharness init`
 
 ```
-labharness init [PATH] [--journal acs] [--force]
+labharness init [PATH] [--journal acs] [--font NAME] [--force]
 ```
 
 Creates a workspace from the template: `paper.tex`, `labharness-style.tex`, `references.bib`,
@@ -62,6 +62,7 @@ Creates a workspace from the template: `paper.tex`, `labharness-style.tex`, `ref
 |---|---|---|
 | `PATH` | `.` | Where to create the workspace |
 | `--journal` | `acs` | The template: `acs` (achemso), `elsevier` (elsarticle), `rsc-draft`, `article` (a short lab report) or `report` (a long report or a thesis chapter) |
+| `--font` | the journal's | The typeface, from the catalogue in *Typefaces*: written to the manifest as `font`, and the document style is generated with it. An unknown name is refused before anything is written |
 | `--force` | off | Write into a folder that is not empty |
 
 ### `labharness add`

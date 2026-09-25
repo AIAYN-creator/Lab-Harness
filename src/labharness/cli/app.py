@@ -23,13 +23,14 @@ from labharness.core.githook import git_root, install_hook, main_check
 from labharness.core.lock import LOCK_NAME
 from labharness.core.lock import accept as accept_changes
 from labharness.core.manifest import MANIFEST_NAME, Figure, Workspace, load_workspace
-from labharness.core.templates import DEFAULT_JOURNAL
+from labharness.core.templates import DEFAULT_JOURNAL, available_journals
 from labharness.core.workspace import create_workspace
 from labharness.doctor import everything_required_passes, run_checks
 from labharness.eject import eject
 from labharness.hints import detect_system
 from labharness.modules.chem import resolve_name
 from labharness.preview import DEFAULT_DPI, Preview, preview_document, preview_figures
+from labharness.style.typefaces import available_typefaces
 from labharness.watch.runner import BuildResult
 from labharness.watch.runner import build as run_build
 from labharness.watch.session import DEFAULT_DEBOUNCE_MS, Cycle, watch
@@ -68,12 +69,18 @@ def _main(
 @app.command()
 def init(
     path: Annotated[Path, typer.Argument(help="Where to create the workspace.")] = Path("."),
-    journal: Annotated[str, typer.Option(help="Journal template to use.")] = DEFAULT_JOURNAL,
+    journal: Annotated[
+        str, typer.Option(help=f"Template: {', '.join(available_journals())}.")
+    ] = DEFAULT_JOURNAL,
+    font: Annotated[
+        str | None,
+        typer.Option(help=f"Typeface: {', '.join(available_typefaces())}. Default: the journal's."),
+    ] = None,
     force: Annotated[bool, typer.Option(help="Write into a folder that is not empty.")] = False,
 ) -> None:
     """Create a workspace: manuscript, data, scripts, figures and manifest."""
     with _reporting_errors():
-        target = create_workspace(path, journal=journal, force=force)
+        target = create_workspace(path, journal=journal, force=force, font=font)
 
     typer.secho(f"Workspace created in {target}", fg=typer.colors.GREEN)
     if git_root(target) is not None:

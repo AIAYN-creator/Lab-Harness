@@ -80,6 +80,31 @@ def test_init_rejects_an_unknown_journal(tmp_path: Path) -> None:
     assert "acs" in result.stdout
 
 
+def test_init_records_the_chosen_typeface_and_styles_the_document_with_it(
+    tmp_path: Path,
+) -> None:
+    from labharness.core.manifest import load_workspace
+
+    target = tmp_path / "paper"
+
+    result = runner.invoke(app, ["init", str(target), "--journal", "report", "--font", "termes"])
+
+    assert result.exit_code == 0, result.stdout
+    workspace = load_workspace(target)
+    assert (workspace.journal, workspace.font) == ("report", "termes")
+    assert "tgtermes" in (target / "labharness-style.tex").read_text(encoding="utf-8")
+
+
+def test_init_rejects_an_unknown_typeface_before_writing_anything(tmp_path: Path) -> None:
+    target = tmp_path / "paper"
+
+    result = runner.invoke(app, ["init", str(target), "--font", "comic-sans"])
+
+    assert result.exit_code == 1
+    assert "latin-modern" in result.stdout
+    assert not target.exists()
+
+
 def test_build_reports_each_figure_and_its_timing(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
