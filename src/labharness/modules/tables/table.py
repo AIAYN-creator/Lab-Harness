@@ -13,6 +13,7 @@ from dataclasses import dataclass, field, replace
 from decimal import ROUND_HALF_EVEN, ROUND_HALF_UP, Decimal
 
 from labharness.core.errors import LabHarnessError
+from labharness.core.numbers import round_together
 from labharness.core.tabular import parse_decimal
 
 # How a half is rounded. Half up is what most chemistry courses teach (2.45 -> 2.5); half to
@@ -125,9 +126,8 @@ class Table:
             cells = list(row)
             number, spread = parse_decimal(row[values]), parse_decimal(row[errors])
             if number is not None and spread is not None and spread > 0:
-                shown_error = round_significant(spread, significant, rounding)
-                places = max(0, -Decimal(shown_error).as_tuple().exponent)  # type: ignore[operator]
-                cells[values] = f"{round_places(number, places, rounding)} +- {shown_error}"
+                shown_value, shown_error = round_together(number, spread, significant, rounding)
+                cells[values] = f"{shown_value} +- {shown_error}"
             rows.append(tuple(cells))
         paired = replace(self, rows=tuple(rows), uncertainties={**self.uncertainties, value: error})
         return paired.drop(error)

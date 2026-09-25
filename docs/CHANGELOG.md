@@ -64,6 +64,10 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- A fitted value and its uncertainty could keep a digit too many when rounding carried (1.2345 ± 0.0996
+  was written 1.234 ± 0.100, not 1.23 ± 0.10), and every digit of an uncertainty above the units
+  (12346 ± 1234, not 12300 ± 1200); tables had the second problem too. Fits and tables now share one
+  decimal rounding.
 - `labharness add --insert` put the figure block between `\bibliographystyle` and
   `\bibliography` in the templates that have both. It now goes before them.
 - The figure block `add` writes had no placement, so a figure added after the text of a page

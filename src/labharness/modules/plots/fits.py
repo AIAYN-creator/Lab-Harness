@@ -7,10 +7,12 @@ find a starting point.
 
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
+from decimal import Decimal
 from typing import Any
 
 from labharness.core.errors import LabHarnessError
 from labharness.core.extras import require
+from labharness.core.numbers import round_together
 
 MODELS = ("linear", "polynomial", "log", "exp", "power")
 
@@ -233,12 +235,13 @@ def _r_squared(numpy: Any, y: Any, predicted: Any) -> float:
 
 
 def _round_together(value: float, uncertainty: float) -> tuple[str, str]:
-    """Round a value to the precision its uncertainty justifies: 0.0123 +/- 0.0004."""
-    from math import floor, isnan, log10
+    """Round a value to the precision its uncertainty justifies: 0.0123 +/- 0.0004.
 
-    if uncertainty <= 0 or isnan(uncertainty):
+    Two significant figures in the uncertainty, as for every fitted parameter, rounded in
+    decimal on the shortest representation of each float, like the tables.
+    """
+    from math import isfinite
+
+    if not isfinite(uncertainty) or uncertainty <= 0:
         return f"{value:.4g}", f"{uncertainty:.1g}"
-
-    exponent = floor(log10(abs(uncertainty)))
-    digits = max(0, -exponent + 1)
-    return f"{value:.{digits}f}", f"{uncertainty:.{digits}f}"
+    return round_together(Decimal(repr(value)), Decimal(repr(uncertainty)), significant=2)
