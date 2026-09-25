@@ -7,6 +7,7 @@ import sys
 from pathlib import Path
 
 import pytest
+from pypdf import PdfReader
 
 from labharness.core import LabHarnessError, load_workspace
 from labharness.eject import VENDOR, eject
@@ -182,3 +183,58 @@ def test_build_py_regenerates_the_whole_paper_without_labharness(ejected: Path) 
     assert (ejected / "paper.pdf").read_bytes().startswith(b"%PDF")
     # The citation of the demo was resolved: BibTeX ran.
     assert "moragomez2020" in (ejected / "paper.bbl").read_text(encoding="utf-8")
+
+
+TABLE_SCRIPT = """\
+# tables/rates.tex -- apparent rate constants
+from labharness.modules.tables import read_table, write_table
+
+write_table(read_table("data/kapp.csv"), "tables/rates.tex")
+"""
+
+TABLE_ENTRY = """
+[[table]]
+output = "tables/rates.tex"
+script = "scripts/rates.py"
+inputs = ["data/kapp.csv"]
+"""
+
+
+@pytest.mark.latex
+@needs("rdkit", "scipy", "matplotlib")
+@pytest.mark.skipif(
+    shutil.which("pdflatex") is None or shutil.which("bibtex") is None,
+    reason="needs a LaTeX distribution",
+)
+def test_a_table_regenerates_in_the_ejected_copy_and_reaches_the_pdf(tmp_path: Path) -> None:
+    workspace = tmp_path / "demo"
+    shutil.copytree(DEMO, workspace)
+    (workspace / "scripts" / "rates.py").write_text(TABLE_SCRIPT, encoding="utf-8")
+    with (workspace / "labharness.toml").open("a", encoding="utf-8") as manifest:
+        manifest.write(TABLE_ENTRY)
+    paper = workspace / "paper.tex"
+    paper.write_text(
+        paper.read_text(encoding="utf-8").replace(
+            "\\end{document}",
+            "\\begin{table}\\labtable{tables/rates.tex}\\end{table}\n\\end{document}",
+        ),
+        encoding="utf-8",
+    )
+    target = tmp_path / "standalone"
+    eject(load_workspace(workspace), target)
+
+    result = subprocess.run(
+        [sys.executable, "-c", WITHOUT_LABHARNESS, "build.py"],
+        cwd=target,
+        capture_output=True,
+        text=True,
+        errors="replace",
+    )
+
+    assert result.returncode == 0, result.stdout[-2000:] + result.stderr[-2000:]
+    assert (target / VENDOR / "modules" / "tables").is_dir()
+    assert "0.0150" in (target / "tables" / "rates.tex").read_text(encoding="utf-8")
+    assert (target / "paper.pdf").read_bytes().startswith(b"%PDF")
+    # The generated table reached the page, not the placeholder shown when it is missing.
+    pages = PdfReader(target / "paper.pdf").pages
+    assert "0.0150" in "".join(page.extract_text() for page in pages)
