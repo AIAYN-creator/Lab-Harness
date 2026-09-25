@@ -1,6 +1,6 @@
-# LabHarness
+# <img src="docs/brand/logo.svg" alt="LabHarness" width="340">
 
-Turn raw lab data into publication-ready LaTeX figures, and keep the PDF in sync while you work.
+**From lab data to PDF in 1.3 seconds.** Change a number: the figure, the fit and the text follow.
 
 ![From a CSV to a figure in the PDF with labharness add and watch; then a changed measurement moves its point and the rate constant quoted in the text](docs/assets/demo.gif)
 
