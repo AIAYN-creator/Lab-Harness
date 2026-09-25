@@ -41,11 +41,18 @@ and maintainer approval, security alerts, and protected release tags.
 **Done when:** someone outside the project can install LabHarness from the README alone and
 generate a figure without help.
 
-## v1.5+ — New domains
+## v1.5 — A modular LabHarness
 
-*Only if v1.0 shows real traction.* The same core applied to economics (statsmodels/stargazer),
-mathematics (Manim/TikZ) and architecture and engineering (.bc3, .dxf), each as its own extra or
-package. Online name resolution through PubChem lands here too, behind an explicit flag.
+**Goal:** anyone can build a package with the modules, figure templates and agent rules their
+field needs, without touching the core (ADR 30 and 31).
+
+**Includes:** the domain contract, with chemistry as its first domain; the first new domains, in
+the order the demand sets: economics (regression tables from statsmodels), mathematics (TikZ and
+pgfplots templates) and construction (.bc3 budgets, .dxf plans); bar charts and heat maps; online
+name resolution through PubChem, behind an explicit flag; and a working environment that opens
+the manuscript, the console and the PDF side by side, with the PDF on either side.
+
+**Goes ahead** whether or not v1.0 draws outside users: the author uses it.
 
 ## v2.0 — Graphical interface
 
