@@ -75,6 +75,10 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Warnings from figure modules (a structure that does not fit, error bars inferred from the
   decimals) never reached the terminal when the watcher ran the script. They are now printed
   under the figure on every rebuild.
+- In a CSV separated by semicolons, a plot read `1.5` as fifteen, taking the point for a
+  thousands separator. Plots and tables now share one reader: a point or a comma is always the
+  decimal mark, it reads UTF-16 and the Windows encoding, skips metadata above the header with a
+  warning, and stops at a summary row at the end instead of misreading it.
 
 - Python figure scripts always used the ACS style, whatever journal the workspace had.
 

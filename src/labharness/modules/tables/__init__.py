@@ -12,12 +12,12 @@ Place it in the manuscript with ``\\labtable{tables/optimisation.tex}`` inside a
 environment that carries the caption and the label.
 """
 
+from labharness.core.tabular import parse_decimal
 from labharness.modules.tables.io import read_table, write_table
 from labharness.modules.tables.table import (
     ROUNDING,
     Table,
     from_rows,
-    parse_decimal,
     round_places,
     round_significant,
 )

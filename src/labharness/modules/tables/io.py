@@ -4,48 +4,34 @@ Reading keeps every cell as text. Writing puts numbers in siunitx columns, align
 decimal mark, exactly as they are written in the table, and everything else as text.
 """
 
-import csv
 import re
 from pathlib import Path
 
 from labharness.core.atomic import atomic_output
-from labharness.core.errors import LabHarnessError
-from labharness.modules.tables.table import DASHES, Table, from_rows, parse_decimal
+from labharness.core.tabular import DASHES, parse_decimal, read_rows
+from labharness.modules.tables.table import Table, from_rows
 
-DELIMITERS = (";", ",", "\t", "|")
-# Tried in order. UTF-16 carries a byte-order mark; cp1252 is what Windows software of any
-# age writes, including the old machines instruments are still attached to.
-ENCODINGS = ("utf-8-sig", "utf-16", "cp1252", "latin-1")
-TEXT_FORMATS = {".csv", ".tsv", ".txt", ".dat", ".asc"}
 EMPTY = "{---}"
 _SPECIALS = {"&": r"\&", "%": r"\%", "#": r"\#", "_": r"\_", "{": r"\{", "}": r"\}"}
 _MATH = re.compile(r"(\$[^$]*\$)")
 _UNCERTAIN = re.compile(r"^\s*(\S+)\s*\+-\s*(\S+)\s*$")
 
 
-def read_table(path: Path | str, delimiter: str | None = None, skip: int = 0) -> Table:
-    """Read a delimited text table (CSV, TSV...), every cell as text.
+def read_table(
+    path: Path | str,
+    delimiter: str | None = None,
+    skip: int | None = None,
+    skip_footer: int = 0,
+) -> Table:
+    """Read a delimited text table (CSV, TSV, TXT), every cell as text.
 
-    The delimiter is guessed from the header unless given; ``skip`` drops lines before the
-    header, for instrument exports that start with metadata. For any other format, export it
-    to CSV first, which every spreadsheet, database and instrument can do.
+    The delimiter is worked out from the file unless given. ``skip`` is the number of lines
+    above the header; left out, metadata lines an instrument writes there are skipped, with a
+    warning. ``skip_footer`` drops lines at the end, such as totals. For any other format,
+    export it to CSV first, which every spreadsheet, database and instrument can do.
     """
-    path = Path(path)
-    if not path.is_file():
-        raise LabHarnessError(f"'{path}' does not exist")
-    if path.suffix.lower() not in TEXT_FORMATS:
-        raise LabHarnessError(
-            f"'{path.name}' is not a delimited text table. Export it to CSV (every "
-            "spreadsheet, database and instrument can) and read that instead."
-        )
-
-    lines = _decode(path).splitlines()[skip:]
-    lines = [line for line in lines if line.strip()]
-    if not lines:
-        raise LabHarnessError(f"'{path.name}' has no rows")
-    delimiter = delimiter or _sniff(lines[0])
-    rows = list(csv.reader(lines, delimiter=delimiter))
-    return from_rows(rows[0], rows[1:], source=path.as_posix())
+    read = read_rows(path, delimiter=delimiter, skip=skip, skip_footer=skip_footer)
+    return from_rows(read.headers, read.rows, source=Path(path).as_posix())
 
 
 def write_table(table: Table, output: Path | str) -> Path:
@@ -98,24 +84,6 @@ def escape(text: str) -> str:
         part if part.startswith("$") else "".join(_SPECIALS.get(ch, ch) for ch in part)
         for part in _MATH.split(text.strip())
     )
-
-
-def _decode(path: Path) -> str:
-    data = path.read_bytes()
-    for encoding in ENCODINGS:
-        if encoding == "utf-16" and not data.startswith((b"\xff\xfe", b"\xfe\xff")):
-            continue
-        try:
-            return data.decode(encoding)
-        except UnicodeDecodeError:
-            continue
-    raise LabHarnessError(f"'{path.name}' is in an encoding LabHarness cannot read")
-
-
-def _sniff(header: str) -> str:
-    counts = {delimiter: header.count(delimiter) for delimiter in DELIMITERS}
-    best = max(counts, key=lambda delimiter: counts[delimiter])
-    return best if counts[best] else ","
 
 
 def _number_text(cell: str) -> str | None:

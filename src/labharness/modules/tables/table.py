@@ -10,15 +10,14 @@ so the original is never lost and the script reads as the list of what was done 
 
 from collections.abc import Callable, Iterable, Mapping, Sequence
 from dataclasses import dataclass, field, replace
-from decimal import ROUND_HALF_EVEN, ROUND_HALF_UP, Decimal, InvalidOperation
+from decimal import ROUND_HALF_EVEN, ROUND_HALF_UP, Decimal
 
 from labharness.core.errors import LabHarnessError
+from labharness.core.tabular import parse_decimal
 
 # How a half is rounded. Half up is what most chemistry courses teach (2.45 -> 2.5); half to
 # even is the ISO 80000-1 rule, which does not bias a long column of results upwards.
 ROUNDING = {"half-up": ROUND_HALF_UP, "half-even": ROUND_HALF_EVEN}
-# What a cell holds when there is no value: shown as a dash, never read as a number.
-DASHES = {"-", "--", "---", "—", "–"}
 
 
 @dataclass(frozen=True)
@@ -178,24 +177,6 @@ class Table:
             for row in self.rows
         )
         return replace(self, rows=rows)
-
-
-def parse_decimal(text: str) -> Decimal | None:
-    """The number written in a cell, or None for text, blanks and dashes.
-
-    Accepts a decimal comma (1,23), a leading plus, exponents (1.2e-3) and the Unicode minus
-    sign that spreadsheets and some instruments write.
-    """
-    cleaned = text.strip().replace("−", "-").replace(" ", "")
-    if not cleaned or cleaned in DASHES:
-        return None
-    if "," in cleaned and "." not in cleaned:
-        cleaned = cleaned.replace(",", ".")
-    try:
-        number = Decimal(cleaned)
-    except InvalidOperation:
-        return None
-    return number if number.is_finite() else None
 
 
 def round_significant(number: Decimal, figures: int, rounding: str) -> str:

@@ -189,3 +189,11 @@ def test_a_plot_without_axis_labels_is_refused(tmp_path: Path) -> None:
             x_label=("", None),
             y_label=("Signal", None),
         )
+
+
+def test_a_point_in_a_semicolon_file_is_a_decimal_point(tmp_path: Path) -> None:
+    source = write(tmp_path / "t.csv", "t;c\n0;1.5\n30;0.637\n")
+
+    points = read_series(Series(csv=source, x="t", y="c"))
+
+    assert list(points.y) == [1.5, 0.637]

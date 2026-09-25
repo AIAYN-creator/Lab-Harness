@@ -382,8 +382,18 @@ was exported from them.
 
 ### CSV
 
-Files with a header row. Columns are chosen by name in the script. CSV exported by Excel in
-languages that use `;` as the separator and `,` as the decimal mark is detected automatically.
+Files with a header row; columns are chosen by name in the script. Plots and tables read them
+the same way, and put up with what old instrument software writes:
+
+| In the file | What LabHarness does |
+|---|---|
+| UTF-8, UTF-16 with a byte-order mark, or the Windows encoding (cp1252) | Reads it, trying them in that order |
+| `;`, tab, `\|` or `,` between cells | Uses the first of those, in that order, that the last line of the file contains. The comma goes last because it is also a decimal mark |
+| `1,5` or `1.5` | Both are one and a half, whatever the separator. `1.234,5` is not read as a number: whether the point groups thousands would be a guess |
+| Lines of metadata above the header (instrument, operator, date) | Skipped, with a warning naming the first one. `skip=N` says how many there are and silences it; a metadata line with the same number of cells as the table cannot be told from a header, so pass `skip=` for those files |
+| A summary row at the end with more cells than the table | Stops with the line number. `skip_footer=N` drops the last N lines |
+
+`skip=` and `skip_footer=` are arguments of `read_table` and of `Series`.
 
 ### Error bars, in priority order
 

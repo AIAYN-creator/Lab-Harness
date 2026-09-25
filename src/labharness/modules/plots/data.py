@@ -5,7 +5,6 @@ column already computed, or nothing but the digits the instrument printed. All f
 handled here, and nothing is ever invented.
 """
 
-import csv
 import re
 from collections.abc import Sequence
 from dataclasses import dataclass, field
@@ -14,8 +13,8 @@ from typing import Any
 
 from labharness.core.errors import LabHarnessError
 from labharness.core.extras import require
+from labharness.core.tabular import parse_decimal, read_rows
 
-DELIMITERS = [",", ";", "\t"]
 DECIMAL_DIGITS = re.compile(r"[.,](\d+)")
 
 
@@ -32,6 +31,9 @@ class Series:
     label: str | None = None
     error_column: str | None = None
     resolution: float | None = None
+    # Lines above the header and at the end of the file; see core.tabular.read_rows.
+    skip: int | None = None
+    skip_footer: int = 0
 
 
 @dataclass
@@ -52,23 +54,17 @@ def read_series(series: Series) -> Points:
     numpy = require("numpy", extra="plots")
 
     path = Path(series.csv)
-    if not path.is_file():
-        raise LabHarnessError(f"'{path}' does not exist")
-
-    rows, delimiter = _read_rows(path)
+    rows = _read_rows(path, series)
     y_columns = [series.y] if isinstance(series.y, str) else list(series.y)
     _check_columns(rows, [series.x, *y_columns], path, series.error_column)
 
     x_raw = [row[series.x] for row in rows]
-    x = numpy.array([_number(value, delimiter, series.x, path) for value in x_raw])
+    x = numpy.array([_number(value, series.x, path) for value in x_raw])
     warnings: list[str] = []
 
     if len(y_columns) > 1:
         values = numpy.array(
-            [
-                [_number(row[column], delimiter, column, path) for column in y_columns]
-                for row in rows
-            ]
+            [[_number(row[column], column, path) for column in y_columns] for row in rows]
         )
         y = values.mean(axis=1)
         error = values.std(axis=1, ddof=1)
@@ -80,15 +76,12 @@ def read_series(series: Series) -> Points:
             )
     else:
         column = y_columns[0]
-        y = numpy.array([_number(row[column], delimiter, column, path) for row in rows])
+        y = numpy.array([_number(row[column], column, path) for row in rows])
         error, source, replicates = None, "none", 1
 
     if series.error_column is not None:
         error = numpy.array(
-            [
-                _number(row[series.error_column], delimiter, series.error_column, path)
-                for row in rows
-            ]
+            [_number(row[series.error_column], series.error_column, path) for row in rows]
         )
         source = "error column"
     elif source == "none" and _has_repeated(x):
@@ -123,25 +116,11 @@ def read_series(series: Series) -> Points:
     )
 
 
-def _read_rows(path: Path) -> tuple[list[dict[str, str]], str]:
-    text = path.read_text(encoding="utf-8-sig")
-    delimiter = _sniff(text)
-    rows = list(csv.DictReader(text.splitlines(), delimiter=delimiter))
-    if not rows:
+def _read_rows(path: Path, series: Series) -> list[dict[str, str]]:
+    read = read_rows(path, skip=series.skip, skip_footer=series.skip_footer)
+    if not read.rows:
         raise LabHarnessError(f"'{path}' has no data rows")
-    return rows, delimiter
-
-
-def _sniff(text: str) -> str:
-    """Pick the delimiter by counting them in the header.
-
-    Spreadsheets in languages that use the comma as the decimal mark export with semicolons,
-    which is what most of this data looks like.
-    """
-    header = text.splitlines()[0] if text.splitlines() else ""
-    counts = {delimiter: header.count(delimiter) for delimiter in DELIMITERS}
-    best = max(counts, key=lambda delimiter: counts[delimiter])
-    return best if counts[best] else ","
+    return [dict(zip(read.headers, row, strict=True)) for row in read.rows]
 
 
 def _check_columns(
@@ -155,17 +134,12 @@ def _check_columns(
             )
 
 
-def _number(value: str, delimiter: str, column: str, path: Path) -> float:
+def _number(value: str, column: str, path: Path) -> float:
     """Read a number written either as 1.23 or as 1,23."""
-    text = (value or "").strip()
-    if delimiter == ";" or ("," in text and "." not in text):
-        text = text.replace(".", "").replace(",", ".")
-    try:
-        return float(text)
-    except ValueError as error:
-        raise LabHarnessError(
-            f"'{path.name}', column '{column}': '{value}' is not a number"
-        ) from error
+    number = parse_decimal(value or "")
+    if number is None:
+        raise LabHarnessError(f"'{path.name}', column '{column}': '{value}' is not a number")
+    return float(number)
 
 
 def _resolution_from_digits(values: Sequence[str]) -> tuple[float, bool]:
