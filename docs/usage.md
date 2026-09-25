@@ -1,9 +1,10 @@
 # LabHarness usage
 
-Complete reference for the v0.1 command line, file formats and troubleshooting.
+How to use LabHarness: every command with examples, the manifest, the file formats and
+troubleshooting. Every option of every command, generated from the command line itself, is in
+[`cli.md`](cli.md).
 
-> **Alpha, v0.1.0.** Every command below works today. Anything marked **[not implemented yet]**
-> is specification (README-driven development).
+> **Alpha.** Everything below works on `main` today.
 
 - [Concepts](#concepts)
 - [Global options](#global-options)
@@ -461,7 +462,7 @@ by number from 0, and `cells="A3:D20"` a range.
    (`0.123` → ± 0.001). Files are read as text so trailing zeros are not lost; set `resolution=`
    in the script if your export trimmed them.
 
-Fits are weighted whenever real uncertainties are available. Errors in x are not handled in v0.1.
+Fits are weighted whenever real uncertainties are available. Errors in x are not handled yet.
 
 ### The lab compound library
 
@@ -504,9 +505,9 @@ The journal style file defines, in one place: the typeface, figure text sizes, c
 structure geometry and plot defaults. Modules never hard-code any of it, so switching journals is
 switching style files.
 
-| What | v0.1 |
+| What | The ACS template, as an example |
 |---|---|
-| Typeface | The LaTeX default (Computer Modern / Latin Modern), for text and figures alike |
+| Typeface | Latin Modern by default, for text and figures alike; any of the five in *Typefaces* |
 | Figure width | One ACS column, 3.25 in |
 | Figure text | 8 pt at final size |
 | Structures | ACS 1996 geometry: 14.4 pt bonds, 0.6 pt lines |

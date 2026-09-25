@@ -43,6 +43,13 @@ uv run pytest -m "not latex"    # without a LaTeX distribution
 Tests that need LaTeX are marked `latex` and skip themselves when it is missing, so the suite runs
 anywhere; CI runs them on TeX Live (Linux) and MiKTeX (Windows).
 
+Changed a command or an option? Regenerate the command reference, which a test compares with
+the command line:
+
+```bash
+uv run python -m typer labharness.cli.app utils docs --name labharness --output docs/cli.md
+```
+
 ## How a pull request gets in
 
 1. Fork the repository and work on a short-lived branch.

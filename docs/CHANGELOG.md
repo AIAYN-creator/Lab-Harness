@@ -9,6 +9,8 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- `docs/cli.md`: every option of every command, generated from the command line, with a test
+  that fails when it falls behind.
 - The lab compound library (the `library` extra): an inventory exported to CSV or `.xlsx`,
   named by `[library]` in the manifest. `resolve` looks in it first, by name, code or alias,
   `render_structure(compound=..., library=...)` draws from it, and `labharness library check`
