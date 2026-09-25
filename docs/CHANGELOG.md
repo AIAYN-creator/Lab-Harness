@@ -54,6 +54,9 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- A cell that is not a number stops a plot with its file, line and column (`'decay.csv', line 6,
+  column 'c': 'n.d.' is not a number`), and the watcher prints that message alone instead of a
+  traceback, then keeps watching. A traceback is still shown when a script itself is broken.
 - macOS is a tier-1 platform: its CI job is part of `ci-pass`. `doctor` asks for `luatex85`
   when a workspace compiles with LuaLaTeX and the distribution lacks it, as BasicTeX does.
 - **Perl is no longer needed.** LabHarness runs the full LaTeX build itself: pdflatex, BibTeX or

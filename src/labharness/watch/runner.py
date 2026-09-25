@@ -10,7 +10,7 @@ from collections.abc import Iterator, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from labharness.core.errors import LabHarnessWarning
+from labharness.core.errors import LabHarnessError, LabHarnessWarning
 from labharness.core.latex import run_pdflatex
 from labharness.core.lock import DataReport, check_data
 from labharness.core.manifest import Figure, Workspace
@@ -133,6 +133,14 @@ def build_figure(workspace: Workspace, figure: Figure) -> FigureResult:
                 using_journal(workspace.journal, workspace.font),
             ):
                 runpy.run_path(str(script), run_name="__main__")
+        except LabHarnessError as error:  # a problem in the data or the call: the message says it
+            return FigureResult(
+                figure,
+                ok=False,
+                seconds=time.perf_counter() - started,
+                error=str(error),
+                warnings=tuple(collected),
+            )
         except Exception:  # noqa: BLE001 - a broken script must not stop the watcher
             return FigureResult(
                 figure,

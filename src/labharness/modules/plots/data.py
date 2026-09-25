@@ -13,7 +13,7 @@ from typing import Any
 
 from labharness.core.errors import LabHarnessError
 from labharness.core.extras import require
-from labharness.core.tabular import parse_decimal, read_rows
+from labharness.core.tabular import Rows, parse_decimal, read_rows
 
 DECIMAL_DIGITS = re.compile(r"[.,](\d+)")
 
@@ -57,18 +57,14 @@ def read_series(series: Series) -> Points:
     numpy = require("numpy", extra="plots")
 
     path = Path(series.csv)
-    rows = _read_rows(path, series)
+    read = _read(path, series)
     y_columns = [series.y] if isinstance(series.y, str) else list(series.y)
-    _check_columns(rows, [series.x, *y_columns], path, series.error_column)
 
-    x_raw = [row[series.x] for row in rows]
-    x = numpy.array([_number(value, series.x, path) for value in x_raw])
+    x = numpy.array(_numbers(read, series.x, path))
     warnings: list[str] = []
 
     if len(y_columns) > 1:
-        values = numpy.array(
-            [[_number(row[column], column, path) for column in y_columns] for row in rows]
-        )
+        values = numpy.column_stack([_numbers(read, column, path) for column in y_columns])
         y = values.mean(axis=1)
         error = values.std(axis=1, ddof=1)
         source, replicates = "replicates", len(y_columns)
@@ -79,13 +75,11 @@ def read_series(series: Series) -> Points:
             )
     else:
         column = y_columns[0]
-        y = numpy.array([_number(row[column], column, path) for row in rows])
+        y = numpy.array(_numbers(read, column, path))
         error, source, replicates = None, "none", 1
 
     if series.error_column is not None:
-        error = numpy.array(
-            [_number(row[series.error_column], series.error_column, path) for row in rows]
-        )
+        error = numpy.array(_numbers(read, series.error_column, path))
         source = "error column"
     elif source == "none" and _has_repeated(x):
         x, y, error, replicates = _group_repeats(numpy, x, y)
@@ -98,7 +92,7 @@ def read_series(series: Series) -> Points:
     elif source == "none":
         resolution = series.resolution
         if resolution is None:
-            resolution, mixed = _resolution_from_digits([row[y_columns[0]] for row in rows])
+            resolution, mixed = _resolution_from_digits(read.column(y_columns[0]))
             if mixed:
                 warnings.append(
                     f"{path.name}: column '{y_columns[0]}' does not use the same number of "
@@ -119,7 +113,7 @@ def read_series(series: Series) -> Points:
     )
 
 
-def _read_rows(path: Path, series: Series) -> list[dict[str, str]]:
+def _read(path: Path, series: Series) -> Rows:
     read = read_rows(
         path,
         skip=series.skip,
@@ -129,26 +123,29 @@ def _read_rows(path: Path, series: Series) -> list[dict[str, str]]:
     )
     if not read.rows:
         raise LabHarnessError(f"'{path}' has no data rows")
-    return [dict(zip(read.headers, row, strict=True)) for row in read.rows]
+    return read
 
 
-def _check_columns(
-    rows: list[dict[str, str]], needed: list[str], path: Path, error_column: str | None
-) -> None:
-    available = set(rows[0])
-    for column in [*needed, *([error_column] if error_column else [])]:
-        if column not in available:
+def _numbers(read: Rows, column: str, path: Path) -> list[float]:
+    """A column as numbers, written either as 1.23 or as 1,23.
+
+    A cell that is not a number stops the plot with the file, the line and the column, so it
+    can be found and fixed in the data rather than guessed around.
+    """
+    try:
+        cells = read.column(column)
+    except LabHarnessError as error:
+        raise LabHarnessError(f"'{path.name}' {error}") from None
+    numbers = []
+    for line, cell in zip(read.lines, cells, strict=True):
+        number = parse_decimal(cell)
+        if number is None:
+            shown = f"'{cell}'" if cell.strip() else "an empty cell"
             raise LabHarnessError(
-                f"'{path.name}' has no column '{column}'. It has: {', '.join(sorted(available))}"
+                f"'{path.name}', line {line}, column '{column}': {shown} is not a number"
             )
-
-
-def _number(value: str, column: str, path: Path) -> float:
-    """Read a number written either as 1.23 or as 1,23."""
-    number = parse_decimal(value or "")
-    if number is None:
-        raise LabHarnessError(f"'{path.name}', column '{column}': '{value}' is not a number")
-    return float(number)
+        numbers.append(float(number))
+    return numbers
 
 
 def _resolution_from_digits(values: Sequence[str]) -> tuple[float, bool]:

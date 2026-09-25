@@ -42,6 +42,15 @@ class Rows:
     delimiter: str
     # The line number of the header in the file, counting from 1, for error messages.
     header_line: int
+    # The line of the file each row came from (the row number in a workbook).
+    lines: list[int]
+
+    def column(self, name: str) -> list[str]:
+        """The cells of one column, or an error that lists the columns there are."""
+        if name not in self.headers:
+            raise LabHarnessError(f"has no column '{name}'. It has: {', '.join(self.headers)}")
+        index = self.headers.index(name)
+        return [row[index] for row in self.rows]
 
 
 def read_rows(
@@ -118,6 +127,7 @@ def read_rows(
         rows=rows,
         delimiter=delimiter,
         header_line=numbered[start][0],
+        lines=[number for number, _ in numbered[start + 1 :]],
     )
 
 
