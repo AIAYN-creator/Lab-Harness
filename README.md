@@ -300,7 +300,7 @@ core.
 
 Nothing here is dated: see [`docs/ROADMAP.md`](docs/ROADMAP.md).
 
-**Not planned before v2.0:** a graphical interface for people who do not use a terminal.
+**v2.0 and beyond — the end goal:** a desktop application, for people who do not use a terminal.
 
 ## Roadmap
 
@@ -310,7 +310,7 @@ Nothing here is dated: see [`docs/ROADMAP.md`](docs/ROADMAP.md).
 | **v0.5** | Daily use: editorial tables, agent rules, protected data, lab compound libraries |
 | **v1.0** | Public release: more templates, selectable typeface, PyPI |
 | **v1.5** | Modular: anyone builds a package for their field; a working environment with manuscript, console and PDF |
-| **v2.0** | A graphical interface for people who do not use a terminal |
+| **v2.0** | The end goal: a desktop application, for people who do not use a terminal |
 
 See [`docs/ROADMAP.md`](docs/ROADMAP.md) for the detail.
 

@@ -54,11 +54,13 @@ the manuscript, the console and the PDF side by side, with the PDF on either sid
 
 **Goes ahead** whether or not v1.0 draws outside users: the author uses it.
 
-## v2.0 — Graphical interface
+## v2.0 — A desktop application
 
-*Only if v1.0 validates the pipeline and there is demand.* A separate product for people who do not
-use a terminal: the existing modules wrapped in a graphical interface, with compilation hidden and
-an editable code panel that keeps the human in the loop.
+**The end goal of the project** (ADR 32): LabHarness for people who do not use a terminal, and whom
+LaTeX already intimidates. A desktop application that wraps the existing modules, hides the
+compilation and keeps an editable code panel, so the human stays in the loop. It grows out of the
+working environment of v1.5, the same editor, console and PDF in a window of their own, and may
+take more than one version to get there.
 
 ## Design rules v0.1 must respect
 
