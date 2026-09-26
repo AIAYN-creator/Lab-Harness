@@ -17,6 +17,7 @@ import shutil
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from labharness.core.domains import Module, installed_modules
 from labharness.core.errors import LabHarnessError
 from labharness.core.manifest import MANIFEST_NAME, Workspace
 from labharness.core.templates import JOURNALS, STYLE_FILE, journal_template
@@ -80,8 +81,9 @@ def eject(workspace: Workspace, target: Path, force: bool = False) -> Ejected:
         ignore=shutil.ignore_patterns(*LEFT_BEHIND, *BUILD_ARTEFACTS),
     )
 
-    modules = _modules_used(workspace)
-    _vendor(target / VENDOR, modules, workspace.journal)
+    used = _modules_used(workspace)
+    _vendor(target / VENDOR, used, workspace.journal)
+    modules = [module.name for module in used]
 
     scripts, diagrams = [], []
     for figure in workspace.figures:
@@ -97,13 +99,15 @@ def eject(workspace: Workspace, target: Path, force: bool = False) -> Ejected:
             script.write_text(_standalone(workspace, script), encoding="utf-8", newline="\n")
             diagrams.append(figure.script.as_posix())
 
-    write_build_files(workspace, target, modules)
+    domains = sorted({m.distribution for m in used if not m.built_in and m.distribution})
+    write_build_files(workspace, target, modules, domains)
     return Ejected(target, tuple(modules), tuple(scripts), tuple(diagrams))
 
 
-def _modules_used(workspace: Workspace) -> list[str]:
-    """The ``labharness.modules`` subpackages the workspace's Python scripts import."""
-    used: list[str] = []
+def _modules_used(workspace: Workspace) -> list[Module]:
+    """The registered modules the workspace's Python scripts import, LabHarness's or a domain's."""
+    installed = installed_modules()
+    used: list[Module] = []
     for figure in workspace.figures:
         script = workspace.root / figure.script
         if script.suffix != ".py" or not script.is_file():
@@ -116,15 +120,19 @@ def _modules_used(workspace: Workspace) -> list[str]:
             elif isinstance(node, ast.Import):
                 names = [alias.name for alias in node.names]
             for name in names:
-                parts = name.split(".")
-                is_module = parts[:2] == ["labharness", "modules"] and len(parts) > 2
-                if is_module and parts[2] not in used:
-                    used.append(parts[2])
+                for module in installed:
+                    if module.provides(name) and module not in used:
+                        used.append(module)
     return used
 
 
-def _vendor(folder: Path, modules: list[str], journal: str) -> None:
-    """Copy the foundation and the used modules, renamed, with the style frozen."""
+def _vendor(folder: Path, modules: list[Module], journal: str) -> None:
+    """Copy the foundation and the used modules, renamed, with the style frozen.
+
+    LabHarness's own modules go inside ``_labharness``. A domain's package is copied next to
+    the scripts under its own name, so their imports stay as they are, with its imports of
+    LabHarness pointed at the frozen copy.
+    """
     if folder.exists():
         shutil.rmtree(folder)
     folder.mkdir(parents=True)
@@ -137,10 +145,16 @@ def _vendor(folder: Path, modules: list[str], journal: str) -> None:
         shutil.copytree(PACKAGE / part, folder / part, ignore=ignore)
     (folder / "modules").mkdir()
     shutil.copy(PACKAGE / "modules" / "__init__.py", folder / "modules" / "__init__.py")
+    copied = [folder]
     for module in modules:
-        shutil.copytree(PACKAGE / "modules" / module, folder / "modules" / module, ignore=ignore)
+        if module.built_in:
+            shutil.copytree(module.location(), folder / "modules" / module.name, ignore=ignore)
+            continue
+        destination = folder.parent.joinpath(*module.package.split("."))
+        shutil.copytree(module.location(), destination, ignore=ignore, dirs_exist_ok=True)
+        copied.append(destination)
 
-    for path in folder.rglob("*.py"):
+    for path in (file for place in copied for file in place.rglob("*.py")):
         path.write_text(
             _rewrite_imports(path.read_text(encoding="utf-8")), encoding="utf-8", newline="\n"
         )

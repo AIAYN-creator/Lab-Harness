@@ -32,6 +32,7 @@ def run_checks() -> list[Check]:
     return [
         _python(),
         *_extras(),
+        _modules(),
         _latex(),
         _bibtex(),
         *_engine(),
@@ -78,6 +79,17 @@ def _extras() -> list[Check]:
             )
         )
     return checks
+
+
+def _modules() -> Check:
+    """The modules installed: LabHarness's own, and those of any domain package."""
+    from labharness.core.domains import installed_modules
+
+    names = [
+        module.name if module.built_in else f"{module.name} ({module.distribution})"
+        for module in installed_modules()
+    ]
+    return Check("modules", True, ", ".join(names), required=False)
 
 
 def _latex() -> Check:

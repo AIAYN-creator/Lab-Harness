@@ -8,6 +8,7 @@ does, minus the watcher, and it is short enough to read.
 
 import pprint
 import re
+from collections.abc import Sequence
 from datetime import UTC, datetime
 from importlib import metadata
 from pathlib import Path
@@ -145,7 +146,9 @@ It also needs a LaTeX distribution with `pdflatex` and `bibtex` (MiKTeX or TeX L
 """
 
 
-def write_build_files(workspace: Workspace, target: Path, modules: list[str]) -> list[str]:
+def write_build_files(
+    workspace: Workspace, target: Path, modules: list[str], domains: Sequence[str] = ()
+) -> list[str]:
     """Write build.py, requirements.txt, EJECTED.md and the compile shortcuts into ``target``."""
     from labharness import __version__
 
@@ -158,7 +161,7 @@ def write_build_files(workspace: Workspace, target: Path, modules: list[str]) ->
             document=workspace.document.name,
             figures=pprint.pformat(figures, width=90),
         ),
-        "requirements.txt": requirements([*modules, *_data_extras(workspace)]),
+        "requirements.txt": requirements([*modules, *_data_extras(workspace)], domains),
         "EJECTED.md": EJECTED_MD.format(version=__version__, date=date, journal=workspace.journal),
         "compile.sh": "#!/usr/bin/env sh\n# Regenerate the figures and the paper.\n"
         'exec python build.py "$@"\n',
@@ -175,15 +178,36 @@ def _data_extras(workspace: Workspace) -> list[str]:
     return ["excel"] if any(path.suffix.lower() == ".xlsx" for path in inputs) else []
 
 
-def requirements(modules: list[str]) -> str:
-    """Exact versions of the packages the used modules need, as installed right now."""
+def requirements(modules: list[str], domains: Sequence[str] = ()) -> str:
+    """Exact versions of the packages the used modules need, as installed right now.
+
+    ``domains`` are the packages of other fields a script imports: their code is copied, and
+    what they depend on is pinned here.
+    """
     lines = ["# The exact versions that drew these figures, written by labharness eject."]
-    for name in _distributions(modules):
+    for name in [*_distributions(modules), *_dependencies(domains)]:
         try:
             lines.append(f"{name}=={metadata.version(name)}")
         except metadata.PackageNotFoundError:
             lines.append(f"# {name}: not installed when this was ejected")
     return "\n".join(lines) + "\n"
+
+
+def _dependencies(distributions: Sequence[str]) -> list[str]:
+    """What the given packages require, without their extras and without LabHarness itself."""
+    names: list[str] = []
+    for distribution in distributions:
+        try:
+            requires = metadata.requires(distribution) or []
+        except metadata.PackageNotFoundError:
+            continue
+        for requirement in requires:
+            if "extra ==" in requirement:
+                continue
+            name = re.match(r"[A-Za-z0-9_.\-]+", requirement.strip())
+            if name and name.group(0).lower() != "labharness" and name.group(0) not in names:
+                names.append(name.group(0))
+    return names
 
 
 def _distributions(modules: list[str]) -> list[str]:

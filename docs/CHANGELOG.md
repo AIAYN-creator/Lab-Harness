@@ -67,6 +67,10 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- Modules are found through their `labharness.modules` entry points, LabHarness's own and
+  those of a package for another field alike. `eject` copies a domain package a script imports
+  next to the scripts, with its imports of LabHarness pointed at the frozen copy, and pins
+  what it depends on; `doctor` lists the modules installed.
 - The `article` and `report` templates cite author-year (`apalike`) instead of by number;
   one argument of `\bibliographystyle` to change back.
 - A cell that is not a number stops a plot with its file, line and column (`'decay.csv', line 6,
