@@ -105,12 +105,15 @@ jobs:
         run: |
           $packages = "achemso", "mciteplus", "natbib", "rsc", "elsarticle", "chemfig", "simplekv", "standalone", "pgf", "siunitx", "booktabs", "threeparttable"
           miktex --admin packages update-package-database
-          foreach ($attempt in 1..3) {
-            miktex --admin packages install @packages
-            if ($LASTEXITCODE -eq 0) { break }
-            if ($attempt -eq 3) { throw "MiKTeX packages did not install after 3 attempts" }
-            Write-Host "::warning::MiKTeX packages failed (attempt $attempt of 3), retrying in 30 s"
-            Start-Sleep -Seconds 30
+          # One by one: MiKTeX refuses the whole list when one of them is already there.
+          foreach ($package in $packages) {
+            foreach ($attempt in 1..3) {
+              $out = miktex --admin packages install $package 2>&1 | Out-String
+              if ($LASTEXITCODE -eq 0 -or $out -match "already installed") { break }
+              if ($attempt -eq 3) { throw "MiKTeX could not install $package after 3 attempts:`n$out" }
+              Write-Host "::warning::$package failed (attempt $attempt of 3), retrying in 30 s"
+              Start-Sleep -Seconds 30
+            }
           }
       - name: Report the environment
         shell: pwsh
