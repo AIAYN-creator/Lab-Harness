@@ -5,6 +5,7 @@ prints the result. No figure logic lives here, so a graphical interface can reus
 functions later.
 """
 
+import json
 import os
 import shlex
 import shutil
@@ -34,6 +35,7 @@ from labharness.modules.chem import load_library, resolve_name, write_smiles
 from labharness.modules.chem.library import workspace_library
 from labharness.preview import DEFAULT_DPI, Preview, preview_document, preview_figures
 from labharness.style.typefaces import available_typefaces
+from labharness.watch import events
 from labharness.watch.runner import BuildResult
 from labharness.watch.runner import build as run_build
 from labharness.watch.session import DEFAULT_DEBOUNCE_MS, Cycle, watch
@@ -162,10 +164,16 @@ def watch_command(
     debounce: Annotated[
         int, typer.Option(help="Milliseconds used to group rapid saves.")
     ] = DEFAULT_DEBOUNCE_MS,
+    as_json: Annotated[
+        bool, typer.Option("--json", help="Write what happens as JSON events, one per line.")
+    ] = False,
 ) -> None:
     """Watch the workspace and rebuild on every save."""
     with _reporting_errors():
         workspace = load_workspace()
+        if as_json:
+            _watch_as_json(workspace, debounce)
+            return
         typer.secho(f"Watching {workspace.root}", fg=typer.colors.GREEN)
 
         first = _build(workspace, list(workspace.figures), compile_latex=True)
@@ -389,6 +397,29 @@ def _print_result(result: BuildResult) -> None:
         f"  figures {_ms(result.figures_seconds)}  |  latex {_ms(result.latex_seconds)}  |  "
         f"total {_ms(result.total_seconds)}"
     )
+
+
+def _watch_as_json(workspace: Workspace, debounce: int) -> None:
+    """The same watch, told as events: for an editor, a page or a script to read."""
+
+    def emit(batch: list[dict[str, object]]) -> None:
+        for event in batch:
+            typer.echo(json.dumps(event, ensure_ascii=False))
+
+    emit([{"event": "watching", "root": workspace.root.as_posix()}])
+    emit(events.starting(workspace.root, (), workspace.figures))
+    emit(events.finished(_build(workspace, list(workspace.figures), compile_latex=True)))
+    try:
+        watch(
+            workspace,
+            on_cycle=lambda cycle: emit(events.finished(cycle.result)),
+            debounce_ms=debounce,
+            on_start=lambda changed, rebuilt: emit(
+                events.starting(workspace.root, changed, rebuilt)
+            ),
+        )
+    except KeyboardInterrupt:  # pragma: no cover - interactive
+        emit([{"event": "stopped"}])
 
 
 def _print_cycle(cycle: Cycle) -> None:

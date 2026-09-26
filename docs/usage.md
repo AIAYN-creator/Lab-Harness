@@ -107,7 +107,7 @@ before a live demo so LaTeX installs anything it is missing ahead of time.
 ### `labharness watch`
 
 ```
-labharness watch [--no-open] [--debounce MS]
+labharness watch [--no-open] [--debounce MS] [--json]
 ```
 
 The main loop. Watches `data/`, `scripts/`, `paper.tex`, the manifest and the style file. On every
@@ -118,9 +118,23 @@ each phase. It opens the PDF in your viewer on start (SumatraPDF on Windows, Ski
 |---|---|---|
 | `--no-open` | off | Do not open the PDF viewer on start |
 | `--debounce` | 100 ms | Wait this long to group rapid saves. Raise it if your editor saves in two steps |
+| `--json` | off | Instead of text, write what happens as JSON events, one per line, for an editor, a page or a script to read |
 
 If LaTeX fails, the error is summarised, the last good PDF stays on screen, and the watcher keeps
 running: fix the file, save, and it recovers.
+
+With `--json`, each line is one event: `watching` when it starts; `changed` for each file saved
+and `building` with the outputs about to be rebuilt; then `data` for each raw data file that
+changed since it was accepted, `built` for each figure or table (with `ok`, `seconds`, `warnings`
+and `error`) and `compiled` for LaTeX (with `ok`, `seconds` and `errors`). The events carry paths,
+times and messages, never the contents of the data.
+
+```json
+{"event": "changed", "path": "data/decay.csv"}
+{"event": "building", "outputs": ["figures/decay.pdf"]}
+{"event": "built", "output": "figures/decay.pdf", "kind": "figure", "ok": true, "seconds": 0.18, "warnings": [], "error": null}
+{"event": "compiled", "ok": true, "seconds": 1.15, "errors": []}
+```
 
 ### `labharness preview`
 

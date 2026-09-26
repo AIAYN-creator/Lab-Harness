@@ -102,6 +102,7 @@ $ labharness watch [OPTIONS]
 
 * `--no-open`: Do not open the PDF viewer.
 * `--debounce <int>`: Milliseconds used to group rapid saves.  [default: 100]
+* `--json`: Write what happens as JSON events, one per line.
 * `--help`: Show this message and exit.
 
 ## `labharness preview`

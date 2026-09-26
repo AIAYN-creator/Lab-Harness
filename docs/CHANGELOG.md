@@ -9,6 +9,9 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- `labharness watch --json`: what the watcher does, as JSON events one per line (`changed`,
+  `building`, `built`, `compiled`, `data`), for an editor, a page or a script to read, and for
+  the working environment of v1.5. The text output is unchanged.
 - `docs/cli.md`: every option of every command, generated from the command line, with a test
   that fails when it falls behind.
 - The lab compound library (the `library` extra): an inventory exported to CSV or `.xlsx`,

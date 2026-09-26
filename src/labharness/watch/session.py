@@ -9,6 +9,8 @@ from labharness.core.manifest import MANIFEST_NAME, STYLE_NAME, Figure, Workspac
 from labharness.watch.runner import BuildResult, build
 
 DEFAULT_DEBOUNCE_MS = 100
+# Called before a rebuild with the files saved and the figures and tables about to be rebuilt.
+Starting = Callable[[tuple[Path, ...], tuple[Figure, ...]], None]
 
 
 @dataclass(frozen=True)
@@ -28,6 +30,7 @@ class Cycle:
 def changes_to_cycles(
     workspace: Workspace,
     change_batches: Iterable[set[Path]],
+    on_start: Starting | None = None,
 ) -> Iterator[Cycle]:
     """Turn batches of changed paths into rebuilds.
 
@@ -46,6 +49,8 @@ def changes_to_cycles(
         if not affected and not document_changed:
             continue
 
+        if on_start is not None:
+            on_start(tuple(sorted(batch)), tuple(affected))
         # Only figures moved: LaTeX needs one pass, not a full latexmk run.
         result = build(workspace, figures=affected, compile_latex=True, quick=not document_changed)
         yield Cycle(
@@ -68,6 +73,7 @@ def watch(
     on_cycle: Callable[[Cycle], None],
     debounce_ms: int = DEFAULT_DEBOUNCE_MS,
     stop: Callable[[], bool] | None = None,
+    on_start: Starting | None = None,
 ) -> None:
     """Watch the workspace until interrupted, calling ``on_cycle`` after every rebuild.
 
@@ -82,7 +88,7 @@ def watch(
         for changes in watch_files(*paths, debounce=debounce_ms, step=10)
     )
 
-    for cycle in changes_to_cycles(workspace, batches):
+    for cycle in changes_to_cycles(workspace, batches, on_start):
         on_cycle(cycle)
         if stop is not None and stop():
             return
