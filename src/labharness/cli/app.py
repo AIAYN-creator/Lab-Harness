@@ -18,8 +18,9 @@ from typing import Annotated
 import typer
 
 from labharness import __version__
-from labharness.core.add import KINDS, add_figure
+from labharness.core.add import add_figure
 from labharness.core.cite import cite as add_citation
+from labharness.core.domains import figure_kinds
 from labharness.core.errors import LabHarnessError, MissingExtraError
 from labharness.core.githook import git_root, install_hook, main_check
 from labharness.core.lock import LOCK_NAME
@@ -104,7 +105,7 @@ def init(
 
 @app.command()
 def add(
-    kind: Annotated[str, typer.Argument(help=f"What to add: {', '.join(KINDS)}.")],
+    kind: Annotated[str, typer.Argument(help=f"What to add: {', '.join(figure_kinds())}.")],
     name: Annotated[
         str,
         typer.Argument(help="Name of the script, and of figures/<name>.pdf or tables/<name>.tex."),

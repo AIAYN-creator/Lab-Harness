@@ -70,6 +70,10 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- The kinds `labharness add` offers are registered under the `labharness.figures` entry points,
+  LabHarness's own included, and each template now lives in the module that draws it. A domain
+  package adds its kinds the same way; two packages with the same kind are told apart as
+  `package:kind`, never chosen between. `add` writes exactly what it wrote before.
 - Modules are found through their `labharness.modules` entry points, LabHarness's own and
   those of a package for another field alike. `eject` copies a domain package a script imports
   next to the scripts, with its imports of LabHarness pointed at the frozen copy, and pins

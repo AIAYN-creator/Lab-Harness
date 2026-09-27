@@ -48,6 +48,15 @@ diagrams = "labharness.modules.diagrams"
 plots = "labharness.modules.plots"
 tables = "labharness.modules.tables"
 
+# The kinds labharness add offers: each points at the package whose templates/<kind>.* it starts from.
+[project.entry-points."labharness.figures"]
+structure = "labharness.modules.chem"
+plot = "labharness.modules.plots"
+table = "labharness.modules.tables"
+mechanism = "labharness.modules.diagrams"
+flow = "labharness.modules.diagrams"
+network = "labharness.modules.diagrams"
+
 [dependency-groups]
 dev = ["pytest>=8", "pytest-cov", "pypdf>=5", "ruff", "mypy", "pre-commit"]
 

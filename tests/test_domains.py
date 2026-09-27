@@ -9,7 +9,8 @@ from typing import Any
 import pytest
 
 from labharness.core import create_workspace, load_workspace
-from labharness.core.domains import GROUP, installed_modules
+from labharness.core.add import add_figure
+from labharness.core.domains import FIGURES, GROUP, figure_kinds, installed_modules
 from labharness.eject import VENDOR, eject
 
 # A domain package as someone else would write it: its own name, importing LabHarness's core.
@@ -45,6 +46,11 @@ def toy_domain(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     package = tmp_path / "site" / "labharness_toy"
     package.mkdir(parents=True)
     (package / "__init__.py").write_text(TOY, encoding="utf-8")
+    (package / "templates").mkdir()
+    (package / "templates" / "note.py.template").write_text(
+        '# $output -- a note\nfrom labharness_toy import note\n\nnote("$output", "hello")\n',
+        encoding="utf-8",
+    )
     monkeypatch.syspath_prepend(str(tmp_path / "site"))
     real = metadata.entry_points
 
@@ -52,6 +58,9 @@ def toy_domain(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
         found = list(real(**selection))
         if selection.get("group") == GROUP:
             found.append(metadata.EntryPoint("toy", "labharness_toy", GROUP))
+        if selection.get("group") == FIGURES:
+            found.append(metadata.EntryPoint("note", "labharness_toy", FIGURES))
+            found.append(metadata.EntryPoint("plot", "labharness_toy", FIGURES))  # a clash
         return found
 
     monkeypatch.setattr(metadata, "entry_points", with_toy)
@@ -81,3 +90,22 @@ def test_an_ejected_workspace_carries_the_domain_it_uses(tmp_path: Path) -> None
     assert f"from {VENDOR}.core.atomic import atomic_output" in copied
     subprocess.run([sys.executable, "-c", WITHOUT_LABHARNESS], cwd=target, check=True)
     assert (target / "figures" / "note.txt").read_text(encoding="utf-8") == "made by a domain"
+
+
+@pytest.mark.usefixtures("toy_domain")
+def test_add_offers_the_kinds_a_domain_registers(tmp_path: Path) -> None:
+    workspace = create_workspace(tmp_path / "paper", journal="article")
+
+    added = add_figure(load_workspace(workspace), "note", "greeting")
+
+    script = (workspace / added.script).read_text(encoding="utf-8")
+    assert script.startswith("# figures/greeting.pdf -- a note")
+
+
+@pytest.mark.usefixtures("toy_domain")
+def test_two_packages_with_the_same_kind_are_told_apart_not_chosen() -> None:
+    kinds = figure_kinds()
+
+    assert "plot" not in kinds
+    assert kinds["labharness.modules.plots:plot"].package == "labharness.modules.plots"
+    assert kinds["labharness_toy:plot"].package == "labharness_toy"

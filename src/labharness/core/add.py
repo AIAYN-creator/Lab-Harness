@@ -12,24 +12,15 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from labharness.core.atomic import atomic_output
+from labharness.core.domains import figure_kinds
 from labharness.core.errors import LabHarnessError
 from labharness.core.manifest import MANIFEST_NAME, Workspace
 from labharness.core.tabular import TEXT_FORMATS, read_rows
-from labharness.core.templates import template_root
 
 FIGURES_FOLDER = "figures"
 TABLES_FOLDER = "tables"
 SCRIPTS_FOLDER = "scripts"
 
-# Each kind: the template it starts from and the suffix of the script it writes.
-KINDS: dict[str, str] = {
-    "structure": "structure.py.template",
-    "plot": "plot.py.template",
-    "mechanism": "mechanism.tex",
-    "flow": "flow.tex",
-    "network": "network.tex",
-    "table": "table.py.template",
-}
 # What a table can be read from.
 READABLE = TEXT_FORMATS | {".xlsx"}
 
@@ -69,15 +60,17 @@ def add_figure(
     ``inputs`` are paths relative to the workspace. With ``insert``, the figure block is
     also added to the manuscript, before the bibliography.
     """
-    if kind not in KINDS:
-        raise LabHarnessError(f"unknown figure kind '{kind}'. Available: {', '.join(KINDS)}")
+    kinds = figure_kinds()
+    if kind not in kinds:
+        raise LabHarnessError(f"unknown figure kind '{kind}'. Available: {', '.join(kinds)}")
     if not _NAME.match(name):
         raise LabHarnessError(
             f"'{name}' cannot be a figure name: use letters, digits, '-' and '_', "
             "starting with a letter or a digit"
         )
 
-    template = template_root().parent / "figures" / KINDS[kind]
+    template = kinds[kind].template()
+    kind = kinds[kind].name  # a kind asked for as package:kind
     suffix = ".tex" if template.suffix == ".tex" else ".py"
     script = Path(SCRIPTS_FOLDER) / f"{name}{suffix}"
     if kind == "table":

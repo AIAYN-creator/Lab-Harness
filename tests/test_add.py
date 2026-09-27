@@ -7,7 +7,8 @@ from typer.testing import CliRunner
 
 from labharness.cli import app
 from labharness.core import LabHarnessError, create_workspace, load_workspace
-from labharness.core.add import KINDS, add_figure
+from labharness.core.add import add_figure
+from labharness.core.domains import figure_kinds
 
 runner = CliRunner()
 
@@ -63,10 +64,10 @@ def test_diagrams_start_from_their_commented_template(root: Path, kind: str) -> 
 
 
 def test_every_kind_has_a_template(root: Path) -> None:
-    for number, kind in enumerate(KINDS):
+    for number, kind in enumerate(figure_kinds()):
         add_figure(load_workspace(root), kind, f"figure{number}")
 
-    assert len(load_workspace(root).figures) == len(KINDS)
+    assert len(load_workspace(root).figures) == len(figure_kinds())
 
 
 def test_insert_puts_the_figure_before_the_references(root: Path) -> None:

@@ -3,6 +3,10 @@
 Every module is registered the same way, under the ``labharness.modules`` entry point group:
 the four that ship with LabHarness, and any a package for another field declares in its own
 ``pyproject.toml``. Nothing in the core names a module; it asks here (ADR 31).
+
+A package also registers the kinds of figure ``labharness add`` offers, under
+``labharness.figures``: the name of the kind points at a package, and its template is the file
+``templates/<kind>.*`` inside it.
 """
 
 from dataclasses import dataclass
@@ -12,12 +16,21 @@ from pathlib import Path
 from labharness.core.errors import LabHarnessError
 
 GROUP = "labharness.modules"
+FIGURES = "labharness.figures"
 # The modules that ship with LabHarness, for when it runs without its package metadata.
 BUILT_IN = {
     "chem": "labharness.modules.chem",
     "diagrams": "labharness.modules.diagrams",
     "plots": "labharness.modules.plots",
     "tables": "labharness.modules.tables",
+}
+BUILT_IN_FIGURES = {
+    "structure": BUILT_IN["chem"],
+    "plot": BUILT_IN["plots"],
+    "table": BUILT_IN["tables"],
+    "mechanism": BUILT_IN["diagrams"],
+    "flow": BUILT_IN["diagrams"],
+    "network": BUILT_IN["diagrams"],
 }
 
 
@@ -33,10 +46,7 @@ class Module:
 
     def location(self) -> Path:
         """The folder the module's code is installed in."""
-        spec = util.find_spec(self.package)
-        if spec is None or not spec.submodule_search_locations:
-            raise LabHarnessError(f"the module '{self.name}' ({self.package}) is not installed")
-        return Path(next(iter(spec.submodule_search_locations)))
+        return _folder(self.package)
 
     def provides(self, imported: str) -> bool:
         """Whether an import of ``imported`` is an import of this module."""
@@ -52,3 +62,47 @@ def installed_modules() -> list[Module]:
     if not found:
         found = [Module(name, package, "labharness") for name, package in BUILT_IN.items()]
     return sorted(found, key=lambda module: module.name)
+
+
+@dataclass(frozen=True)
+class FigureKind:
+    """A kind of figure or table ``labharness add`` can start, and where its template is."""
+
+    name: str
+    package: str
+    distribution: str
+
+    def template(self) -> Path:
+        found = sorted((_folder(self.package) / "templates").glob(f"{self.name}.*"))
+        if not found:
+            raise LabHarnessError(
+                f"{self.package} registers the kind '{self.name}' but has no "
+                f"templates/{self.name}.* to start it from"
+            )
+        return found[0]
+
+
+def figure_kinds() -> dict[str, FigureKind]:
+    """Every kind installed, by name. Two packages with the same kind are told apart as
+    ``package:kind``, and neither is chosen by its plain name."""
+    found = [
+        FigureKind(point.name, point.value, point.dist.name if point.dist else "")
+        for point in metadata.entry_points(group=FIGURES)
+    ]
+    if not found:
+        found = [
+            FigureKind(name, package, "labharness") for name, package in BUILT_IN_FIGURES.items()
+        ]
+    kinds: dict[str, FigureKind] = {}
+    for kind in found:
+        clashing = [other for other in found if other.name == kind.name]
+        key = kind.name if len(clashing) == 1 else f"{kind.package}:{kind.name}"
+        kinds[key] = kind
+    return dict(sorted(kinds.items()))
+
+
+def _folder(package: str) -> Path:
+    spec = util.find_spec(package)
+    if spec is None or not spec.submodule_search_locations:
+        raise LabHarnessError(f"'{package}' is not installed")
+    return Path(next(iter(spec.submodule_search_locations)))

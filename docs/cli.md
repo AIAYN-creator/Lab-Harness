@@ -61,7 +61,7 @@ $ labharness add [OPTIONS] {kind} {name}
 
 **Arguments**:
 
-* `kind`: What to add: structure, plot, mechanism, flow, network, table.  [required]
+* `kind`: What to add: flow, mechanism, network, plot, structure, table.  [required]
 * `name`: Name of the script, and of figures/&lt;name&gt;.pdf or tables/&lt;name&gt;.tex.  [required]
 
 **Options**:

@@ -140,7 +140,8 @@ def _vendor(folder: Path, modules: list[Module], journal: str) -> None:
         '"""LabHarness, frozen: only what this paper\'s scripts use. See EJECTED.md."""\n',
         encoding="utf-8",
     )
-    ignore = shutil.ignore_patterns("__pycache__", "*.pyc")
+    # The templates are for labharness add, which an ejected paper no longer has.
+    ignore = shutil.ignore_patterns("__pycache__", "*.pyc", "templates")
     for part in FOUNDATION:
         shutil.copytree(PACKAGE / part, folder / part, ignore=ignore)
     (folder / "modules").mkdir()

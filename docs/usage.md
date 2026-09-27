@@ -80,7 +80,7 @@ above for a table.
 
 | Argument | Meaning |
 |---|---|
-| `kind` | `structure`, `plot`, `mechanism`, `flow`, `network` or `table` |
+| `kind` | `structure`, `plot`, `mechanism`, `flow`, `network` or `table`, and any kind an installed domain package brings. If two packages bring the same kind, name it as `package:kind` |
 | `name` | Used for the script and for `figures/<name>.pdf` or `tables/<name>.tex`: letters, digits, `-` and `_` |
 | `--input` | Input files the figure depends on. Repeatable. A `structure` without one reads `data/<name>.smi`; a `plot` fills in its column names from the CSV header, and a `table` reads its file as it is |
 | `--insert` | Also add the figure block to `paper.tex`, just before the bibliography |

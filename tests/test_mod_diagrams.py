@@ -7,10 +7,9 @@ import pytest
 from pypdf import PdfReader
 
 from labharness.core import LabHarnessError
+from labharness.core.domains import figure_kinds
 from labharness.modules.diagrams import build_document, render_diagram
 from labharness.style import load_style
-
-TEMPLATES = Path(__file__).resolve().parents[1] / "templates" / "figures"
 
 needs_latex = pytest.mark.skipif(
     shutil.which("pdflatex") is None, reason="needs a LaTeX distribution"
@@ -49,7 +48,7 @@ def test_a_drawing_becomes_a_vector_pdf(tmp_path: Path) -> None:
 @needs_latex
 @pytest.mark.parametrize("template", ["mechanism", "flow", "network"])
 def test_every_shipped_template_compiles(template: str, tmp_path: Path) -> None:
-    output = render_diagram(TEMPLATES / f"{template}.tex", tmp_path / f"{template}.pdf")
+    output = render_diagram(figure_kinds()[template].template(), tmp_path / f"{template}.pdf")
 
     assert output.is_file()
 
@@ -57,7 +56,7 @@ def test_every_shipped_template_compiles(template: str, tmp_path: Path) -> None:
 @pytest.mark.latex
 @needs_latex
 def test_a_mechanism_uses_the_document_typeface(tmp_path: Path) -> None:
-    output = render_diagram(TEMPLATES / "mechanism.tex", tmp_path / "mechanism.pdf")
+    output = render_diagram(figure_kinds()["mechanism"].template(), tmp_path / "mechanism.pdf")
 
     fonts = set()
     for page in PdfReader(str(output)).pages:
