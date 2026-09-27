@@ -10,7 +10,8 @@ import pytest
 
 from labharness.core import create_workspace, load_workspace
 from labharness.core.add import add_figure
-from labharness.core.domains import FIGURES, GROUP, figure_kinds, installed_modules
+from labharness.core.domains import FIELDS, FIGURES, GROUP, figure_kinds, installed_modules
+from labharness.core.errors import LabHarnessError
 from labharness.eject import VENDOR, eject
 
 # A domain package as someone else would write it: its own name, importing LabHarness's core.
@@ -51,6 +52,7 @@ def toy_domain(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
         '# $output -- a note\nfrom labharness_toy import note\n\nnote("$output", "hello")\n',
         encoding="utf-8",
     )
+    (package / "AGENTS.toys.md").write_text("# Rules for toys\n", encoding="utf-8")
     monkeypatch.syspath_prepend(str(tmp_path / "site"))
     real = metadata.entry_points
 
@@ -61,6 +63,8 @@ def toy_domain(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
         if selection.get("group") == FIGURES:
             found.append(metadata.EntryPoint("note", "labharness_toy", FIGURES))
             found.append(metadata.EntryPoint("plot", "labharness_toy", FIGURES))  # a clash
+        if selection.get("group") == FIELDS:
+            found.append(metadata.EntryPoint("toys", "labharness_toy", FIELDS))
         return found
 
     monkeypatch.setattr(metadata, "entry_points", with_toy)
@@ -109,3 +113,23 @@ def test_two_packages_with_the_same_kind_are_told_apart_not_chosen() -> None:
     assert "plot" not in kinds
     assert kinds["labharness.modules.plots:plot"].package == "labharness.modules.plots"
     assert kinds["labharness_toy:plot"].package == "labharness_toy"
+
+
+@pytest.mark.usefixtures("toy_domain")
+def test_a_workspace_stacks_the_rules_of_several_fields(tmp_path: Path) -> None:
+    root = create_workspace(tmp_path / "paper", fields=["chemistry", "toys", "chemistry"])
+
+    assert (root / "AGENTS.chemistry.md").is_file()
+    assert (root / "AGENTS.toys.md").read_text(encoding="utf-8") == "# Rules for toys\n"
+    assert (root / "CLAUDE.md").read_text(encoding="utf-8").split() == [
+        "@AGENTS.md",
+        "@AGENTS.chemistry.md",
+        "@AGENTS.toys.md",
+    ]
+
+
+def test_an_unknown_field_is_refused_before_anything_is_written(tmp_path: Path) -> None:
+    with pytest.raises(LabHarnessError, match="unknown field 'alchemy'. Installed: chemistry"):
+        create_workspace(tmp_path / "paper", fields=["alchemy"])
+
+    assert not (tmp_path / "paper").exists()

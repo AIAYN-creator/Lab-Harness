@@ -20,6 +20,7 @@ import typer
 from labharness import __version__
 from labharness.core.add import add_figure
 from labharness.core.cite import cite as add_citation
+from labharness.core.domains import fields as installed_fields
 from labharness.core.domains import figure_kinds
 from labharness.core.errors import LabHarnessError, MissingExtraError
 from labharness.core.githook import git_root, install_hook, main_check
@@ -27,7 +28,7 @@ from labharness.core.lock import LOCK_NAME
 from labharness.core.lock import accept as accept_changes
 from labharness.core.manifest import MANIFEST_NAME, Figure, Workspace, load_workspace
 from labharness.core.templates import DEFAULT_JOURNAL, available_journals
-from labharness.core.workspace import create_workspace
+from labharness.core.workspace import DEFAULT_FIELDS, create_workspace
 from labharness.doctor import everything_required_passes, run_checks
 from labharness.eject import eject
 from labharness.hints import detect_system
@@ -87,11 +88,21 @@ def init(
         str | None,
         typer.Option(help=f"Typeface: {', '.join(available_typefaces())}. Default: the journal's."),
     ] = None,
+    field: Annotated[
+        list[str] | None,
+        typer.Option(
+            "--field",
+            help=f"A field whose agent rules to add; repeat it for several: "
+            f"{', '.join(installed_fields())}. Default: chemistry.",
+        ),
+    ] = None,
     force: Annotated[bool, typer.Option(help="Write into a folder that is not empty.")] = False,
 ) -> None:
     """Create a workspace: manuscript, data, scripts, figures and manifest."""
     with _reporting_errors():
-        target = create_workspace(path, journal=journal, force=force, font=font)
+        target = create_workspace(
+            path, journal=journal, force=force, font=font, fields=field or DEFAULT_FIELDS
+        )
 
     typer.secho(f"Workspace created in {target}", fg=typer.colors.GREEN)
     if git_root(target) is not None:

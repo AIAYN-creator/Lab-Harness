@@ -46,6 +46,7 @@ $ labharness init [OPTIONS] [path]
 
 * `--journal <str>`: Template: acs, article, elsevier, report, rsc-draft.  [default: acs]
 * `--font <str>`: Typeface: latin-modern, termes, pagella, stix, libertinus. Default: the journal&#x27;s.
+* `--field <str>`: A field whose agent rules to add; repeat it for several: chemistry. Default: chemistry.
 * `--force / --no-force`: Write into a folder that is not empty.  [default: no-force]
 * `--help`: Show this message and exit.
 

@@ -9,6 +9,10 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- `labharness init --field NAME`, repeatable: the workspace carries the agent rules of each
+  field, and `CLAUDE.md` imports them all. The rules of a field live in its package, found
+  through the `labharness.fields` entry points; chemistry's are in the `chem` module. Without
+  `--field`, a workspace gets chemistry, as before.
 - `labharness watch --json`: what the watcher does, as JSON events one per line (`changed`,
   `building`, `built`, `compiled`, `data`), for an editor, a page or a script to read, and for
   the working environment of v1.5. The text output is unchanged.

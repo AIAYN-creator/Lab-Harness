@@ -57,6 +57,10 @@ mechanism = "labharness.modules.diagrams"
 flow = "labharness.modules.diagrams"
 network = "labharness.modules.diagrams"
 
+# The fields labharness init --field offers: each points at the package holding AGENTS.<field>.md.
+[project.entry-points."labharness.fields"]
+chemistry = "labharness.modules.chem"
+
 [dependency-groups]
 dev = ["pytest>=8", "pytest-cov", "pypdf>=5", "ruff", "mypy", "pre-commit"]
 

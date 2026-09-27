@@ -6,7 +6,8 @@ the four that ship with LabHarness, and any a package for another field declares
 
 A package also registers the kinds of figure ``labharness add`` offers, under
 ``labharness.figures``: the name of the kind points at a package, and its template is the file
-``templates/<kind>.*`` inside it.
+``templates/<kind>.*`` inside it. And the fields whose agent rules ``labharness init`` copies,
+under ``labharness.fields``: the rules of a field are ``AGENTS.<field>.md`` inside its package.
 """
 
 from dataclasses import dataclass
@@ -17,6 +18,7 @@ from labharness.core.errors import LabHarnessError
 
 GROUP = "labharness.modules"
 FIGURES = "labharness.figures"
+FIELDS = "labharness.fields"
 # The modules that ship with LabHarness, for when it runs without its package metadata.
 BUILT_IN = {
     "chem": "labharness.modules.chem",
@@ -32,6 +34,7 @@ BUILT_IN_FIGURES = {
     "flow": BUILT_IN["diagrams"],
     "network": BUILT_IN["diagrams"],
 }
+BUILT_IN_FIELDS = {"chemistry": BUILT_IN["chem"]}
 
 
 @dataclass(frozen=True)
@@ -99,6 +102,34 @@ def figure_kinds() -> dict[str, FigureKind]:
         key = kind.name if len(clashing) == 1 else f"{kind.package}:{kind.name}"
         kinds[key] = kind
     return dict(sorted(kinds.items()))
+
+
+@dataclass(frozen=True)
+class Field:
+    """A field whose rules for AI agents a workspace can carry, next to the general ones."""
+
+    name: str
+    package: str
+    distribution: str
+
+    def rules(self) -> Path:
+        rules = _folder(self.package) / f"AGENTS.{self.name}.md"
+        if not rules.is_file():
+            raise LabHarnessError(
+                f"{self.package} registers the field '{self.name}' but has no {rules.name}"
+            )
+        return rules
+
+
+def fields() -> dict[str, Field]:
+    """Every field installed, by name."""
+    found = [
+        Field(point.name, point.value, point.dist.name if point.dist else "")
+        for point in metadata.entry_points(group=FIELDS)
+    ]
+    if not found:
+        found = [Field(name, package, "labharness") for name, package in BUILT_IN_FIELDS.items()]
+    return {field.name: field for field in sorted(found, key=lambda field: field.name)}
 
 
 def _folder(package: str) -> Path:

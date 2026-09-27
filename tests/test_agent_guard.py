@@ -35,13 +35,13 @@ def test_the_rule_is_also_written_for_agents_that_read_agents_md(tmp_path: Path)
     assert "Never run `labharness accept`" in rules
 
 
-def test_the_demo_shows_the_same_protection() -> None:
+def test_the_demo_shows_the_same_protection(tmp_path: Path) -> None:
     demo = Path(__file__).resolve().parents[1] / "examples" / "demo"
-    template = Path(__file__).resolve().parents[1] / "templates" / "workspace"
+    fresh = create_workspace(tmp_path / "paper")
 
-    assert deny_rules(demo) == deny_rules(template)
+    assert deny_rules(demo) == deny_rules(fresh)
     for name in ("AGENTS.md", "AGENTS.chemistry.md", "CLAUDE.md"):
-        assert (demo / name).read_text(encoding="utf-8") == (template / name).read_text(
+        assert (demo / name).read_text(encoding="utf-8") == (fresh / name).read_text(
             encoding="utf-8"
         )
 
