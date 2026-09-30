@@ -26,3 +26,8 @@ body:
     attributes:
       label: Python or LaTeX tools that already do part of it
       description: A library that draws it, a LaTeX package, anything.
+  - type: input
+    id: bounty
+    attributes:
+      label: Would you put a bounty on it? (optional)
+      description: An amount, or "no". How it works is in docs/bounties.md.

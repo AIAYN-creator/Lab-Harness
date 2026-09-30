@@ -6,6 +6,7 @@
   { "name": "documentation", "color": "0075ca", "description": "README, usage guide, docstrings" },
   { "name": "journal", "color": "5319e7", "description": "A journal template or its style file" },
   { "name": "module", "color": "1d76db", "description": "A figure kind or a domain module" },
+  { "name": "bounty", "color": "0e8a16", "description": "A module request with a bounty on it" },
   { "name": "latex", "color": "008672", "description": "Compiling the document or the diagrams" },
   { "name": "platform:windows", "color": "c5def5", "description": "Only happens on Windows" },
   { "name": "platform:macos", "color": "c5def5", "description": "Only happens on macOS" },
