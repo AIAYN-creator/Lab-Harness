@@ -118,12 +118,14 @@ both and prints the command that installs each: `winget install Microsoft.Visual
 
 It writes `.vscode/tasks.json` (a task that runs `labharness watch --no-open` when the folder
 opens) and `.vscode/settings.json` (LaTeX Workshop shows the PDF in a tab and does not compile:
-LabHarness does). What you already had in those files stays. If either has comments, `open` says
+LabHarness does; and `data/` opens read-only, so a stray save cannot change a raw measurement). What you already had in those files stays. If either has comments, `open` says
 so and leaves it alone, because rewriting it would lose them.
 
 | Option | Default | Meaning |
 |---|---|---|
 | `--pdf` | `right` | The side of the manuscript the PDF opens on. Remembered in the workspace settings |
+
+The read-only `data/` is a convenience, not a protection: it can be switched off from the editor. What protects the data is the fingerprints, the git hook and the agent rules (`labharness accept` records a change on purpose).
 
 Two things VS Code decides. The first time, it asks whether to allow the automatic task: say yes
 once. And it does not let anyone place the PDF for you, so the first time you open it with the

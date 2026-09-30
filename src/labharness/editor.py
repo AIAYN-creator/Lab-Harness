@@ -3,7 +3,8 @@
 LabHarness does not build an editor. It writes the two files VS Code reads from ``.vscode/``
 and opens the folder: a task that starts the watcher when the folder opens, and the settings
 that make the LaTeX Workshop extension show the PDF in a tab, on the side the person chose,
-and leave compiling to LabHarness. What was already in those files is kept.
+and leave compiling to LabHarness, and open ``data/`` read-only. What was already in those
+files is kept.
 """
 
 import json
@@ -22,6 +23,10 @@ SIDES = ("left", "right")
 DEFAULT_SIDE = "right"
 
 SIDE_KEY = "latex-workshop.view.pdf.tab.editorGroup"
+READONLY_KEY = "files.readonlyInclude"
+# Raw data opens read-only: a Ctrl+S or a formatter cannot change it by accident. Changing it
+# is a decision, and then it is accepted with 'labharness accept'.
+READONLY_DATA = "data/**"
 # What LabHarness owns in settings.json: the rest of the file is the person's.
 SETTINGS = {
     "latex-workshop.latex.autoBuild.run": "never",
@@ -62,6 +67,11 @@ def configure(workspace: Workspace, side: str | None = None) -> list[Path]:
     settings = _read(folder / "settings.json")
     settings.update(SETTINGS)
     settings[SIDE_KEY] = side or settings.get(SIDE_KEY) or DEFAULT_SIDE
+    readonly = settings.get(READONLY_KEY)
+    settings[READONLY_KEY] = {
+        **(readonly if isinstance(readonly, dict) else {}),
+        READONLY_DATA: True,
+    }
 
     tasks = _read(folder / "tasks.json")
     tasks.setdefault("version", "2.0.0")

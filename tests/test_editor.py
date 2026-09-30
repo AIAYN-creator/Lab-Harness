@@ -40,6 +40,24 @@ def test_open_writes_the_task_and_the_settings(workspace: Workspace) -> None:
     assert settings[editor.SIDE_KEY] == "right"
 
 
+def test_raw_data_opens_read_only_and_the_paths_already_there_are_kept(
+    workspace: Workspace,
+) -> None:
+    folder = workspace.root / ".vscode"
+    folder.mkdir()
+    (folder / "settings.json").write_text(
+        json.dumps({editor.READONLY_KEY: {"dist/**": True}}), encoding="utf-8"
+    )
+
+    editor.configure(workspace)
+    editor.configure(workspace)
+
+    assert read(workspace.root, "settings.json")[editor.READONLY_KEY] == {
+        "dist/**": True,
+        "data/**": True,
+    }
+
+
 def test_what_the_person_already_had_is_kept(workspace: Workspace) -> None:
     folder = workspace.root / ".vscode"
     folder.mkdir()

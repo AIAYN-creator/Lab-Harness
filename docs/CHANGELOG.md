@@ -19,6 +19,7 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   terminal and the PDF beside it, on the side you choose (remembered). It writes `.vscode/tasks.json`
   and `.vscode/settings.json`, keeping what was there. It needs VS Code and the LaTeX Workshop
   extension, which `labharness doctor` now checks; nothing is installed for you.
+- `labharness open` opens `data/` read-only in VS Code, keeping any read-only paths already set.
 - `labharness watch` stops when you type `q` and press Enter, as well as with Ctrl+C.
 - `labharness init --field NAME`, repeatable: the workspace carries the agent rules of each
   field, and `CLAUDE.md` imports them all. The rules of a field live in its package, found
