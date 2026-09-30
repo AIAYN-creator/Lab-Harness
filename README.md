@@ -9,13 +9,17 @@
 > **Status: alpha.** The latest release is v0.1.0. `main` is on its way to v0.5 and already has
 > tables, five templates, a choice of typeface and engine, Excel files, a lab compound library,
 > references from a DOI, protected raw data and `eject`, and most of the modular core of v1.5:
-> a package for any field (`labharness new-domain`) and `labharness open` in VS Code. Everything described below runs on `main` today; see [Progress](#progress) for what is
-> done and what is next.
+> a package for any field (`labharness new-domain`) and `labharness open` in VS Code. Everything
+> described below runs on `main` today; see [Progress](#progress) for what is done and what is
+> next.
 
 LabHarness is a local-first, open-source (MIT) harness for scientific writing and lab-data
 automation — *Data-to-Paper*. Change a data point or a SMILES string, save, and the figure and the
 PDF update on their own. The pipeline is always short, readable Python you can open and edit,
 never a black box.
+
+What makes it more than a tool for one lab is its architecture: a small core, and **a module for
+each field**. [Build one, or ask for one and put a price on it.](#one-core-a-module-for-every-field)
 
 ## The problem
 
@@ -26,6 +30,24 @@ nobody is sure which figure goes with which data.
 
 In LabHarness the figure is a script that reads the data file. The figure, the fit and the number
 in the text all come from that one file, so changing it changes all three.
+
+## One core, a module for every field
+
+LabHarness is two things. A **core** that turns raw data into a document and keeps the PDF in
+sync, and **modules**, one per field, that know how to read that field's data and draw it.
+Chemistry, plots, tables and diagrams are modules. **Your field is a module too**, and LabHarness
+never has to change for it: a test guards that the core does not depend on any of them.
+
+| You want | What you do |
+|---|---|
+| **To use one** | Chemistry, plots, tables and diagrams come with LabHarness; [install only the ones you use](#install) |
+| **To build one** | `labharness new-domain architecture` writes a package ready to fill in, with its tests passing. [How it works](docs/modules.md) |
+| **To ask for one** | Open an issue with the [module request form](.github/ISSUE_TEMPLATE/new_module.yml): the figure you make today and what the data looks like. If the maintainer finds it worth doing, he does it, free |
+| **To put a price on it** | **Anyone can put a bounty on a request, and anyone can claim it**: the maintainer or another developer. [How bounties work](docs/bounties.md) |
+
+A module brings what the field needs and nothing else: its own kinds of figure for
+`labharness add`, its own rules for AI agents, its own commands and its own tests. It is a
+package of its own, so it is published and maintained by whoever wrote it.
 
 ## How fast is it
 
@@ -53,6 +75,9 @@ See what it produces in the [gallery](docs/gallery/README.md): the demo, and eve
 
 Researchers, PhD students and science students who already write in LaTeX or Overleaf and are
 comfortable with a terminal and an editor such as VS Code or Zed.
+
+And anyone who works in another field and would like LabHarness to speak it: that is what the
+modules are for.
 
 ## How it works
 
@@ -263,20 +288,6 @@ and Libertinus with `font = "..."` in the manifest. The LaTeX engine is `pdflate
 or `xelatex` and `lualatex` with `engine = "..."`. Figures are generated at their final printed
 size and included without scaling, so 8 pt in a figure is 8 pt on paper, and each structure is
 drawn as large as the column allows.
-
-## A module for your field
-
-The same core serves any field; what changes is the module that reads the data and draws.
-Chemistry, plots, tables and diagrams are modules, and **yours is a package of its own**, so
-LabHarness never has to change for it:
-
-```bash
-labharness new-domain architecture   # a package ready to fill in, with tests that pass
-```
-
-It brings its own figure templates for `labharness add`, its own rules for AI agents and, if it
-wants, its own commands. [How to build one](docs/modules.md). If you would rather not write it,
-[ask for it, and put a bounty on it](docs/bounties.md): anyone can claim it.
 
 ## Progress
 
