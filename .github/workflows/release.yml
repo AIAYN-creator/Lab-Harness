@@ -1,0 +1,103 @@
+name: release
+
+# Publishes LabHarness to PyPI with trusted publishing (OIDC): no token is stored anywhere.
+# It needs, once, a trusted publisher for this repository and this workflow on PyPI and on
+# TestPyPI, and the two GitHub environments below. See "Publishing a release" in
+# docs/onboarding.md.
+#
+# A tag v* publishes to PyPI after a rehearsal on TestPyPI. Running it by hand publishes an
+# existing tag to TestPyPI only, unless asked otherwise.
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag to publish, e.g. v0.1.0"
+        required: true
+      pypi:
+        description: "Also publish to PyPI, not only TestPyPI"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: build
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.tag.outputs.tag }}
+    steps:
+      - id: tag
+        run: echo "tag=${{ inputs.tag || github.ref_name }}" >> "$GITHUB_OUTPUT"
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.tag.outputs.tag }}
+      - uses: astral-sh/setup-uv@v5
+      - name: The tag and the package version agree
+        run: |
+          version=$(python3 -c 'import tomllib; print(tomllib.load(open("pyproject.toml", "rb"))["project"]["version"])')
+          tag="${{ steps.tag.outputs.tag }}"
+          echo "package $version, tag $tag"
+          [ "v$version" = "$tag" ] || { echo "::error::tag $tag does not match version $version"; exit 1; }
+      - run: uv build
+      - name: The wheel installs and runs, with no extras
+        run: |
+          uv venv /tmp/check
+          uv pip install --python /tmp/check dist/*.whl
+          /tmp/check/bin/labharness --version
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  testpypi:
+    name: testpypi
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: testpypi
+      url: https://test.pypi.org/project/labharness/
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - uses: astral-sh/setup-uv@v5
+      - run: uv publish --trusted-publishing always --publish-url https://test.pypi.org/legacy/
+
+  pypi:
+    name: pypi
+    needs: [build, testpypi]
+    if: github.event_name == 'push' || inputs.pypi
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/project/labharness/
+    permissions:
+      id-token: write
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - uses: astral-sh/setup-uv@v5
+      - run: uv publish --trusted-publishing always
+      - name: Attach the files to the GitHub release, if there is one
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="${{ needs.build.outputs.tag }}"
+          if gh release view "$tag" -R "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release upload "$tag" dist/* -R "$GITHUB_REPOSITORY" --clobber
+          fi

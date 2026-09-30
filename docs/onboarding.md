@@ -133,6 +133,33 @@ Windows is where LabHarness is developed and demoed, so these are first-class co
   stale. `initexmf --update-fndb` fixes it.
 - **Adobe Acrobat locks the PDF** and LaTeX then cannot write it. Use SumatraPDF.
 
+## Publishing a release
+
+Releases are published by `.github/workflows/release.yml` with **trusted publishing**: PyPI
+trusts this repository's workflow directly, so no API token exists anywhere to leak.
+
+### Once, before the first release
+
+1. On [PyPI](https://pypi.org/manage/account/publishing/) and on
+   [TestPyPI](https://test.pypi.org/manage/account/publishing/), add a *pending publisher*:
+   project `labharness`, owner `AIAYN-creator`, repository `Lab-Harness`, workflow `release.yml`,
+   environment `pypi` on PyPI and `testpypi` on TestPyPI. A pending publisher does not reserve
+   the name; the first upload does.
+2. In the repository settings, *Environments*, create `pypi` and `testpypi`. Requiring the
+   maintainer's approval on `pypi` makes every real publication a deliberate click.
+
+### Every release
+
+1. Bump `version` in `pyproject.toml`, run `uv lock`, and move the changelog entries from
+   *Unreleased* to the new version.
+2. Commit, tag `vX.Y.Z` on that commit, and push the tag.
+3. The workflow checks that the tag matches the version, builds the wheel and the sdist, checks
+   the wheel installs and runs without extras, publishes to TestPyPI, then to PyPI, and attaches
+   the files to the GitHub release if there is one.
+
+To rehearse, run the workflow by hand (*Actions → release → Run workflow*) with an existing tag:
+it stops after TestPyPI unless *Also publish to PyPI* is ticked.
+
 ## Decisions
 
 Every architectural decision is written down as an ADR in [`docs/adr/`](adr/): what was
