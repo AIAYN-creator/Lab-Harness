@@ -1,5 +1,6 @@
 """The watch loop: react to every save, rebuild only what changed, recompile."""
 
+import threading
 import time
 from collections.abc import Callable, Iterable, Iterator
 from dataclasses import dataclass
@@ -74,6 +75,7 @@ def watch(
     debounce_ms: int = DEFAULT_DEBOUNCE_MS,
     stop: Callable[[], bool] | None = None,
     on_start: Starting | None = None,
+    stop_event: threading.Event | None = None,
 ) -> None:
     """Watch the workspace until interrupted, calling ``on_cycle`` after every rebuild.
 
@@ -85,7 +87,7 @@ def watch(
     paths = [path for path in workspace.watched_paths if path.exists()]
     batches = (
         {Path(path) for _, path in changes}
-        for changes in watch_files(*paths, debounce=debounce_ms, step=10)
+        for changes in watch_files(*paths, debounce=debounce_ms, step=10, stop_event=stop_event)
     )
 
     for cycle in changes_to_cycles(workspace, batches, on_start):

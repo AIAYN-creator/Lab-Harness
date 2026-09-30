@@ -69,6 +69,11 @@ COMMANDS: dict[str, dict[str, str]] = {
         "arch": "sudo pacman -S poppler",
         "linux": "install poppler-utils (pdftoppm) or Ghostscript",
     },
+    "vscode": {
+        "windows": "winget install Microsoft.VisualStudioCode",
+        "macos": "brew install --cask visual-studio-code",
+        "linux": "install VS Code from https://code.visualstudio.com/, with 'code' on the PATH",
+    },
     "perl": {
         "windows": "winget install StrawberryPerl.StrawberryPerl",
         "linux": "perl comes with your distribution: install the 'perl' package",

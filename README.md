@@ -73,6 +73,7 @@ comfortable with a terminal and an editor such as VS Code or Zed.
 | [uv](https://docs.astral.sh/uv/) | Environment and lockfile | `pip install .` also works |
 | A LaTeX distribution | Compiling the document and the diagrams | MiKTeX or TeX Live/MacTeX. Perl and latexmk are not needed |
 | A PDF viewer that does not lock files | Live reload | SumatraPDF (Windows), Skim (macOS). **Adobe Acrobat will not work**: it locks the PDF |
+| [VS Code](https://code.visualstudio.com/) *(optional)* | `labharness open`: the manuscript, the watcher and the PDF in one window | With the LaTeX Workshop extension. Not needed for `watch` |
 | Java *(optional)* | IUPAC name resolution with OPSIN | Only for the `iupac` extra |
 
 ## Install
@@ -86,6 +87,7 @@ comfortable with a terminal and an editor such as VS Code or Zed.
 winget install astral-sh.uv
 winget install SumatraPDF.SumatraPDF
 winget install MiKTeX.MiKTeX                   # or TeX Live
+winget install Microsoft.VisualStudioCode      # optional, only for `labharness open`
 winget install EclipseAdoptium.Temurin.21.JDK  # optional, only for the iupac extra
 ```
 
@@ -161,6 +163,7 @@ All of these work today.
 | `labharness init [PATH] [--journal NAME] [--font NAME] [--field NAME...]` | Create a workspace from a template (`acs`, `elsevier`, `rsc-draft`, `article` or `report`), optionally with a typeface, and with the agent rules of each field you work in |
 | `labharness add <kind> <name> [--input FILE...]` | Add a figure or a table: writes the script and the manifest entry, and with `--insert` the LaTeX |
 | `labharness build [--only NAME] [--no-latex]` | Rebuild figures and compile the PDF once |
+| `labharness open [--pdf left\|right]` | Open the workspace in VS Code: the manuscript, the watcher in its terminal and the PDF beside it |
 | `labharness watch [--no-open] [--debounce MS] [--json]` | Watch, rebuild and recompile on every save; with `--json`, tell it as events for an editor or a script |
 | `labharness preview [--only NAME] [--document]` | Render figures (and the pages of the PDF) as PNG, to review them by eye |
 | `labharness resolve NAME -o FILE` | A compound of the lab library, or an IUPAC name, to SMILES, offline |
@@ -297,8 +300,8 @@ core.
 - [x] `init --field`, repeatable, for work that spans fields
 - [x] `labharness watch --json`: what the watcher does, as events
 - [ ] A domain package tested end to end, and `labharness new-domain NAME` to start one
-- [ ] `labharness open`: the manuscript, the watcher and the PDF side by side, the PDF on either
-  side
+- [x] `labharness open`: VS Code with the manuscript, the watcher and the PDF beside it, on either
+  side (VS Code and its LaTeX Workshop extension are needed for it)
 - [ ] First domains, in the order demand sets: economics, mathematics, construction
 - [ ] Bar charts and heat maps; PubChem behind `--online`; the lab library read straight from
   its database

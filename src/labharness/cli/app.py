@@ -5,19 +5,21 @@ prints the result. No figure logic lives here, so a graphical interface can reus
 functions later.
 """
 
+import contextlib
 import json
 import os
 import shlex
 import shutil
 import subprocess
 import sys
+import threading
 import time
 from pathlib import Path
 from typing import Annotated
 
 import typer
 
-from labharness import __version__
+from labharness import __version__, editor
 from labharness.core.add import add_figure
 from labharness.core.cite import cite as add_citation
 from labharness.core.domains import fields as installed_fields
@@ -31,7 +33,7 @@ from labharness.core.templates import DEFAULT_JOURNAL, available_journals
 from labharness.core.workspace import DEFAULT_FIELDS, create_workspace
 from labharness.doctor import everything_required_passes, run_checks
 from labharness.eject import eject
-from labharness.hints import detect_system
+from labharness.hints import command_for, detect_system
 from labharness.modules.chem import check as check_compound
 from labharness.modules.chem import load_library, resolve_name, write_smiles
 from labharness.modules.chem.library import workspace_library
@@ -199,11 +201,51 @@ def watch_command(
                 fg=typer.colors.YELLOW,
             )
 
-        typer.echo("Waiting for changes. Press Ctrl+C to stop.")
-        try:
-            watch(workspace, on_cycle=_print_cycle, debounce_ms=debounce)
-        except KeyboardInterrupt:  # pragma: no cover - interactive
-            typer.echo("Stopped.")
+        typer.echo("Waiting for changes. Type q and press Enter to stop.")
+        quit_requested = _stop_on_q()
+        with contextlib.suppress(KeyboardInterrupt):  # pragma: no cover - interactive
+            watch(
+                workspace,
+                on_cycle=_print_cycle,
+                debounce_ms=debounce,
+                stop_event=quit_requested,
+            )
+        typer.echo("Stopped.")
+
+
+@app.command("open")
+def open_command(
+    pdf: Annotated[
+        str | None,
+        typer.Option(
+            "--pdf",
+            help="Side of the manuscript the PDF opens on: left or right. Remembered.",
+        ),
+    ] = None,
+) -> None:
+    """Open the workspace in VS Code: the manuscript, the watcher and the PDF beside it."""
+    with _reporting_errors():
+        workspace = load_workspace()
+        code = editor.find_code()
+        if code is None:
+            typer.secho(
+                f"VS Code was not found. Install it: {command_for('vscode')}",
+                fg=typer.colors.RED,
+            )
+            raise typer.Exit(EXIT_MISSING_DEPENDENCY)
+        editor.configure(workspace, pdf)
+        if not editor.extension_installed(code):
+            typer.secho(
+                "The PDF needs the LaTeX Workshop extension: "
+                f"code --install-extension {editor.EXTENSION}",
+                fg=typer.colors.YELLOW,
+            )
+        editor.launch(code, workspace)
+    typer.echo(
+        f"Opened {workspace.root.name} in VS Code. The watcher starts with the folder "
+        "(VS Code asks once to allow it); open the PDF with the preview icon at the top right. "
+        "Close VS Code to stop everything."
+    )
 
 
 @app.command()
@@ -409,6 +451,20 @@ def _print_result(result: BuildResult) -> None:
         f"  figures {_ms(result.figures_seconds)}  |  latex {_ms(result.latex_seconds)}  |  "
         f"total {_ms(result.total_seconds)}"
     )
+
+
+def _stop_on_q() -> threading.Event:
+    """An event set when the person types q and Enter: a way out that is not Ctrl+C."""
+    requested = threading.Event()
+
+    def read() -> None:
+        for line in sys.stdin:
+            if line.strip().lower() == "q":
+                requested.set()
+                return
+
+    threading.Thread(target=read, daemon=True).start()
+    return requested
 
 
 def _watch_as_json(workspace: Workspace, debounce: int) -> None:

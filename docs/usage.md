@@ -105,6 +105,34 @@ before a live demo so LaTeX installs anything it is missing ahead of time.
 | `--only NAME` | Rebuild a single figure |
 | `--no-latex` | Rebuild figures but do not compile the document |
 
+### `labharness open`
+
+```
+labharness open [--pdf left|right]
+```
+
+The working environment: VS Code with the manuscript, the watcher running in its terminal and the
+PDF beside it. **It needs VS Code and its LaTeX Workshop extension** (`labharness doctor` checks
+both and prints the command that installs each: `winget install Microsoft.VisualStudioCode`,
+`code --install-extension James-Yu.latex-workshop`). Nothing is installed for you.
+
+It writes `.vscode/tasks.json` (a task that runs `labharness watch --no-open` when the folder
+opens) and `.vscode/settings.json` (LaTeX Workshop shows the PDF in a tab and does not compile:
+LabHarness does). What you already had in those files stays. If either has comments, `open` says
+so and leaves it alone, because rewriting it would lose them.
+
+| Option | Default | Meaning |
+|---|---|---|
+| `--pdf` | `right` | The side of the manuscript the PDF opens on. Remembered in the workspace settings |
+
+Two things VS Code decides. The first time, it asks whether to allow the automatic task: say yes
+once. And it does not let anyone place the PDF for you, so the first time you open it with the
+preview icon at the top right; VS Code remembers the layout after that.
+
+**To stop**, close VS Code: the watcher ends with it. To stop only the watcher, use the bin icon of
+its terminal. In a plain terminal, `labharness watch` also stops when you type `q` and press
+Enter, so Ctrl+C is not the only way out.
+
 ### `labharness watch`
 
 ```

@@ -41,6 +41,7 @@ def run_checks() -> list[Check]:
         _java(),
         _viewer(),
         _rasteriser(),
+        *_environment(),
     ]
 
 
@@ -212,6 +213,34 @@ def _rasteriser() -> Check:
         required=False,
         hint="" if tool else f"'labharness preview' needs it: {command_for('rasteriser')}",
     )
+
+
+def _environment() -> list[Check]:
+    """VS Code and LaTeX Workshop: only 'labharness open' needs them."""
+    from labharness.editor import EXTENSION, extension_installed, find_code
+
+    code = find_code()
+    checks = [
+        Check(
+            "VS Code",
+            code is not None,
+            code or "not found",
+            required=False,
+            hint="" if code else f"'labharness open' needs it: {command_for('vscode')}",
+        )
+    ]
+    if code is not None:
+        installed = extension_installed(code)
+        checks.append(
+            Check(
+                "LaTeX Workshop",
+                installed,
+                "installed" if installed else "not installed (the PDF beside the manuscript)",
+                required=False,
+                hint="" if installed else f"code --install-extension {EXTENSION}",
+            )
+        )
+    return checks
 
 
 def _viewer() -> Check:

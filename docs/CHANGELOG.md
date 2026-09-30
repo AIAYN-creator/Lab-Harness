@@ -9,6 +9,11 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- `labharness open [--pdf left|right]`: VS Code with the manuscript, the watcher in its own
+  terminal and the PDF beside it, on the side you choose (remembered). It writes `.vscode/tasks.json`
+  and `.vscode/settings.json`, keeping what was there. It needs VS Code and the LaTeX Workshop
+  extension, which `labharness doctor` now checks; nothing is installed for you.
+- `labharness watch` stops when you type `q` and press Enter, as well as with Ctrl+C.
 - `labharness init --field NAME`, repeatable: the workspace carries the agent rules of each
   field, and `CLAUDE.md` imports them all. The rules of a field live in its package, found
   through the `labharness.fields` entry points; chemistry's are in the `chem` module. Without
