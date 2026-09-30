@@ -72,6 +72,10 @@ later.
 
 ## Adding a module
 
+For a field of your own, do not start here: `labharness new-domain NAME` writes a package of its
+own, with the entry points, an example, its agent rules and its tests, and nothing in LabHarness
+has to change. What follows is for a module that belongs to LabHarness itself.
+
 1. Create `src/labharness/modules/<name>/` with an `__init__.py` that documents what it does
    and which extra it needs.
 2. Add the extra to `pyproject.toml` under `[project.optional-dependencies]`, and register

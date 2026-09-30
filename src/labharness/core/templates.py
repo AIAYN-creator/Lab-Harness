@@ -10,26 +10,27 @@ from pathlib import Path
 from labharness.core.errors import LabHarnessError
 
 WORKSPACE = "workspace"
+DOMAIN = "domain"
 JOURNALS = "journals"
 STYLE_FILE = "style.toml"
 DEFAULT_JOURNAL = "acs"
 
 
-def template_root() -> Path:
-    """The folder holding the workspace template.
+def template_root(name: str = WORKSPACE) -> Path:
+    """The folder holding a template: the workspace's, or the one a new domain starts from.
 
     Installed, it lives inside the package. Running from a source checkout it is the
     ``templates/`` folder of the repository.
     """
-    packaged = Path(__file__).resolve().parents[1] / "templates" / WORKSPACE
+    packaged = Path(__file__).resolve().parents[1] / "templates" / name
     if packaged.is_dir():
         return packaged
 
-    from_source = Path(__file__).resolve().parents[3] / "templates" / WORKSPACE
+    from_source = Path(__file__).resolve().parents[3] / "templates" / name
     if from_source.is_dir():
         return from_source
 
-    raise LabHarnessError("the workspace template is missing from this installation")
+    raise LabHarnessError(f"the {name} template is missing from this installation")
 
 
 def available_journals() -> list[str]:

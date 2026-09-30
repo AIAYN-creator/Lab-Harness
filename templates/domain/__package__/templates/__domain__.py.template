@@ -1,0 +1,4 @@
+# $output -- an example for {{domain}}: replace it with what your field draws
+from {{package}} import render
+
+render("$output", "hello from {{domain}}")

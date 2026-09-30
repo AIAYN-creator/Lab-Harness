@@ -163,6 +163,7 @@ All of these work today.
 | `labharness init [PATH] [--journal NAME] [--font NAME] [--field NAME...]` | Create a workspace from a template (`acs`, `elsevier`, `rsc-draft`, `article` or `report`), optionally with a typeface, and with the agent rules of each field you work in |
 | `labharness add <kind> <name> [--input FILE...]` | Add a figure or a table: writes the script and the manifest entry, and with `--insert` the LaTeX |
 | `labharness build [--only NAME] [--no-latex]` | Rebuild figures and compile the PDF once |
+| `labharness new-domain NAME [--path DIR]` | Start a package for a field: modules, figure templates and agent rules, ready to fill in |
 | `labharness open [--pdf left\|right]` | Open the workspace in VS Code: the manuscript, the watcher in its terminal and the PDF beside it |
 | `labharness watch [--no-open] [--debounce MS] [--json]` | Watch, rebuild and recompile on every save; with `--json`, tell it as events for an editor or a script |
 | `labharness preview [--only NAME] [--document]` | Render figures (and the pages of the PDF) as PNG, to review them by eye |
@@ -301,7 +302,7 @@ core.
 - [x] `labharness watch --json`: what the watcher does, as events
 - [x] A domain package tested end to end, and a test that the core imports none: a domain can
   also add commands
-- [ ] `labharness new-domain NAME` to start one
+- [x] `labharness new-domain NAME`: a package for a field, ready to fill in
 - [x] `labharness open`: VS Code with the manuscript, the watcher and the PDF beside it, on either
   side (VS Code and its LaTeX Workshop extension are needed for it)
 - [ ] First domains, in the order demand sets: economics, mathematics, construction

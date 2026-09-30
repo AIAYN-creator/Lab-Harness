@@ -9,12 +9,15 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- `labharness new-domain NAME`: a package for a field, ready to fill in, with its entry points,
+  an example of each, its agent rules and tests that pass as they come. LabHarness's own tests
+  build their toy domain with it.
 - A domain can add commands to the command line: the `labharness.commands` entry points name a
   module with a `register(app)` function. `resolve` and `library check` are now registered by
   the chemistry module this way, and work as before.
-- A toy domain, `tests/toy_domain`, published like any other package (its own `pyproject.toml`),
-  tested from `init --field` to `eject`. A test fails if the core imports a module, apart from
-  two listed exceptions. This is what `labharness new-domain` will start from.
+- A toy domain in the tests, a package like any other (its own `pyproject.toml`), tested from
+  `init --field` to `eject`. A test fails if the core imports a module, apart from
+  two listed exceptions. Made with `labharness new-domain`.
 - `labharness open [--pdf left|right]`: VS Code with the manuscript, the watcher in its own
   terminal and the PDF beside it, on the side you choose (remembered). It writes `.vscode/tasks.json`
   and `.vscode/settings.json`, keeping what was there. It needs VS Code and the LaTeX Workshop

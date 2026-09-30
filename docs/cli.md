@@ -16,6 +16,7 @@ $ labharness [OPTIONS] COMMAND [ARGS]...
 **Commands**:
 
 * `init`: Create a workspace: manuscript, data,...
+* `new-domain`: Start a package for a field: modules,...
 * `add`: Add a figure or a table: write its script...
 * `build`: Rebuild the figures and compile the...
 * `watch`: Watch the workspace and rebuild on every...
@@ -48,6 +49,26 @@ $ labharness init [OPTIONS] [path]
 * `--journal <str>`: Template: acs, article, elsevier, report, rsc-draft.  [default: acs]
 * `--font <str>`: Typeface: latin-modern, termes, pagella, stix, libertinus. Default: the journal&#x27;s.
 * `--field <str>`: A field whose agent rules to add; repeat it for several: chemistry. Default: chemistry.
+* `--force / --no-force`: Write into a folder that is not empty.  [default: no-force]
+* `--help`: Show this message and exit.
+
+## `labharness new-domain`
+
+Start a package for a field: modules, figure templates and agent rules, ready to fill in.
+
+**Usage**:
+
+```console
+$ labharness new-domain [OPTIONS] {name}
+```
+
+**Arguments**:
+
+* `name`: The field, e.g. architecture.  [required]
+
+**Options**:
+
+* `--path <path>`: Where to write the package. Default: labharness-&lt;name&gt;.
 * `--force / --no-force`: Write into a folder that is not empty.  [default: no-force]
 * `--help`: Show this message and exit.
 

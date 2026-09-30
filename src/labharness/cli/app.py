@@ -31,6 +31,7 @@ from labharness.core.githook import git_root, install_hook, main_check
 from labharness.core.lock import LOCK_NAME
 from labharness.core.lock import accept as accept_changes
 from labharness.core.manifest import MANIFEST_NAME, Figure, Workspace, load_workspace
+from labharness.core.newdomain import create_domain
 from labharness.core.templates import DEFAULT_JOURNAL, available_journals
 from labharness.core.workspace import DEFAULT_FIELDS, create_workspace
 from labharness.doctor import everything_required_passes, run_checks
@@ -107,6 +108,24 @@ def init(
     else:
         typer.echo("Not a git repository: after 'git init', run 'labharness hook install'.")
     typer.echo("Next: add a figure with 'labharness add', then run 'labharness watch'.")
+
+
+@app.command("new-domain")
+def new_domain_command(
+    name: Annotated[str, typer.Argument(help="The field, e.g. architecture.")],
+    path: Annotated[
+        Path | None,
+        typer.Option("--path", help="Where to write the package. Default: labharness-<name>."),
+    ] = None,
+    force: Annotated[bool, typer.Option(help="Write into a folder that is not empty.")] = False,
+) -> None:
+    """Start a package for a field: modules, figure templates and agent rules, ready to fill in."""
+    with reporting_errors():
+        folder = create_domain(name, path, force=force)
+
+    typer.secho(f"Domain package created in {folder}", fg=typer.colors.GREEN)
+    typer.echo(f"Next: cd {folder}, then 'uv pip install -e .', 'labharness doctor' and 'pytest'.")
+    typer.echo("Its README.md has the five steps to make it yours.")
 
 
 @app.command()

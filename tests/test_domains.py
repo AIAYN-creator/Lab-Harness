@@ -17,11 +17,11 @@ from labharness.core import create_workspace, load_workspace
 from labharness.core.add import add_figure
 from labharness.core.domains import FIGURES, figure_kinds, installed_modules
 from labharness.core.errors import LabHarnessError
+from labharness.core.newdomain import create_domain
 from labharness.eject import VENDOR, eject
 
-# A domain package as someone else would write it: tests/toy_domain, with its own pyproject.
-TOY = Path(__file__).parent / "toy_domain"
-SCRIPT = 'from labharness_toy import note\n\nnote("figures/note.txt", "made by a domain")\n'
+# A domain package as someone else would start it: with labharness new-domain toy.
+SCRIPT = 'from labharness_toy import render\n\nrender("figures/note.txt", "made by a domain")\n'
 WITHOUT_LABHARNESS = (
     "import runpy, sys; sys.modules['labharness'] = None; sys.path.insert(0, '.'); "
     "runpy.run_path('scripts/note.py', run_name='__main__')"
@@ -37,10 +37,11 @@ def test_labharness_registers_its_own_modules_like_any_domain() -> None:
 
 
 @pytest.fixture
-def toy_domain(monkeypatch: pytest.MonkeyPatch) -> None:
+def toy_domain(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """labharness_toy, importable and declared as its pyproject declares it, as if installed."""
-    declared = tomllib.loads((TOY / "pyproject.toml").read_text(encoding="utf-8"))
-    monkeypatch.syspath_prepend(str(TOY))
+    toy = create_domain("toy", tmp_path / "labharness-toy")
+    declared = tomllib.loads((toy / "pyproject.toml").read_text(encoding="utf-8"))
+    monkeypatch.syspath_prepend(str(toy))
     real = metadata.entry_points
 
     def with_toy(**selection: Any) -> list[metadata.EntryPoint]:
@@ -61,7 +62,7 @@ def test_a_domain_package_is_found_by_its_entry_point() -> None:
 
     assert toy.package == "labharness_toy"
     assert not toy.built_in
-    assert toy.provides("labharness_toy") and not toy.provides("labharness_toys")
+    assert toy.provides("labharness_toy") and not toy.provides("labharness_toy_more")
 
 
 @pytest.mark.usefixtures("toy_domain")
@@ -85,10 +86,10 @@ def test_an_ejected_workspace_carries_the_domain_it_uses(tmp_path: Path) -> None
 def test_add_offers_the_kinds_a_domain_registers(tmp_path: Path) -> None:
     workspace = create_workspace(tmp_path / "paper", journal="article")
 
-    added = add_figure(load_workspace(workspace), "note", "greeting")
+    added = add_figure(load_workspace(workspace), "toy", "greeting")
 
     script = (workspace / added.script).read_text(encoding="utf-8")
-    assert script.startswith("# figures/greeting.pdf -- a note")
+    assert script.startswith("# figures/greeting.pdf -- an example for toy")
 
 
 @pytest.mark.usefixtures("toy_domain")
@@ -102,14 +103,14 @@ def test_two_packages_with_the_same_kind_are_told_apart_not_chosen() -> None:
 
 @pytest.mark.usefixtures("toy_domain")
 def test_a_workspace_stacks_the_rules_of_several_fields(tmp_path: Path) -> None:
-    root = create_workspace(tmp_path / "paper", fields=["chemistry", "toys", "chemistry"])
+    root = create_workspace(tmp_path / "paper", fields=["chemistry", "toy", "chemistry"])
 
     assert (root / "AGENTS.chemistry.md").is_file()
-    assert (root / "AGENTS.toys.md").read_text(encoding="utf-8") == "# Rules for toys\n"
+    assert (root / "AGENTS.toy.md").read_text(encoding="utf-8").startswith("# Rules for toy\n")
     assert (root / "CLAUDE.md").read_text(encoding="utf-8").split() == [
         "@AGENTS.md",
         "@AGENTS.chemistry.md",
-        "@AGENTS.toys.md",
+        "@AGENTS.toy.md",
     ]
 
 
@@ -127,17 +128,17 @@ def test_a_domain_works_from_init_to_eject_without_touching_the_core(
     runner = CliRunner()
     root = tmp_path / "paper"
 
-    assert runner.invoke(app, ["init", str(root), "--field", "toys"]).exit_code == 0
-    assert (root / "AGENTS.toys.md").is_file()
+    assert runner.invoke(app, ["init", str(root), "--field", "toy"]).exit_code == 0
+    assert (root / "AGENTS.toy.md").is_file()
     monkeypatch.chdir(root)
     with_domains = typer.Typer()
     add_domain_commands(with_domains)  # a fresh one: the real command line is not changed
-    assert "hello from a domain" in runner.invoke(with_domains, ["hello"]).stdout
-    added = runner.invoke(app, ["add", "note", "greeting"])
+    assert "hello from toy" in runner.invoke(with_domains, ["toy-hello"]).stdout
+    added = runner.invoke(app, ["add", "toy", "greeting"])
     assert added.exit_code == 0, added.stdout
     built = runner.invoke(app, ["build", "--no-latex"])
     assert built.exit_code == 0, built.stdout
-    assert (root / "figures" / "greeting.pdf").read_text(encoding="utf-8") == "hello"
+    assert (root / "figures" / "greeting.pdf").read_text(encoding="utf-8") == "hello from toy"
     ejected = runner.invoke(app, ["eject", str(tmp_path / "standalone")])
     assert ejected.exit_code == 0, ejected.stdout
     assert "toy" in ejected.stdout
