@@ -299,7 +299,9 @@ core.
   agent rules, found through entry points, LabHarness's own included
 - [x] `init --field`, repeatable, for work that spans fields
 - [x] `labharness watch --json`: what the watcher does, as events
-- [ ] A domain package tested end to end, and `labharness new-domain NAME` to start one
+- [x] A domain package tested end to end, and a test that the core imports none: a domain can
+  also add commands
+- [ ] `labharness new-domain NAME` to start one
 - [x] `labharness open`: VS Code with the manuscript, the watcher and the PDF beside it, on either
   side (VS Code and its LaTeX Workshop extension are needed for it)
 - [ ] First domains, in the order demand sets: economics, mathematics, construction

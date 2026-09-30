@@ -9,6 +9,12 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- A domain can add commands to the command line: the `labharness.commands` entry points name a
+  module with a `register(app)` function. `resolve` and `library check` are now registered by
+  the chemistry module this way, and work as before.
+- A toy domain, `tests/toy_domain`, published like any other package (its own `pyproject.toml`),
+  tested from `init --field` to `eject`. A test fails if the core imports a module, apart from
+  two listed exceptions. This is what `labharness new-domain` will start from.
 - `labharness open [--pdf left|right]`: VS Code with the manuscript, the watcher in its own
   terminal and the PDF beside it, on the side you choose (remembered). It writes `.vscode/tasks.json`
   and `.vscode/settings.json`, keeping what was there. It needs VS Code and the LaTeX Workshop

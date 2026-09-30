@@ -14,17 +14,19 @@ import subprocess
 import sys
 import threading
 import time
+from importlib import import_module
 from pathlib import Path
 from typing import Annotated
 
 import typer
 
 from labharness import __version__, editor
+from labharness.cli.support import EXIT_ERROR, EXIT_MISSING_DEPENDENCY, reporting_errors
 from labharness.core.add import add_figure
 from labharness.core.cite import cite as add_citation
+from labharness.core.domains import command_modules, figure_kinds
 from labharness.core.domains import fields as installed_fields
-from labharness.core.domains import figure_kinds
-from labharness.core.errors import LabHarnessError, MissingExtraError
+from labharness.core.errors import LabHarnessError
 from labharness.core.githook import git_root, install_hook, main_check
 from labharness.core.lock import LOCK_NAME
 from labharness.core.lock import accept as accept_changes
@@ -34,9 +36,6 @@ from labharness.core.workspace import DEFAULT_FIELDS, create_workspace
 from labharness.doctor import everything_required_passes, run_checks
 from labharness.eject import eject
 from labharness.hints import command_for, detect_system
-from labharness.modules.chem import check as check_compound
-from labharness.modules.chem import load_library, resolve_name, write_smiles
-from labharness.modules.chem.library import workspace_library
 from labharness.preview import DEFAULT_DPI, Preview, preview_document, preview_figures
 from labharness.style.typefaces import available_typefaces
 from labharness.watch import events
@@ -45,8 +44,6 @@ from labharness.watch.runner import build as run_build
 from labharness.watch.session import DEFAULT_DEBOUNCE_MS, Cycle, watch
 from labharness.watch.viewer import open_pdf
 
-EXIT_ERROR = 1
-EXIT_MISSING_DEPENDENCY = 3
 BIBLIOGRAPHY_NAME = "references.bib"
 
 app = typer.Typer(
@@ -59,10 +56,6 @@ hook_app = typer.Typer(
     no_args_is_help=True, help="The git hook that stops unaccepted data changes being committed."
 )
 app.add_typer(hook_app, name="hook")
-library_app = typer.Typer(
-    no_args_is_help=True, help="The lab's compound inventory, named by [library] in the manifest."
-)
-app.add_typer(library_app, name="library")
 
 
 @app.callback()
@@ -101,14 +94,14 @@ def init(
     force: Annotated[bool, typer.Option(help="Write into a folder that is not empty.")] = False,
 ) -> None:
     """Create a workspace: manuscript, data, scripts, figures and manifest."""
-    with _reporting_errors():
+    with reporting_errors():
         target = create_workspace(
             path, journal=journal, force=force, font=font, fields=field or DEFAULT_FIELDS
         )
 
     typer.secho(f"Workspace created in {target}", fg=typer.colors.GREEN)
     if git_root(target) is not None:
-        with _reporting_errors():
+        with reporting_errors():
             hook = install_hook(target)
         typer.echo(f"Git hook installed in {hook}: unaccepted data changes cannot be committed.")
     else:
@@ -134,7 +127,7 @@ def add(
     force: Annotated[bool, typer.Option(help="Replace a script that already exists.")] = False,
 ) -> None:
     """Add a figure or a table: write its script from a template and declare it."""
-    with _reporting_errors():
+    with reporting_errors():
         workspace = load_workspace()
         added = add_figure(workspace, kind, name, inputs=input_files, insert=insert, force=force)
 
@@ -162,7 +155,7 @@ def build(
     no_latex: Annotated[bool, typer.Option(help="Rebuild figures without compiling.")] = False,
 ) -> None:
     """Rebuild the figures and compile the document once."""
-    with _reporting_errors():
+    with reporting_errors():
         workspace = load_workspace()
         figures = _selected(workspace, only)
         result = _build(workspace, figures, compile_latex=not no_latex)
@@ -183,7 +176,7 @@ def watch_command(
     ] = False,
 ) -> None:
     """Watch the workspace and rebuild on every save."""
-    with _reporting_errors():
+    with reporting_errors():
         workspace = load_workspace()
         if as_json:
             _watch_as_json(workspace, debounce)
@@ -224,7 +217,7 @@ def open_command(
     ] = None,
 ) -> None:
     """Open the workspace in VS Code: the manuscript, the watcher and the PDF beside it."""
-    with _reporting_errors():
+    with reporting_errors():
         workspace = load_workspace()
         code = editor.find_code()
         if code is None:
@@ -259,7 +252,7 @@ def preview(
     ),
 ) -> None:
     """Render figures as PNG images, to look at them before trusting them."""
-    with _reporting_errors():
+    with reporting_errors():
         workspace = load_workspace()
         results = preview_figures(workspace, _selected(workspace, only), dpi=dpi)
         if document:
@@ -277,7 +270,7 @@ def eject_command(
     force: Annotated[bool, typer.Option(help="Write into a folder that is not empty.")] = False,
 ) -> None:
     """Copy this workspace into a folder that regenerates without LabHarness."""
-    with _reporting_errors():
+    with reporting_errors():
         workspace = load_workspace()
         ejected = eject(workspace, target, force=force)
 
@@ -293,7 +286,7 @@ def accept(
     files: Annotated[list[str], typer.Argument(help="Data files whose change you accept.")],
 ) -> None:
     """Accept a change to a raw data file, recording who, when and what it replaced."""
-    with _reporting_errors():
+    with reporting_errors():
         workspace = load_workspace()
         accepted = accept_changes(workspace.root, files)
 
@@ -309,7 +302,7 @@ def hook_install(
     ] = False,
 ) -> None:
     """Install the pre-commit hook in the git repository of this workspace."""
-    with _reporting_errors():
+    with reporting_errors():
         workspace = load_workspace()
         hook = install_hook(workspace.root, force=force)
     typer.secho(f"Installed {hook}", fg=typer.colors.GREEN)
@@ -322,55 +315,6 @@ def hook_check() -> None:
 
 
 @app.command()
-def resolve(
-    name: Annotated[
-        str, typer.Argument(help="A compound of the lab library, or a systematic IUPAC name.")
-    ],
-    output: Annotated[Path, typer.Option("--output", "-o", help="Where to write the SMILES.")],
-) -> None:
-    """Turn a name into a SMILES file, offline: the lab library first, then OPSIN."""
-    with _reporting_errors():
-        library, problem = workspace_library()
-        found = library.find(name) if library is not None else None
-        if library is not None and found is not None:
-            smiles = found.smiles
-            source = f"from library: {library.source.name}, row {found.row} ({found.label})"
-            write_smiles(output, smiles, source)
-        else:
-            smiles = resolve_name(name, output=output)
-
-    if problem:
-        typer.secho(f"note: {problem}", fg=typer.colors.YELLOW)
-    typer.secho(f"{smiles}", fg=typer.colors.GREEN)
-    typer.echo(f"{'from the lab library' if found else 'from OPSIN'}, written to {output}.")
-    for finding in check_compound(found) if found else []:
-        typer.secho(f"  warning: {finding}", fg=typer.colors.YELLOW)
-    typer.echo("Check it before using it in a figure.")
-
-
-@library_app.command("check")
-def library_check() -> None:
-    """Check every compound: unreadable SMILES, missing stereochemistry, wrong formula."""
-    with _reporting_errors():
-        workspace = load_workspace()
-        settings = workspace.library
-        if settings is None:
-            raise LabHarnessError(f'{MANIFEST_NAME} has no [library]. Add one: file = "data/..."')
-        library = load_library(
-            workspace.root / settings.file, settings.sheet, dict(settings.columns)
-        )
-
-    problems = [*library.rejected, *library.findings]
-    typer.echo(f"{library.source.name}: {len(library.compounds)} compounds read")
-    for problem in problems:
-        typer.secho(f"  {problem}", fg=typer.colors.YELLOW)
-    if problems:
-        typer.echo(f"{len(problems)} to review. Nothing in the inventory was changed.")
-        raise typer.Exit(EXIT_ERROR)
-    typer.secho("Nothing to review.", fg=typer.colors.GREEN)
-
-
-@app.command()
 def cite(
     doi: Annotated[str, typer.Argument(help="The DOI, as 10.1021/... or https://doi.org/...")],
     bib: Annotated[
@@ -378,7 +322,7 @@ def cite(
     ] = None,
 ) -> None:
     """Add a work to the bibliography from its DOI, asking doi.org. Needs the network."""
-    with _reporting_errors():
+    with reporting_errors():
         bibliography = bib or load_workspace().root / BIBLIOGRAPHY_NAME
         citation = add_citation(doi, bibliography)
 
@@ -527,19 +471,13 @@ def _ms(seconds: float) -> str:
     return f"{seconds * 1000:.0f} ms"
 
 
-class _reporting_errors:
-    """Turn LabHarness errors into a clear message and the right exit code."""
+def add_domain_commands(target: typer.Typer) -> None:
+    """Add the commands the installed domains bring."""
+    for module in command_modules():
+        import_module(module).register(target)
 
-    def __enter__(self) -> None:
-        return None
 
-    def __exit__(self, kind: object, error: BaseException | None, traceback: object) -> None:
-        if isinstance(error, MissingExtraError):
-            typer.secho(str(error), fg=typer.colors.RED)
-            raise typer.Exit(EXIT_MISSING_DEPENDENCY) from None
-        if isinstance(error, LabHarnessError):
-            typer.secho(str(error), fg=typer.colors.RED)
-            raise typer.Exit(EXIT_ERROR) from None
+add_domain_commands(app)
 
 
 def main() -> None:

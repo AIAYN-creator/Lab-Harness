@@ -2,30 +2,25 @@
 
 import subprocess
 import sys
+import tomllib
 from importlib import metadata
 from pathlib import Path
 from typing import Any
 
 import pytest
+import typer
+from typer.testing import CliRunner
 
+from labharness.cli import app
+from labharness.cli.app import add_domain_commands
 from labharness.core import create_workspace, load_workspace
 from labharness.core.add import add_figure
-from labharness.core.domains import FIELDS, FIGURES, GROUP, figure_kinds, installed_modules
+from labharness.core.domains import FIGURES, figure_kinds, installed_modules
 from labharness.core.errors import LabHarnessError
 from labharness.eject import VENDOR, eject
 
-# A domain package as someone else would write it: its own name, importing LabHarness's core.
-TOY = '''"""A toy domain: writes a file, and uses LabHarness's core to do it."""
-
-from pathlib import Path
-
-from labharness.core.atomic import atomic_output
-
-
-def note(output: str, text: str) -> None:
-    with atomic_output(Path(output)) as temporary:
-        temporary.write_text(text, encoding="utf-8")
-'''
+# A domain package as someone else would write it: tests/toy_domain, with its own pyproject.
+TOY = Path(__file__).parent / "toy_domain"
 SCRIPT = 'from labharness_toy import note\n\nnote("figures/note.txt", "made by a domain")\n'
 WITHOUT_LABHARNESS = (
     "import runpy, sys; sys.modules['labharness'] = None; sys.path.insert(0, '.'); "
@@ -42,29 +37,19 @@ def test_labharness_registers_its_own_modules_like_any_domain() -> None:
 
 
 @pytest.fixture
-def toy_domain(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """labharness_toy, importable and declared under the entry point group, as if installed."""
-    package = tmp_path / "site" / "labharness_toy"
-    package.mkdir(parents=True)
-    (package / "__init__.py").write_text(TOY, encoding="utf-8")
-    (package / "templates").mkdir()
-    (package / "templates" / "note.py.template").write_text(
-        '# $output -- a note\nfrom labharness_toy import note\n\nnote("$output", "hello")\n',
-        encoding="utf-8",
-    )
-    (package / "AGENTS.toys.md").write_text("# Rules for toys\n", encoding="utf-8")
-    monkeypatch.syspath_prepend(str(tmp_path / "site"))
+def toy_domain(monkeypatch: pytest.MonkeyPatch) -> None:
+    """labharness_toy, importable and declared as its pyproject declares it, as if installed."""
+    declared = tomllib.loads((TOY / "pyproject.toml").read_text(encoding="utf-8"))
+    monkeypatch.syspath_prepend(str(TOY))
     real = metadata.entry_points
 
     def with_toy(**selection: Any) -> list[metadata.EntryPoint]:
         found = list(real(**selection))
-        if selection.get("group") == GROUP:
-            found.append(metadata.EntryPoint("toy", "labharness_toy", GROUP))
-        if selection.get("group") == FIGURES:
-            found.append(metadata.EntryPoint("note", "labharness_toy", FIGURES))
+        group = selection.get("group", "")
+        for name, value in declared["project"]["entry-points"].get(group, {}).items():
+            found.append(metadata.EntryPoint(name, value, group))
+        if group == FIGURES:
             found.append(metadata.EntryPoint("plot", "labharness_toy", FIGURES))  # a clash
-        if selection.get("group") == FIELDS:
-            found.append(metadata.EntryPoint("toys", "labharness_toy", FIELDS))
         return found
 
     monkeypatch.setattr(metadata, "entry_points", with_toy)
@@ -133,3 +118,26 @@ def test_an_unknown_field_is_refused_before_anything_is_written(tmp_path: Path) 
         create_workspace(tmp_path / "paper", fields=["alchemy"])
 
     assert not (tmp_path / "paper").exists()
+
+
+@pytest.mark.usefixtures("toy_domain")
+def test_a_domain_works_from_init_to_eject_without_touching_the_core(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    runner = CliRunner()
+    root = tmp_path / "paper"
+
+    assert runner.invoke(app, ["init", str(root), "--field", "toys"]).exit_code == 0
+    assert (root / "AGENTS.toys.md").is_file()
+    monkeypatch.chdir(root)
+    with_domains = typer.Typer()
+    add_domain_commands(with_domains)  # a fresh one: the real command line is not changed
+    assert "hello from a domain" in runner.invoke(with_domains, ["hello"]).stdout
+    added = runner.invoke(app, ["add", "note", "greeting"])
+    assert added.exit_code == 0, added.stdout
+    built = runner.invoke(app, ["build", "--no-latex"])
+    assert built.exit_code == 0, built.stdout
+    assert (root / "figures" / "greeting.pdf").read_text(encoding="utf-8") == "hello"
+    ejected = runner.invoke(app, ["eject", str(tmp_path / "standalone")])
+    assert ejected.exit_code == 0, ejected.stdout
+    assert "toy" in ejected.stdout

@@ -1,0 +1,4 @@
+# $output -- a note
+from labharness_toy import note
+
+note("$output", "hello")

@@ -61,6 +61,10 @@ network = "labharness.modules.diagrams"
 [project.entry-points."labharness.fields"]
 chemistry = "labharness.modules.chem"
 
+# The commands a domain adds to the command line: a module with register(app).
+[project.entry-points."labharness.commands"]
+chemistry = "labharness.modules.chem.commands"
+
 [dependency-groups]
 dev = ["pytest>=8", "pytest-cov", "pypdf>=5", "ruff", "mypy", "pre-commit"]
 

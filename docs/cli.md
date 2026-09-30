@@ -23,9 +23,9 @@ $ labharness [OPTIONS] COMMAND [ARGS]...
 * `preview`: Render figures as PNG images, to look at...
 * `eject`: Copy this workspace into a folder that...
 * `accept`: Accept a change to a raw data file,...
-* `resolve`: Turn a name into a SMILES file, offline:...
 * `cite`: Add a work to the bibliography from its...
 * `doctor`: Check that this machine has everything...
+* `resolve`: Turn a name into a SMILES file, offline:...
 * `hook`: The git hook that stops unaccepted data...
 * `library`: The lab&#x27;s compound inventory, named by...
 
@@ -176,25 +176,6 @@ $ labharness accept [OPTIONS] {files}...
 
 * `--help`: Show this message and exit.
 
-## `labharness resolve`
-
-Turn a name into a SMILES file, offline: the lab library first, then OPSIN.
-
-**Usage**:
-
-```console
-$ labharness resolve [OPTIONS] {name}
-```
-
-**Arguments**:
-
-* `name`: A compound of the lab library, or a systematic IUPAC name.  [required]
-
-**Options**:
-
-* `-o, --output <path>`: Where to write the SMILES.  [required]
-* `--help`: Show this message and exit.
-
 ## `labharness cite`
 
 Add a work to the bibliography from its DOI, asking doi.org. Needs the network.
@@ -226,6 +207,25 @@ $ labharness doctor [OPTIONS]
 
 **Options**:
 
+* `--help`: Show this message and exit.
+
+## `labharness resolve`
+
+Turn a name into a SMILES file, offline: the lab library first, then OPSIN.
+
+**Usage**:
+
+```console
+$ labharness resolve [OPTIONS] {name}
+```
+
+**Arguments**:
+
+* `name`: A compound of the lab library, or a systematic IUPAC name.  [required]
+
+**Options**:
+
+* `-o, --output <path>`: Where to write the SMILES.  [required]
 * `--help`: Show this message and exit.
 
 ## `labharness hook`

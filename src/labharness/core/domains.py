@@ -8,6 +8,8 @@ A package also registers the kinds of figure ``labharness add`` offers, under
 ``labharness.figures``: the name of the kind points at a package, and its template is the file
 ``templates/<kind>.*`` inside it. And the fields whose agent rules ``labharness init`` copies,
 under ``labharness.fields``: the rules of a field are ``AGENTS.<field>.md`` inside its package.
+And the commands it adds to the command line, under ``labharness.commands``: a module with a
+``register(app)`` function.
 """
 
 from dataclasses import dataclass
@@ -19,6 +21,7 @@ from labharness.core.errors import LabHarnessError
 GROUP = "labharness.modules"
 FIGURES = "labharness.figures"
 FIELDS = "labharness.fields"
+COMMANDS = "labharness.commands"
 # The modules that ship with LabHarness, for when it runs without its package metadata.
 BUILT_IN = {
     "chem": "labharness.modules.chem",
@@ -35,6 +38,7 @@ BUILT_IN_FIGURES = {
     "network": BUILT_IN["diagrams"],
 }
 BUILT_IN_FIELDS = {"chemistry": BUILT_IN["chem"]}
+BUILT_IN_COMMANDS = {"chemistry": f"{BUILT_IN['chem']}.commands"}
 
 
 @dataclass(frozen=True)
@@ -130,6 +134,12 @@ def fields() -> dict[str, Field]:
     if not found:
         found = [Field(name, package, "labharness") for name, package in BUILT_IN_FIELDS.items()]
     return {field.name: field for field in sorted(found, key=lambda field: field.name)}
+
+
+def command_modules() -> list[str]:
+    """The modules that add commands to the command line, each with a ``register(app)``."""
+    found = [point.value for point in metadata.entry_points(group=COMMANDS)]
+    return sorted(found or BUILT_IN_COMMANDS.values())
 
 
 def _folder(package: str) -> Path:
