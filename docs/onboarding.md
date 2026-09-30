@@ -154,6 +154,9 @@ trusts this repository's workflow directly, so no API token exists anywhere to l
 
 ### Every release
 
+The full checklist, with the rehearsal and what to do if it goes wrong, is in
+[`RELEASING.md`](RELEASING.md). In short:
+
 1. Bump `version` in `pyproject.toml`, run `uv lock`, and move the changelog entries from
    *Unreleased* to the new version.
 2. Commit, tag `vX.Y.Z` on that commit, and push the tag.
