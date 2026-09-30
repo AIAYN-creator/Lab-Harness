@@ -17,6 +17,16 @@ automation — *Data-to-Paper*. Change a data point or a SMILES string, save, an
 PDF update on their own. The pipeline is always short, readable Python you can open and edit,
 never a black box.
 
+## The problem
+
+A measurement changes. Today that means opening the graphing program, redrawing the figure,
+exporting it, pasting it into the manuscript, retyping the number in the text and compiling.
+Then a co-author asks for one more correction and you do it all again, and by the fourth version
+nobody is sure which figure goes with which data.
+
+In LabHarness the figure is a script that reads the data file. The figure, the fit and the number
+in the text all come from that one file, so changing it changes all three.
+
 ## How fast is it
 
 From saving a file to seeing the PDF, measured on the author's laptop (Windows 11, MiKTeX)
