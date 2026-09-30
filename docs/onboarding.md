@@ -72,7 +72,7 @@ later.
 
 ## Adding a module
 
-For a field of your own, do not start here: `labharness new-domain NAME` writes a package of its
+For a field of your own, do not start here (see [`modules.md`](modules.md)): `labharness new-domain NAME` writes a package of its
 own, with the entry points, an example, its agent rules and its tests, and nothing in LabHarness
 has to change. What follows is for a module that belongs to LabHarness itself.
 

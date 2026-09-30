@@ -86,7 +86,10 @@ copied into every user's workspace. Check the class on CTAN before starting.
 
 ## Adding a figure kind or a module
 
-See *Adding a module* in [`docs/onboarding.md`](../docs/onboarding.md). In short:
+For a field of your own, `labharness new-domain NAME` starts a package that never touches
+LabHarness ([`docs/modules.md`](../docs/modules.md)), and a module can be [requested with a
+bounty](../docs/bounties.md). For a module that belongs to LabHarness itself, see *Adding a
+module* in [`docs/onboarding.md`](../docs/onboarding.md). In short:
 
 - modules are plain functions with no terminal I/O;
 - heavy dependencies go behind an extra, and the core must import without any;

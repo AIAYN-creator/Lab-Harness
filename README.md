@@ -264,6 +264,20 @@ or `xelatex` and `lualatex` with `engine = "..."`. Figures are generated at thei
 size and included without scaling, so 8 pt in a figure is 8 pt on paper, and each structure is
 drawn as large as the column allows.
 
+## A module for your field
+
+The same core serves any field; what changes is the module that reads the data and draws.
+Chemistry, plots, tables and diagrams are modules, and **yours is a package of its own**, so
+LabHarness never has to change for it:
+
+```bash
+labharness new-domain architecture   # a package ready to fill in, with tests that pass
+```
+
+It brings its own figure templates for `labharness add`, its own rules for AI agents and, if it
+wants, its own commands. [How to build one](docs/modules.md). If you would rather not write it,
+[ask for it, and put a bounty on it](docs/bounties.md): anyone can claim it.
+
 ## Progress
 
 **v0.1 — released (0.1.0).** Chemical structures (RDKit), mechanisms and diagrams
@@ -337,7 +351,8 @@ See [`docs/ROADMAP.md`](docs/ROADMAP.md) for the detail.
 
 ## Contributing
 
-Issues and pull requests are welcome. See [`CONTRIBUTING.md`](.github/CONTRIBUTING.md) and the
+Issues and pull requests are welcome, and so are modules for other fields: [build one](docs/modules.md),
+or [ask for one](docs/bounties.md). See [`CONTRIBUTING.md`](.github/CONTRIBUTING.md) and the
 [Code of Conduct](.github/CODE_OF_CONDUCT.md). If you want to work on LabHarness itself, start with
 [`docs/onboarding.md`](docs/onboarding.md); the decisions behind the design are in
 [`docs/adr/`](docs/adr/).

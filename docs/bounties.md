@@ -5,6 +5,8 @@ package of its own (ADR 31), so a request has a clear shape, and so does the wor
 
 Everything is handled by the maintainer, by hand: no platform sits in the middle.
 
+The other half, building one yourself, is in [Build a module for your field](modules.md).
+
 ## Asking for a module
 
 Open an issue with the [*New figure kind or module*](../.github/ISSUE_TEMPLATE/new_module.yml)

@@ -115,7 +115,8 @@ Starts a package for a field, as an ordinary Python package of its own: `labharn
 `--path`. It has the entry points that tell LabHarness what it brings (a module, a kind of figure
 for `labharness add`, agent rules for `labharness init --field`, and a command), one working
 example of each, and tests that pass as they come. Its `README.md` has the five steps to make it
-yours. Nothing is installed and nothing in LabHarness is touched.
+yours. Nothing is installed and nothing in LabHarness is touched. How a module works, and the rules it follows, are in
+[Build a module for your field](modules.md).
 
 The name becomes what a Python package can be called (`Arquitectura y obra` is
 `arquitectura_y_obra`). A name already used by a module, a kind of figure or a field is refused.
