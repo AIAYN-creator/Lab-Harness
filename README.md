@@ -45,6 +45,19 @@ never has to change for it: a test guards that the core does not depend on any o
 | **To ask for one** | Open an issue with the [module request form](.github/ISSUE_TEMPLATE/new_module.yml): the figure you make today and what the data looks like. If the maintainer finds it worth doing, he does it, free |
 | **To put a price on it** | **Anyone can put a bounty on a request, and anyone can claim it**: the maintainer or another developer. [How bounties work](docs/bounties.md) |
 
+### The modules that exist today
+
+| Module | For | It draws | Install | Specification |
+|---|---|---|---|---|
+| **`chem`** | Chemistry | Structures from SMILES, offline name resolution (OPSIN), the lab compound library | `chem`, plus `iupac` and `library` | [Usage](docs/usage.md#structure--chemical-structures), [the library](docs/usage.md#the-lab-compound-library), [source](src/labharness/modules/chem) |
+| **`plots`** | Any experimental science | Regressions and plots with error bars, from CSV or Excel | `plots` | [Usage](docs/usage.md#plot--regressions-and-plots), [source](src/labharness/modules/plots) |
+| **`tables`** | Any field | Editorial tables from any delimited file or workbook, with values and uncertainties rounded together | *(none: it ships with the core)* | [Usage](docs/usage.md#tables), [source](src/labharness/modules/tables) |
+| **`diagrams`** | Any field | Reaction mechanisms, flowcharts and networks in TikZ and chemfig | *(none: it ships with the core)* | [Usage](docs/usage.md#mechanism-and-flow--diagrams), [source](src/labharness/modules/diagrams) |
+
+They ship inside LabHarness, so there is nothing else to download: [install the extras you use](#install).
+**No module by anyone else is listed yet.** When one is published, it is added to this table with
+a pull request, and yours can be the first.
+
 A module brings what the field needs and nothing else: its own kinds of figure for
 `labharness add`, its own rules for AI agents, its own commands and its own tests. It is a
 package of its own, so it is published and maintained by whoever wrote it.

@@ -1,4 +1,4 @@
-"""Every link in the documentation to a file of this repository points at a file that exists."""
+"""Every link in the documentation to a file of this repository, and to a section of one, exists."""
 
 import re
 import subprocess
@@ -17,14 +17,28 @@ def documents() -> list[Path]:
     return [ROOT / name for name in listed.stdout.split() if (ROOT / name).is_file()]
 
 
+def sections(document: Path) -> set[str]:
+    """The anchors GitHub gives the headings of a Markdown file."""
+    found = set()
+    for heading in re.findall(r"^#{1,6}\s+(.+?)\s*$", document.read_text(encoding="utf-8"), re.M):
+        plain = re.sub(r"[^\w\- ]", "", heading.replace("`", "").lower())
+        found.add(plain.replace(" ", "-"))
+    return found
+
+
 def broken(document: Path) -> list[str]:
     missing = []
     for markdown, html in LINK.findall(document.read_text(encoding="utf-8")):
-        target = (markdown or html).split("#")[0]
-        if not target or re.match(r"[a-z]+:", target):  # an anchor, or http:, mailto:...
+        link = markdown or html
+        if re.match(r"[a-z]+:", link):  # http:, mailto:...
             continue
-        if not (document.parent / target).exists():
-            missing.append(f"{document.relative_to(ROOT).as_posix()} -> {target}")
+        target, _, anchor = link.partition("#")
+        found = document if not target else document.parent / target
+        where = f"{document.relative_to(ROOT).as_posix()} -> {link}"
+        if not found.exists() or (
+            anchor and found.suffix == ".md" and anchor not in sections(found)
+        ):
+            missing.append(where)
     return missing
 
 
