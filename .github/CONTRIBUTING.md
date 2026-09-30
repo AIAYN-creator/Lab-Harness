@@ -78,7 +78,7 @@ Types: `feat`, `fix`, `docs`, `refactor`, `test`, `ci`, `chore`, `build`.
 ## Adding a journal
 
 A journal is one folder, `templates/workspace/journals/<journal>/`, with its `style.toml`,
-`paper.tex` and `references.bib`. [`docs/onboarding.md`](docs/onboarding.md) explains each file.
+`paper.tex` and `references.bib`. [`docs/onboarding.md`](../docs/onboarding.md) explains each file.
 No module should need changing; `tests/test_journal_contract.py` fails if one does.
 
 **Only journals whose LaTeX class has a free licence can be added**, because the template is
@@ -86,7 +86,7 @@ copied into every user's workspace. Check the class on CTAN before starting.
 
 ## Adding a figure kind or a module
 
-See *Adding a module* in [`docs/onboarding.md`](docs/onboarding.md). In short:
+See *Adding a module* in [`docs/onboarding.md`](../docs/onboarding.md). In short:
 
 - modules are plain functions with no terminal I/O;
 - heavy dependencies go behind an extra, and the core must import without any;
@@ -95,8 +95,8 @@ See *Adding a module* in [`docs/onboarding.md`](docs/onboarding.md). In short:
 
 ## Design rules
 
-Please read [`AGENTS.md`](AGENTS.md): it applies to humans too. Larger design decisions are
-recorded in [`docs/adr/`](docs/adr/). If a change contradicts one, say so in the issue before
+Please read [`AGENTS.md`](../AGENTS.md): it applies to humans too. Larger design decisions are
+recorded in [`docs/adr/`](../docs/adr/). If a change contradicts one, say so in the issue before
 working around it.
 
 ## Code of conduct

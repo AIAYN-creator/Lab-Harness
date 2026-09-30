@@ -1,4 +1,4 @@
-# <img src="docs/brand/logo.svg" alt="LabHarness" width="340">
+# <img src="docs/brand/svg/logo.svg" alt="LabHarness" width="340">
 
 **From lab data to PDF in 1.3 seconds.** Change a number: the figure, the fit and the text follow.
 
@@ -326,8 +326,8 @@ See [`docs/ROADMAP.md`](docs/ROADMAP.md) for the detail.
 
 ## Contributing
 
-Issues and pull requests are welcome. See [`CONTRIBUTING.md`](CONTRIBUTING.md) and the
-[Code of Conduct](CODE_OF_CONDUCT.md). If you want to work on LabHarness itself, start with
+Issues and pull requests are welcome. See [`CONTRIBUTING.md`](.github/CONTRIBUTING.md) and the
+[Code of Conduct](.github/CODE_OF_CONDUCT.md). If you want to work on LabHarness itself, start with
 [`docs/onboarding.md`](docs/onboarding.md); the decisions behind the design are in
 [`docs/adr/`](docs/adr/).
 

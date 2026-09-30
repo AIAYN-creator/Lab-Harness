@@ -65,7 +65,7 @@ def draw(name: str, line: str, accent: str, background: str | None, wordmark: bo
     with tempfile.TemporaryDirectory() as scratch:
         tex = Path(scratch) / f"{name}.tex"
         tex.write_text(source, encoding="utf-8")
-        pdf = BRAND / f"{name}.pdf"
+        pdf = BRAND / "pdf" / f"{name}.pdf"
         render_diagram(tex, pdf, border_pt=0)
     _convert(pdf, name)
     print(f"docs/brand/{name}.pdf, .svg, .png")
@@ -76,7 +76,7 @@ def _convert(pdf: Path, name: str) -> None:
     pdftocairo = shutil.which("pdftocairo")
     if pdftocairo is None:
         raise SystemExit("needs pdftocairo, from poppler (it comes with MiKTeX and TeX Live)")
-    subprocess.run([pdftocairo, "-svg", pdf, BRAND / f"{name}.svg"], check=True)
+    subprocess.run([pdftocairo, "-svg", pdf, BRAND / "svg" / f"{name}.svg"], check=True)
     subprocess.run(
         [
             pdftocairo,
@@ -88,7 +88,7 @@ def _convert(pdf: Path, name: str) -> None:
             "-1",
             "-transp",
             pdf,
-            BRAND / name,
+            BRAND / "png" / name,
         ],
         check=True,
     )
@@ -104,14 +104,15 @@ def _convert(pdf: Path, name: str) -> None:
                 "32",
                 "-transp",
                 pdf,
-                BRAND / "favicon",
+                BRAND / "png" / "favicon",
             ],
             check=True,
         )
 
 
 def main() -> None:
-    BRAND.mkdir(parents=True, exist_ok=True)
+    for folder in ("pdf", "svg", "png"):
+        (BRAND / folder).mkdir(parents=True, exist_ok=True)
     for name, (line, accent, background, wordmark) in VARIANTS.items():
         draw(name, line, accent, background, wordmark)
 

@@ -1,6 +1,6 @@
 # The LabHarness brand
 
-![LabHarness](logo.svg)
+![LabHarness](svg/logo.svg)
 
 **Everything LabHarness shows, LabHarness makes.** The logo is a TikZ diagram compiled by
 LabHarness, the demo GIF is a real build, and every number on this page was measured. That is the
@@ -65,12 +65,14 @@ Three measurements and the curve that follows them; the one that just changed is
 
 | File | For |
 |---|---|
-| `logo.svg`, `logo.pdf`, `logo.png` | The mark and the name, on white |
+| `logo.*` | The mark and the name, on white |
 | `logo-mono.*` | One colour: photocopies, stamps |
 | `logo-negative.*` | White on the brand blue |
 | `mark.*`, `mark-mono.*` | The mark alone |
-| `mark-negative.png` | Avatars and social previews |
-| `favicon.png` | 32 px |
+| `png/mark-negative.png` | Avatars and social previews |
+| `png/favicon.png` | 32 px |
+
+Every one comes in `svg/` (the web), `pdf/` (LaTeX) and `png/` (avatars and previews).
 
 Leave around it at least the width of one dot of the mark, and never stretch, recolour, outline
 or put it on a photograph. To change it, edit and rerun the script that draws it:
