@@ -49,8 +49,8 @@ field needs, without touching the core (ADR 30 and 31).
 **Includes:** the domain contract, with chemistry as its first domain; the first new domains, in
 the order the demand sets: economics (regression tables from statsmodels), mathematics (TikZ and
 pgfplots templates) and construction (.bc3 budgets, .dxf plans); bar charts and heat maps; online
-name resolution through PubChem, behind an explicit flag; and a working environment that opens
-the manuscript, the console and the PDF side by side, with the PDF on either side.
+name resolution through PubChem, behind an explicit flag; and a working environment in VS Code
+that opens the manuscript, the watcher and the PDF side by side, with the PDF on either side.
 
 **Goes ahead** whether or not v1.0 draws outside users: the author uses it.
 
@@ -59,8 +59,9 @@ the manuscript, the console and the PDF side by side, with the PDF on either sid
 **The end goal of the project** (ADR 32): LabHarness for people who do not use a terminal, and whom
 LaTeX already intimidates. A desktop application that wraps the existing modules, hides the
 compilation and keeps an editable code panel, so the human stays in the loop. It grows out of the
-working environment of v1.5, the same editor, console and PDF in a window of their own, and may
-take more than one version to get there.
+working environment of v1.5, with the manuscript, console and PDF side by side in a window of
+their own, and may take more than one version to get there. The lab compound library read
+straight from a SQLite database, without exporting it, belongs to this stage too.
 
 ## Design rules v0.1 must respect
 
