@@ -47,3 +47,6 @@ acs-*.bib
 *.pfx
 .pypirc
 .netrc
+
+# Real lab exports never go in the repository: tests use synthetic files shaped like them.
+corpus/
