@@ -7,6 +7,25 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+This section becomes **0.5.0** when the check of a real document closes it (`chk-uso-real-v05`).
+Everything since 0.1.0, by theme, with the detail below:
+
+- **Data in.** One reader for CSV, TSV, TXT and Excel: encodings, separators, decimal commas,
+  metadata rows, units in the header, and errors that name the file, the row and the column.
+- **Tables and numbers.** Editorial tables from any table, values and uncertainties rounded
+  together, the same way in the text and in the tables.
+- **Figures.** `add` and `preview`; plots that take their axis labels from the header; five
+  typefaces and three LaTeX engines; a lab compound library for the structures.
+- **Templates.** Elsevier, an RSC working layout, and A4 `article` and `report` for lab work.
+- **Raw data and portability.** `data/` fingerprinted, `accept`, a git hook and agent deny rules;
+  `eject`, a copy that rebuilds without LabHarness; `cite DOI` for the bibliography.
+- **Modular.** A package for any field with `new-domain`, found through entry points, with its
+  own figure kinds, agent rules and commands; `init --field`.
+- **Environment.** `labharness open` in VS Code, `watch --json`, and a way out of `watch` that is
+  not Ctrl+C.
+- **The project.** A generated command reference, a gallery and a demo GIF, the brand, a guide to
+  building a module, bounties for modules, and the steps of a release.
+
 ### Added
 
 - `labharness new-domain NAME`: a package for a field, ready to fill in, with its entry points,
@@ -86,6 +105,13 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Templates for Elsevier (`elsarticle`), an RSC working layout (`rsc-draft`, not the official
   template), and a short `article` and a long `report` for lab work on A4:
   `labharness init --journal elsevier`.
+- Guides in `docs/`: [`modules.md`](modules.md), how to build a module for your field;
+  [`bounties.md`](bounties.md), how to ask for one and put a bounty on it; and
+  [`RELEASING.md`](RELEASING.md), the steps of a release and what to do if one goes wrong.
+- The LabHarness brand in `docs/brand/`: the logo and the mark, in colour, in one colour and in
+  negative, as SVG, PDF and PNG, drawn by `tools/make_brand.py` with LabHarness itself.
+- `.github/workflows/release.yml`: publishes to PyPI by tag with trusted publishing, after a
+  rehearsal on TestPyPI. No token is stored anywhere.
 
 ### Changed
 
