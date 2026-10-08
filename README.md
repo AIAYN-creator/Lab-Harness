@@ -21,7 +21,7 @@ never a black box.
 What makes it more than a tool for one lab is its architecture: a small core, and **a module for
 each field**. [Build one, or ask for one and put a price on it.](#one-core-a-module-for-every-field)
 
-## The problem
+## The problem we solve
 
 A measurement changes. Today that means opening the graphing program, redrawing the figure,
 exporting it, pasting it into the manuscript, retyping the number in the text and compiling.
@@ -84,9 +84,9 @@ What is left is LaTeX itself, and mechanisms drawn with chemfig, which are slow 
 
 See what it produces in the [gallery](docs/gallery/README.md): the demo, and every template.
 
-## Who it is for
+## Who it is for and potential consummers
 
-Researchers, PhD students and science students who already write in LaTeX or Overleaf and are
+Researchers, PhD students and science students even big lab groups who already write in LaTeX or Overleaf and are
 comfortable with a terminal and an editor such as VS Code or Zed.
 
 And anyone who works in another field and would like LabHarness to speak it: that is what the
